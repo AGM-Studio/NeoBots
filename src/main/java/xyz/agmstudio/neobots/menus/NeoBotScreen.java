@@ -1,7 +1,6 @@
 package xyz.agmstudio.neobots.menus;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,32 +14,13 @@ public class NeoBotScreen extends AbstractContainerScreen<NeoBotMenu> {
             ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/single_slot.png");
     private static final ResourceLocation ACTIVE_SLOT_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/single_slot_active.png");
-
+    private static final ResourceLocation UPGRADE_SLOT_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/upgrade_slot.png");
 
     public NeoBotScreen(NeoBotMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
-        this.imageWidth = 255;
+        this.imageWidth = 280;
         this.imageHeight = 166;
-    }
-
-    private Button upgradeButton;
-
-    @Override protected void init() {
-        super.init();
-
-        this.upgradeButton = Button.builder(Component.literal("Upgrade"), btn -> menu.getBot().useUpgrade()).bounds(leftPos + 108, topPos + 51, 86, 18).build();
-        addRenderableWidget(upgradeButton);
-    }
-
-    @Override public void containerTick() {
-        super.containerTick();
-
-        double chance = menu.upgradeChance.get() / 10000.0;
-        upgradeButton.active = chance > 0;
-        upgradeButton.visible = upgradeButton.active;
-        if (upgradeButton.active) upgradeButton.setMessage(
-                Component.literal("Upgrade (" + (chance * 100) + "%)")
-        );
     }
 
     @Override protected void renderBg(GuiGraphics g, float partialTick, int x, int y) {
@@ -53,6 +33,8 @@ public class NeoBotScreen extends AbstractContainerScreen<NeoBotMenu> {
             if (i == activeModule) g.blit(ACTIVE_SLOT_TEXTURE, leftPos + px, topPos + py, 0, 0, 18, 18, 18, 18);
             else g.blit(SLOT_TEXTURE, leftPos + px, topPos + py, 0, 0, 18, 18, 18, 18);
         }
+        for (int i = 0; i < menu.getBot().getUpgradeInventory().getContainerSize(); i++)
+            g.blit(UPGRADE_SLOT_TEXTURE, leftPos + 257, topPos + i * 18 + 11, 0, 0, 18, 18, 18, 18);
     }
 
     @Override protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
@@ -60,5 +42,4 @@ public class NeoBotScreen extends AbstractContainerScreen<NeoBotMenu> {
         g.drawString(this.font, playerInventoryTitle, 87, 72, 0x404040, false);
         g.drawString(this.font, Component.literal("Modules"), 5, 8, 0x404040, false);
     }
-
 }

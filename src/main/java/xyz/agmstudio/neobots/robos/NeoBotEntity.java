@@ -34,8 +34,18 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private static final int MODULE_COOLDOWN = 20;
 
     private final SimpleContainer moduleInventory = new SimpleContainer(6) {
-        @Override public boolean canPlaceItem(int slot, ItemStack stack) {
+        @Override public boolean canPlaceItem(int slot, @NotNull ItemStack stack) {
             return stack.getItem() instanceof BotModuleItem;
+        }
+
+        @Override public void setChanged() {
+            super.setChanged();
+            NeoBotEntity.this.setChanged();
+        }
+    };
+    private final SimpleContainer upgradeInventory = new SimpleContainer(3) {
+        @Override public boolean canPlaceItem(int slot, @NotNull ItemStack stack) {
+            return false;
         }
 
         @Override public void setChanged() {
@@ -55,10 +65,13 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     public SimpleContainer getModuleInventory() {
         return moduleInventory;
     }
+    public SimpleContainer getUpgradeInventory() {
+        return upgradeInventory;
+    }
+
     public int getActiveModuleIndex() {
         return activeModuleIndex;
     }
-
     public void setActiveModule(int index) {
         activeModuleIndex = index < getModuleInventory().getContainerSize() ? index : 0;
         moduleJustStarted = true;

@@ -19,7 +19,9 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 public class NeoBotMenu extends AbstractContainerMenu {
     private final NeoBotEntity bot;
     protected final DataSlot activeModule = DataSlot.standalone();
-    protected final DataSlot upgradeChance = DataSlot.standalone();
+
+    private final int moduleSlotSize;
+    private final int upgradeSlotSize;
 
     private static NeoBotEntity captureBot(Level level, FriendlyByteBuf buf) {
         Entity entity = level.getEntity(buf.readInt());
@@ -35,13 +37,23 @@ public class NeoBotMenu extends AbstractContainerMenu {
         this.bot = bot;
 
         addDataSlot(activeModule);
-        addDataSlot(upgradeChance);
 
         SimpleContainer modules = bot.getModuleInventory();
-        addRectangleShapedSlots(modules, 4, (int) (modules.getContainerSize() / 4.0) + 1, 6, 19, 0, -1, (c, index, x, y) ->
+        moduleSlotSize = modules.getContainerSize();
+        addRectangleShapedSlots(modules, 4, (int) Math.ceil(moduleSlotSize / 4.0), 6, 19, 0, -1, (c, index, x, y) ->
             this.addSlot(new Slot(c, index, x, y) {
                 @Override public boolean mayPlace(@NotNull ItemStack stack) {
-                    return stack.getItem() instanceof BotModuleItem;
+                    return isModuleItem(stack);
+                }
+            })
+        );
+
+        SimpleContainer upgrades = bot.getUpgradeInventory();
+        upgradeSlotSize = upgrades.getContainerSize();
+        addRectangleShapedSlots(upgrades, 1, upgradeSlotSize, 258, 12,0, 7, (c, index, x, y) ->
+            this.addSlot(new Slot(upgrades, index, x, y) {
+                @Override public boolean mayPlace(@NotNull ItemStack stack) {
+                    return isUpgradeItem(stack);
                 }
             })
         );
@@ -51,9 +63,39 @@ public class NeoBotMenu extends AbstractContainerMenu {
         addRectangleShapedSlots(inv, 9, 1, 87, 142, 0, 9);
     }
 
-    @Override
-    public @NotNull ItemStack quickMoveStack(@NotNull Player p_38941_, int p_38942_) {
-        return null;
+    private static boolean isModuleItem(ItemStack stack) {
+        return stack.getItem() instanceof BotModuleItem;
+    }
+    private static boolean isUpgradeItem(ItemStack stack) {
+        return false;
+    }
+
+    @Override public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
+        Slot slot = slots.get(index);
+        if (!slot.hasItem()) return ItemStack.EMPTY;
+
+        ItemStack stack = slot.getItem();
+        ItemStack copy = stack.copy();
+
+
+        if (index < moduleSlotSize +  upgradeSlotSize) { // --- FROM BOT → PLAYER ---
+            if (!moveItemStackTo(stack, moduleSlotSize + upgradeSlotSize, moduleSlotSize + upgradeSlotSize + 36, true))
+                return ItemStack.EMPTY;
+        } else { // --- FROM PLAYER → BOT ---
+            if (isModuleItem(stack)) {
+                if (!moveItemStackTo(stack, 0, moduleSlotSize, false))
+                    return ItemStack.EMPTY;
+            } else if (isUpgradeItem(stack)) {
+                if (!moveItemStackTo(stack, moduleSlotSize, moduleSlotSize + upgradeSlotSize, false))
+                    return ItemStack.EMPTY;
+            } else return ItemStack.EMPTY;
+        }
+
+        if (stack.isEmpty()) slot.set(ItemStack.EMPTY);
+        else slot.setChanged();
+
+        slot.onTake(player, stack);
+        return copy;
     }
 
     @Override public boolean stillValid(@NotNull Player player) {
@@ -64,7 +106,6 @@ public class NeoBotMenu extends AbstractContainerMenu {
         if (bot == null || bot.level().isClientSide) return;
 
         activeModule.set(bot.getActiveModuleIndex());
-        upgradeChance.set(5000);
     }
 
     public NeoBotEntity getBot() {
@@ -85,7 +126,8 @@ public class NeoBotMenu extends AbstractContainerMenu {
         int size = inv.getContainerSize();
         for (int j = 0; j < h; ++j) for (int i = 0; i < w; i++) {
             int index = j * w + i + offset;
-            if (index >= size || (limit > -1 && index >= limit)) break;
+            if (index >= size) continue;
+            if (limit > -1 && index >= limit) continue;
             creator.create(inv, index, x + i * 18, y + j * 18);
         }
     }
