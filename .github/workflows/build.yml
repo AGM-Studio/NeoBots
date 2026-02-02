@@ -15,18 +15,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Build JAR
         run: ./gradlew build
-      - name: Create/Update Release
+      - name: Create/Update Release & Upload JAR
         uses: softprops/action-gh-release@v1
         with:
           tag_name: experimental-build
           name: Experimental Build
+          files: build/libs/*.jar
           draft: false
           prerelease: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload JAR to Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/libs/*.jar
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
