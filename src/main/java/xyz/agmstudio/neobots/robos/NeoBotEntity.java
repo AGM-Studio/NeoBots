@@ -1,9 +1,11 @@
 package xyz.agmstudio.neobots.robos;
 
+import com.simibubi.create.AllSoundEvents;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -18,6 +20,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.modules.IBotModule;
@@ -44,9 +47,21 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private void setChanged() {
 
     }
+    public void useUpgrade() {
+        level().playSound(null, blockPosition(), AllSoundEvents.DESK_BELL_USE.getMainEventHolder().value(), SoundSource.NEUTRAL);
+        NeoBots.LOGGER.debug("Upgrade called");
+    }
 
     public SimpleContainer getModuleInventory() {
         return moduleInventory;
+    }
+    public int getActiveModuleIndex() {
+        return activeModuleIndex;
+    }
+
+    public void setActiveModule(int index) {
+        activeModuleIndex = index < getModuleInventory().getContainerSize() ? index : 0;
+        moduleJustStarted = true;
     }
 
     public NeoBotEntity(EntityType<? extends PathfinderMob> type, Level level) {

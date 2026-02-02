@@ -1,11 +1,13 @@
 package xyz.agmstudio.neobots.menus;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -16,6 +18,8 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public class NeoBotMenu extends AbstractContainerMenu {
     private final NeoBotEntity bot;
+    protected final DataSlot activeModule = DataSlot.standalone();
+    protected final DataSlot upgradeChance = DataSlot.standalone();
 
     private static NeoBotEntity captureBot(Level level, FriendlyByteBuf buf) {
         Entity entity = level.getEntity(buf.readInt());
@@ -30,17 +34,21 @@ public class NeoBotMenu extends AbstractContainerMenu {
         super(NeoBots.NEOBOT_INVENTORY.get(), id);
         this.bot = bot;
 
+        addDataSlot(activeModule);
+        addDataSlot(upgradeChance);
+
         SimpleContainer modules = bot.getModuleInventory();
-        for (int i = 0; i < modules.getContainerSize(); i++) {
-            addSlot(new Slot(modules, i, 8 + i * 18, 20) {
+        addRectangleShapedSlots(modules, 4, (int) (modules.getContainerSize() / 4.0) + 1, 6, 19, 0, -1, (c, index, x, y) ->
+            this.addSlot(new Slot(c, index, x, y) {
                 @Override public boolean mayPlace(@NotNull ItemStack stack) {
                     return stack.getItem() instanceof BotModuleItem;
                 }
-            });
-        }
+            })
+        );
 
         // Player inventory
-        addPlayerInventory(inv);
+        addRectangleShapedSlots(inv, 9, 3, 87, 84, 9);
+        addRectangleShapedSlots(inv, 9, 1, 87, 142, 0, 9);
     }
 
     @Override
@@ -48,23 +56,41 @@ public class NeoBotMenu extends AbstractContainerMenu {
         return null;
     }
 
-    @Override
-    public boolean stillValid(@NotNull Player player) {
+    @Override public boolean stillValid(@NotNull Player player) {
         return bot.isAlive() && player.distanceTo(bot) < 8.0F;
     }
+    @Override public void broadcastChanges() {
+        super.broadcastChanges();
+        if (bot == null || bot.level().isClientSide) return;
 
-    private void addPlayerInventory(Inventory inv) {
-        for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < 9; x++) {
-                addSlot(new Slot(inv, x + y * 9 + 9, 8 + x * 18, 84 + y * 18));
-            }
-        }
-        for (int x = 0; x < 9; x++) {
-            addSlot(new Slot(inv, x, 8 + x * 18, 142));
-        }
+        activeModule.set(bot.getActiveModuleIndex());
+        upgradeChance.set(5000);
     }
 
     public NeoBotEntity getBot() {
         return bot;
+    }
+
+    public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset) {
+        NeoBotMenu.this.addRectangleShapedSlots(inv, w, h, x, y, offset, -1, (c, index, px, py) ->
+            this.addSlot(new Slot(c, index, px, py))
+        );
+    }
+    public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset, int limit) {
+        NeoBotMenu.this.addRectangleShapedSlots(inv, w, h, x, y, offset, limit, (c, index, px, py) ->
+            this.addSlot(new Slot(c, index, px, py))
+        );
+    }
+    public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset, int limit, MenuSlotCreator creator) {
+        int size = inv.getContainerSize();
+        for (int j = 0; j < h; ++j) for (int i = 0; i < w; i++) {
+            int index = j * w + i + offset;
+            if (index >= size || (limit > -1 && index >= limit)) break;
+            creator.create(inv, index, x + i * 18, y + j * 18);
+        }
+    }
+
+    public interface MenuSlotCreator {
+        void create(Container inv, int index, int x, int y);
     }
 }
