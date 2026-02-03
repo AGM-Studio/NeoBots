@@ -4,29 +4,40 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout the repository
       - name: Checkout
         uses: actions/checkout@v4
+      # 2️⃣ Setup Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
+      # 3️⃣ Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+      # 4️⃣ Build JAR
       - name: Build JAR
         run: ./gradlew build
-      - name: Create/Update Release
+      # 5️⃣ Generate human-friendly release description automatically
+      - name: Generate release description
+        id: release_body
+        run: |
+          echo "body<<EOF" >> $GITHUB_ENV
+          echo "Automated experimental build. ⚠️ May be unstable." >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "Changes included in this build:" >> $GITHUB_ENV
+          git log -n 5 --pretty=format:"- %s" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      # 6️⃣ Create/Update Release and Upload JAR
+      - name: Create/Update Release & Upload JAR
         uses: softprops/action-gh-release@v1
         with:
           tag_name: experimental-build
           name: Experimental Build
+          body: ${{ env.body }}
+          files: build/libs/*.jar
           draft: false
           prerelease: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload JAR to Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/libs/*.jar
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
