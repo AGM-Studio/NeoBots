@@ -5,9 +5,13 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
 
-public class UpgradeContainer extends BotFilteredContainer<BotUpgradeItem> {
+public class UpgradeContainer extends BotFilteredContainer {
     public UpgradeContainer(NeoBotEntity bot, int size) {
-        super(bot, size, BotUpgradeItem.class);
+        super(bot, size);
+    }
+
+    @Override public boolean isItemValid(ItemStack stack) {
+        return BotUpgradeItem.isUpgrade(stack);
     }
 
     @Override public void setItem(int slot, @NotNull ItemStack stack) {

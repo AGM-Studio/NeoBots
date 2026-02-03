@@ -1,43 +1,110 @@
 package xyz.agmstudio.neobots.containers;
 
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
-public class ModuleContainer extends BotFilteredContainer<BotModuleItem> {
+public class ModuleContainer extends BotFilteredContainer {
+    private int activeModuleIndex = 0;
+    private boolean moduleJustStarted = true;
+    private boolean hasModules = false;
+
     public ModuleContainer(NeoBotEntity bot, int maxSize) {
-        super(bot, maxSize, BotModuleItem.class);
+        super(bot, maxSize);
+    }
+
+    public int getActiveModuleIndex() {
+        return activeModuleIndex;
+    }
+    public boolean isModuleJustStarted() {
+        return moduleJustStarted;
+    }
+
+    public void setActiveModuleIndex(int index) {
+        if (index < 0 || index >= getContainerSize()) index = 0;
+        activeModuleIndex = index;
+        moduleJustStarted = true;
+    }
+
+    private boolean advance() {
+        int size = bot.getModuleCapacity();
+        int index = -1;
+        for (int i = 0; i < size; i++) {
+            int idx = (activeModuleIndex + i + 1) % size;
+            if (getItem(idx).getItem() instanceof BotModuleItem) {
+                index = idx;
+                break;
+            }
+        }
+        if (index == -1) {
+            hasModules = false;
+            return false;
+        }
+
+        activeModuleIndex = index;
+        moduleJustStarted = true;
+        return true;
+    }
+
+    public void tickModules() {
+        if (!hasModules) return;
+        if (activeModuleIndex >= bot.getModuleCapacity())
+            activeModuleIndex = 0;
+
+        ItemStack stack = getItem(activeModuleIndex);
+        if (!(stack.getItem() instanceof BotModuleItem)) {
+            if (!advance()) return;
+            stack = getItem(activeModuleIndex);
+        }
+
+        BotModuleItem module = (BotModuleItem) stack.getItem();
+        if (moduleJustStarted) {
+            module.onStart(bot, stack);
+            moduleJustStarted = false;
+        }
+
+        module.tick(bot, stack);
+        if (module.isFinished(bot, stack)) {
+            module.onStop(bot, stack);
+            bot.setCooldown(module.getCooldown(bot, stack));
+            advance();
+        }
+    }
+
+    @Override public void setChanged() {
+        super.setChanged();
+        hasModules = false;
+        for (ItemStack stack: getItems()) {
+            if (stack.getItem() instanceof BotModuleItem) {
+                hasModules = true;
+                break;
+            }
+        }
+    }
+
+    @Override public void loadTag(@NotNull CompoundTag tag, String key, HolderLookup.@NotNull Provider access) {
+        CompoundTag data = tag.getCompound(key);
+        this.fromTag(data.getList("inv", 10), access);
+        this.activeModuleIndex = data.getInt("current");
+
+        moduleJustStarted = true;
+    }
+    @Override public void saveTag(@NotNull CompoundTag tag, String key, HolderLookup.@NotNull Provider access) {
+        CompoundTag data = new CompoundTag();
+        data.put("inv", this.createTag(access));
+        data.putInt("current", activeModuleIndex);
+
+        tag.put(key, data);
+    }
+
+    @Override public boolean isItemValid(ItemStack stack) {
+        return BotModuleItem.isModule(stack);
     }
 
     @Override public int getActiveSlots() {
         return bot.getModuleCapacity();
-    }
-
-    public static class Slot extends net.minecraft.world.inventory.Slot {
-        private final NeoBotEntity bot;
-        private final int index;
-
-        public static NeoBotMenu.MenuSlotCreator builder(NeoBotEntity bot) {
-            return (c, i, x, y) -> new Slot(bot, c, i, x, y);
-        }
-        public Slot(NeoBotEntity bot, Container inv, int index, int x, int y) {
-            super(inv, index, x, y);
-            this.index = index;
-            this.bot = bot;
-        }
-
-        @Override public boolean mayPlace(@NotNull ItemStack stack) {
-            return BotModuleItem.isModule(stack) && index < bot.getModuleCapacity();
-        }
-        @Override public boolean mayPickup(@NotNull Player player) {
-            return index < bot.getModuleCapacity();
-        }
-        @Override public boolean isActive() {
-            return index < bot.getModuleCapacity();
-        }
     }
 }

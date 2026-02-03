@@ -25,4 +25,9 @@ public abstract class BotModuleItem extends Item {
 
     /** Called once when the module finishes */
     public void onStop(NeoBotEntity bot, ItemStack stack) {}
+
+    /** The module cooldown after it's finished */
+    public int getCooldown(NeoBotEntity bot, ItemStack stack) {
+        return 50;
+    }
 }

@@ -12,13 +12,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
+import xyz.agmstudio.neobots.containers.BotFilteredContainer;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
-
-import java.util.function.Predicate;
 
 public class NeoBotMenu extends AbstractContainerMenu {
     private final NeoBotEntity bot;
@@ -45,11 +44,11 @@ public class NeoBotMenu extends AbstractContainerMenu {
         addDataSlot(moduleCapacity);
 
         ModuleContainer modules = bot.getModuleInventory();
-        addRectangleShapedSlots(modules, 4, 8, 6, 19, 0, -1, ModuleContainer.Slot.builder(bot));
+        addRectangleShapedSlots(modules, 4, 8, 6, 19, 0, -1);
         moduleSlotSize = modules.getContainerSize();
 
         UpgradeContainer upgrades = bot.getUpgradeInventory();
-        addRectangleShapedSlots(upgrades, 1, 7, 258, 12,0, 7, conditionalSlotCreator(BotUpgradeItem::isUpgrade));
+        addRectangleShapedSlots(upgrades, 1, 7, 258, 12,0, 7);
         upgradeSlotSize = upgrades.getContainerSize();
 
         // Player inventory
@@ -100,21 +99,17 @@ public class NeoBotMenu extends AbstractContainerMenu {
         return bot;
     }
 
-    public MenuSlotCreator conditionalSlotCreator(Predicate<ItemStack> place) {
-        return (c, i, x, y) -> new Slot(c, i, x, y) {
-            @Override public boolean mayPlace(@NotNull ItemStack stack) {
-                return place.test(stack);
-            }
-        };
-    }
     public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset) {
         addRectangleShapedSlots(inv, w, h, x, y, offset, -1, null);
     }
     public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset, int limit) {
         addRectangleShapedSlots(inv, w, h, x, y, offset, limit, null);
     }
-    public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset, int limit, MenuSlotCreator creator) {
-        if (creator == null) creator = net.minecraft.world.inventory.Slot::new;
+    public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset, int limit, SlotCreator creator) {
+        if (creator == null) {
+            if (inv instanceof BotFilteredContainer bfc) creator = bfc.slotBuilder();
+            else creator = (i, px, py) -> new Slot(inv, i, px, py);
+        }
         int maxByGrid = offset + w * h;
         int maxByLimit = limit > -1 ? offset + limit : Integer.MAX_VALUE;
         int last = Math.min(Math.min(maxByGrid, maxByLimit), inv.getContainerSize());
@@ -122,11 +117,11 @@ public class NeoBotMenu extends AbstractContainerMenu {
             int index = i - offset;
             int px = x + (index % w) * 18;
             int py = y + (index / w) * 18;
-            this.addSlot(creator.create(inv, i, px, py));
+            this.addSlot(creator.create(i, px, py));
         }
     }
 
-    public interface MenuSlotCreator {
-        Slot create(Container inv, int index, int x, int y);
+    public interface SlotCreator {
+        Slot create(int index, int x, int y);
     }
 }

@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -21,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
-import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
@@ -32,10 +30,6 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     // Execution values
     private int moduleCapacity = BASE_MODULE_SLOTS;
-    private int activeModuleIndex = 0;
-    private boolean moduleJustStarted = true;
-
-    // Cooldown
     private int cooldownTicks = 0;
     private static final int MODULE_COOLDOWN = 20;
 
@@ -61,11 +55,17 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     }
 
     public int getActiveModuleIndex() {
-        return activeModuleIndex;
+        return moduleInventory.getActiveModuleIndex();
     }
     public void setActiveModule(int index) {
-        activeModuleIndex = index < getModuleInventory().getContainerSize() ? index : 0;
-        moduleJustStarted = true;
+        moduleInventory.setActiveModuleIndex(index);
+    }
+
+    public int getCooldown() {
+        return cooldownTicks;
+    }
+    public void setCooldown(int cooldownTicks) {
+        this.cooldownTicks = cooldownTicks;
     }
 
     public NeoBotEntity(EntityType<? extends PathfinderMob> type, Level level) {
@@ -84,48 +84,16 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
 
-    @Override
-    public void tick() {
+    @Override public void tick() {
         super.tick();
         if (level().isClientSide) return;
+
         if (cooldownTicks > 0) {
             cooldownTicks--;
             return;
         }
 
-        SimpleContainer inv = getModuleInventory();
-        if (inv.isEmpty()) return;
-
-        int size = inv.getContainerSize();
-        if (activeModuleIndex >= size) { // Clamp index (in case slots changed)
-            activeModuleIndex = 0;
-            moduleJustStarted = true;
-        }
-
-        ItemStack stack = inv.getItem(activeModuleIndex);
-        if (!(stack.getItem() instanceof BotModuleItem module)) {
-            advanceModule(size);
-            return;
-        }
-
-        if (moduleJustStarted) {
-            module.onStart(this, stack);
-            moduleJustStarted = false;
-        }
-
-        module.tick(this, stack);
-
-        if (module.isFinished(this, stack)) {
-            module.onStop(this, stack);
-            cooldownTicks = MODULE_COOLDOWN;
-            advanceModule(size);
-        }
-    }
-
-    private void advanceModule(int size) {
-        activeModuleIndex = (activeModuleIndex + 1) % size;
-        moduleJustStarted = true;
-        setChanged();
+        moduleInventory.tickModules();
     }
 
     // Attributes
@@ -149,21 +117,18 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
-        tag.put("Modules", moduleInventory.createTag(access));
-        tag.put("Upgrades", upgradeInventory.createTag(access));
-        tag.putInt("ActiveModule", activeModuleIndex);
+        moduleInventory.saveTag(tag, "Modules", access);
+        upgradeInventory.saveTag(tag, "Upgrades", access);
         tag.putInt("Cooldown", cooldownTicks);
     }
 
     @Override public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
-        moduleInventory.fromTag(tag.getList("Modules", 10), access);
-        upgradeInventory.fromTag(tag.getList("Upgrades", 10), access);
-        activeModuleIndex = tag.getInt("ActiveModule");
+        moduleInventory.loadTag(tag, "Modules", access);
+        upgradeInventory.loadTag(tag, "Upgrades", access);
         cooldownTicks = tag.getInt("Cooldown");
 
-        moduleJustStarted = true;
         recalculateModuleCapacity();
     }
 
