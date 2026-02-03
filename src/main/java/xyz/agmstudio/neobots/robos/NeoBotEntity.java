@@ -30,8 +30,6 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     // Execution values
     private int moduleCapacity = BASE_MODULE_SLOTS;
-    private int cooldownTicks = 0;
-    private static final int MODULE_COOLDOWN = 20;
 
     private final ModuleContainer moduleInventory = new ModuleContainer(this, MAX_MODULE_SLOTS);
     private final UpgradeContainer upgradeInventory = new UpgradeContainer(this, UPGRADE_SLOTS);
@@ -61,13 +59,6 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         moduleInventory.setActiveModuleIndex(index);
     }
 
-    public int getCooldown() {
-        return cooldownTicks;
-    }
-    public void setCooldown(int cooldownTicks) {
-        this.cooldownTicks = cooldownTicks;
-    }
-
     public NeoBotEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
     }
@@ -87,11 +78,6 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void tick() {
         super.tick();
         if (level().isClientSide) return;
-
-        if (cooldownTicks > 0) {
-            cooldownTicks--;
-            return;
-        }
 
         moduleInventory.tickModules();
     }
@@ -119,7 +105,6 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         RegistryAccess access = level().registryAccess();
         moduleInventory.saveTag(tag, "Modules", access);
         upgradeInventory.saveTag(tag, "Upgrades", access);
-        tag.putInt("Cooldown", cooldownTicks);
     }
 
     @Override public void readAdditionalSaveData(@NotNull CompoundTag tag) {
@@ -127,7 +112,6 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         RegistryAccess access = level().registryAccess();
         moduleInventory.loadTag(tag, "Modules", access);
         upgradeInventory.loadTag(tag, "Upgrades", access);
-        cooldownTicks = tag.getInt("Cooldown");
 
         recalculateModuleCapacity();
     }

@@ -10,6 +10,10 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 public class ModuleContainer extends BotFilteredContainer {
     private int activeModuleIndex = 0;
     private boolean moduleJustStarted = true;
+
+    private int cooldownTicks = 0;
+    private boolean onCooldown = false;
+
     private boolean hasModules = false;
 
     public ModuleContainer(NeoBotEntity bot, int maxSize) {
@@ -50,6 +54,15 @@ public class ModuleContainer extends BotFilteredContainer {
     }
 
     public void tickModules() {
+        if (cooldownTicks > 0) {
+            cooldownTicks--;
+            return;
+        }
+        if (onCooldown) {
+            onCooldown = false;
+            advance();
+        }
+
         if (!hasModules) return;
         if (activeModuleIndex >= bot.getModuleCapacity())
             activeModuleIndex = 0;
@@ -69,8 +82,8 @@ public class ModuleContainer extends BotFilteredContainer {
         module.tick(bot, stack);
         if (module.isFinished(bot, stack)) {
             module.onStop(bot, stack);
-            bot.setCooldown(module.getCooldown(bot, stack));
-            advance();
+            cooldownTicks = module.getCooldown(bot, stack);
+            onCooldown = true;
         }
     }
 
@@ -89,6 +102,8 @@ public class ModuleContainer extends BotFilteredContainer {
         CompoundTag data = tag.getCompound(key);
         this.fromTag(data.getList("inv", 10), access);
         this.activeModuleIndex = data.getInt("current");
+        this.cooldownTicks = data.getInt("cooldown");
+        this.onCooldown = data.getBoolean("on_cooldown");
 
         moduleJustStarted = true;
     }
@@ -96,6 +111,8 @@ public class ModuleContainer extends BotFilteredContainer {
         CompoundTag data = new CompoundTag();
         data.put("inv", this.createTag(access));
         data.putInt("current", activeModuleIndex);
+        data.putInt("cooldown", cooldownTicks);
+        data.putBoolean("on_cooldown", onCooldown);
 
         tag.put(key, data);
     }
