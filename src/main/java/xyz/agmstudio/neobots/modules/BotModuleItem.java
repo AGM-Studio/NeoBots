@@ -1,9 +1,23 @@
 package xyz.agmstudio.neobots.modules;
 
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public abstract class BotModuleItem extends Item {
     public BotModuleItem(Properties properties) {
         super(properties);
     }
+
+    /** Called once when this module becomes active */
+    public abstract void onStart(NeoBotEntity bot, ItemStack stack);
+
+    /** Called every tick while active */
+    public abstract void tick(NeoBotEntity bot, ItemStack stack);
+
+    /** Return true when the module is finished */
+    public abstract boolean isFinished(NeoBotEntity bot, ItemStack stack);
+
+    /** Called once when the module finishes */
+    public void onStop(NeoBotEntity bot, ItemStack stack) {}
 }

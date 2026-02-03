@@ -19,7 +19,7 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import java.util.List;
 
-public class MoveToModuleItem extends BotModuleItem implements IBotModule {
+public class MoveToModuleItem extends BotModuleItem {
     public MoveToModuleItem(Properties props) {
         super(props);
     }

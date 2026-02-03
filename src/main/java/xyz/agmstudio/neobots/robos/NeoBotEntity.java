@@ -23,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
-import xyz.agmstudio.neobots.modules.IBotModule;
 
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private int activeModuleIndex = 0;
@@ -112,7 +111,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         }
 
         ItemStack stack = inv.getItem(activeModuleIndex);
-        if (!(stack.getItem() instanceof IBotModule module)) {
+        if (!(stack.getItem() instanceof BotModuleItem module)) {
             advanceModule(size);
             return;
         }
