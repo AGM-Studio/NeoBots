@@ -20,11 +20,18 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
+import xyz.agmstudio.neobots.containers.ModuleContainer;
+import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
+    // Attributes
+    protected final static int UPGRADE_SLOTS     = 3;
+    protected final static int BASE_MODULE_SLOTS = 6;
+    protected final static int MAX_MODULE_SLOTS  = 32;
+
+    // Execution values
     private int activeModuleIndex = 0;
     private boolean moduleJustStarted = true;
 
@@ -32,39 +39,17 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private int cooldownTicks = 0;
     private static final int MODULE_COOLDOWN = 20;
 
-    private final SimpleContainer moduleInventory = new SimpleContainer(6) {
-        @Override public boolean canPlaceItem(int slot, @NotNull ItemStack stack) {
-            return stack.getItem() instanceof BotModuleItem;
-        }
+    private final ModuleContainer moduleInventory = new ModuleContainer(this, MAX_MODULE_SLOTS);
+    private final UpgradeContainer upgradeInventory = new UpgradeContainer(this, UPGRADE_SLOTS);
 
-        @Override public void setChanged() {
-            super.setChanged();
-            NeoBotEntity.this.setChanged();
-        }
-    };
-    private final SimpleContainer upgradeInventory = new SimpleContainer(3) {
-        @Override public boolean canPlaceItem(int slot, @NotNull ItemStack stack) {
-            return false;
-        }
-
-        @Override public void setChanged() {
-            super.setChanged();
-            NeoBotEntity.this.setChanged();
-        }
-    };
-
-    private void setChanged() {
+    public void setChanged() {
 
     }
-    public void useUpgrade() {
-        level().playSound(null, blockPosition(), AllSoundEvents.DESK_BELL_USE.getMainEventHolder().value(), SoundSource.NEUTRAL);
-        NeoBots.LOGGER.debug("Upgrade called");
-    }
 
-    public SimpleContainer getModuleInventory() {
+    public ModuleContainer getModuleInventory() {
         return moduleInventory;
     }
-    public SimpleContainer getUpgradeInventory() {
+    public UpgradeContainer getUpgradeInventory() {
         return upgradeInventory;
     }
 
@@ -158,6 +143,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         super.addAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
         tag.put("Modules", moduleInventory.createTag(access));
+        tag.put("Upgrades", upgradeInventory.createTag(access));
         tag.putInt("ActiveModule", activeModuleIndex);
         tag.putInt("Cooldown", cooldownTicks);
     }
@@ -166,6 +152,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         super.readAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
         moduleInventory.fromTag(tag.getList("Modules", 10), access);
+        upgradeInventory.fromTag(tag.getList("Upgrades", 10), access);
         activeModuleIndex = tag.getInt("ActiveModule");
         cooldownTicks = tag.getInt("Cooldown");
 
