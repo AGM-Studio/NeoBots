@@ -2,9 +2,14 @@ package xyz.agmstudio.neobots.modules;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public abstract class BotModuleItem extends Item {
+    public static boolean isModule(@NotNull ItemStack stack) {
+        return stack.getItem() instanceof BotModuleItem;
+    }
+
     public BotModuleItem(Properties properties) {
         super(properties);
     }

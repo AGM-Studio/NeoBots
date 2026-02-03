@@ -15,6 +15,9 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
+import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
+
+import java.util.function.Predicate;
 
 public class NeoBotMenu extends AbstractContainerMenu {
     private final NeoBotEntity bot;
@@ -40,34 +43,15 @@ public class NeoBotMenu extends AbstractContainerMenu {
 
         SimpleContainer modules = bot.getModuleInventory();
         moduleSlotSize = modules.getContainerSize();
-        addRectangleShapedSlots(modules, 4, (int) Math.ceil(moduleSlotSize / 4.0), 6, 19, 0, -1, (c, index, x, y) ->
-            this.addSlot(new Slot(c, index, x, y) {
-                @Override public boolean mayPlace(@NotNull ItemStack stack) {
-                    return isModuleItem(stack);
-                }
-            })
-        );
+        addRectangleShapedSlots(modules, 4, 8, 6, 19, 0, -1, conditionalSlotCreator(BotModuleItem::isModule));
 
         SimpleContainer upgrades = bot.getUpgradeInventory();
         upgradeSlotSize = upgrades.getContainerSize();
-        addRectangleShapedSlots(upgrades, 1, upgradeSlotSize, 258, 12,0, 7, (c, index, x, y) ->
-            this.addSlot(new Slot(upgrades, index, x, y) {
-                @Override public boolean mayPlace(@NotNull ItemStack stack) {
-                    return isUpgradeItem(stack);
-                }
-            })
-        );
+        addRectangleShapedSlots(upgrades, 1, 7, 258, 12,0, 7, conditionalSlotCreator(BotUpgradeItem::isUpgrade));
 
         // Player inventory
         addRectangleShapedSlots(inv, 9, 3, 87, 84, 9);
         addRectangleShapedSlots(inv, 9, 1, 87, 142, 0, 9);
-    }
-
-    private static boolean isModuleItem(ItemStack stack) {
-        return stack.getItem() instanceof BotModuleItem;
-    }
-    private static boolean isUpgradeItem(ItemStack stack) {
-        return false;
     }
 
     @Override public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
@@ -82,10 +66,10 @@ public class NeoBotMenu extends AbstractContainerMenu {
             if (!moveItemStackTo(stack, moduleSlotSize + upgradeSlotSize, moduleSlotSize + upgradeSlotSize + 36, true))
                 return ItemStack.EMPTY;
         } else { // --- FROM PLAYER → BOT ---
-            if (isModuleItem(stack)) {
+            if (BotModuleItem.isModule(stack)) {
                 if (!moveItemStackTo(stack, 0, moduleSlotSize, false))
                     return ItemStack.EMPTY;
-            } else if (isUpgradeItem(stack)) {
+            } else if (BotUpgradeItem.isUpgrade(stack)) {
                 if (!moveItemStackTo(stack, moduleSlotSize, moduleSlotSize + upgradeSlotSize, false))
                     return ItemStack.EMPTY;
             } else return ItemStack.EMPTY;
@@ -112,27 +96,33 @@ public class NeoBotMenu extends AbstractContainerMenu {
         return bot;
     }
 
+    public MenuSlotCreator conditionalSlotCreator(Predicate<ItemStack> place) {
+        return (c, i, x, y) -> new Slot(c, i, x, y) {
+            @Override public boolean mayPlace(@NotNull ItemStack stack) {
+                return place.test(stack);
+            }
+        };
+    }
     public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset) {
-        NeoBotMenu.this.addRectangleShapedSlots(inv, w, h, x, y, offset, -1, (c, index, px, py) ->
-            this.addSlot(new Slot(c, index, px, py))
-        );
+        addRectangleShapedSlots(inv, w, h, x, y, offset, -1, null);
     }
     public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset, int limit) {
-        NeoBotMenu.this.addRectangleShapedSlots(inv, w, h, x, y, offset, limit, (c, index, px, py) ->
-            this.addSlot(new Slot(c, index, px, py))
-        );
+        addRectangleShapedSlots(inv, w, h, x, y, offset, limit, null);
     }
     public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset, int limit, MenuSlotCreator creator) {
-        int size = inv.getContainerSize();
-        for (int j = 0; j < h; ++j) for (int i = 0; i < w; i++) {
-            int index = j * w + i + offset;
-            if (index >= size) continue;
-            if (limit > -1 && index >= limit) continue;
-            creator.create(inv, index, x + i * 18, y + j * 18);
+        if (creator == null) creator = Slot::new;
+        int maxByGrid = offset + w * h;
+        int maxByLimit = limit > -1 ? offset + limit : Integer.MAX_VALUE;
+        int last = Math.min(Math.min(maxByGrid, maxByLimit), inv.getContainerSize());
+        for (int i = offset; i < last; i++) {
+            int index = i - offset;
+            int px = x + (index % w) * 18;
+            int py = y + (index / w) * 18;
+            creator.create(inv, i, px, py);
         }
     }
 
     public interface MenuSlotCreator {
-        void create(Container inv, int index, int x, int y);
+        Slot create(Container inv, int index, int x, int y);
     }
 }
