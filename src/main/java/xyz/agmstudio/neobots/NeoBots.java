@@ -1,27 +1,25 @@
 package xyz.agmstudio.neobots;
 
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
-
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.ModContainer;
 import org.slf4j.LoggerFactory;
 import xyz.agmstudio.neobots.components.MoveTarget;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.MoveToModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
+import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
 @Mod(NeoBots.MOD_ID)
 public class NeoBots {
@@ -60,6 +58,12 @@ public class NeoBots {
     public static final DeferredHolder<Item, MoveToModuleItem> MOVE_TO_MODULE =
             ITEMS.register("move_to_module", () ->
                     new MoveToModuleItem(
+                            new Item.Properties().stacksTo(1)
+                    )
+            );
+    public static final DeferredHolder<Item, MemoryUpgradeItem> MEMORY_UPGRADE =
+            ITEMS.register("memory_upgrade", () ->
+                    new MemoryUpgradeItem(
                             new Item.Properties().stacksTo(1)
                     )
             );

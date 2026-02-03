@@ -1,11 +1,9 @@
 package xyz.agmstudio.neobots.robos;
 
-import com.simibubi.create.AllSoundEvents;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -24,6 +22,7 @@ import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
+import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     // Attributes
@@ -32,6 +31,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     protected final static int MAX_MODULE_SLOTS  = 32;
 
     // Execution values
+    private int moduleCapacity = BASE_MODULE_SLOTS;
     private int activeModuleIndex = 0;
     private boolean moduleJustStarted = true;
 
@@ -51,6 +51,13 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     }
     public UpgradeContainer getUpgradeInventory() {
         return upgradeInventory;
+    }
+
+    public int getModuleCapacity() {
+        return moduleCapacity;
+    }
+    public int getUpgradeCapacity() {
+        return UPGRADE_SLOTS;
     }
 
     public int getActiveModuleIndex() {
@@ -157,5 +164,17 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         cooldownTicks = tag.getInt("Cooldown");
 
         moduleJustStarted = true;
+        recalculateModuleCapacity();
+    }
+
+    public void recalculateModuleCapacity() {
+        int upgrades = 0;
+        for (ItemStack stack: upgradeInventory.getItems()) {
+            if (stack.getItem() instanceof MemoryUpgradeItem upgrade) {
+                upgrades += 1;
+            }
+        }
+
+        moduleCapacity = Math.min(BASE_MODULE_SLOTS + upgrades, MAX_MODULE_SLOTS);
     }
 }

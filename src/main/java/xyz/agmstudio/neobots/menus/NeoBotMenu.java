@@ -2,7 +2,6 @@ package xyz.agmstudio.neobots.menus;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -13,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
+import xyz.agmstudio.neobots.containers.ModuleContainer;
+import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
@@ -22,6 +23,7 @@ import java.util.function.Predicate;
 public class NeoBotMenu extends AbstractContainerMenu {
     private final NeoBotEntity bot;
     protected final DataSlot activeModule = DataSlot.standalone();
+    protected final DataSlot moduleCapacity = DataSlot.standalone();
 
     private final int moduleSlotSize;
     private final int upgradeSlotSize;
@@ -40,14 +42,15 @@ public class NeoBotMenu extends AbstractContainerMenu {
         this.bot = bot;
 
         addDataSlot(activeModule);
+        addDataSlot(moduleCapacity);
 
-        SimpleContainer modules = bot.getModuleInventory();
+        ModuleContainer modules = bot.getModuleInventory();
+        addRectangleShapedSlots(modules, 4, 8, 6, 19, 0, -1, ModuleContainer.Slot.builder(bot));
         moduleSlotSize = modules.getContainerSize();
-        addRectangleShapedSlots(modules, 4, 8, 6, 19, 0, -1, conditionalSlotCreator(BotModuleItem::isModule));
 
-        SimpleContainer upgrades = bot.getUpgradeInventory();
-        upgradeSlotSize = upgrades.getContainerSize();
+        UpgradeContainer upgrades = bot.getUpgradeInventory();
         addRectangleShapedSlots(upgrades, 1, 7, 258, 12,0, 7, conditionalSlotCreator(BotUpgradeItem::isUpgrade));
+        upgradeSlotSize = upgrades.getContainerSize();
 
         // Player inventory
         addRectangleShapedSlots(inv, 9, 3, 87, 84, 9);
@@ -90,6 +93,7 @@ public class NeoBotMenu extends AbstractContainerMenu {
         if (bot == null || bot.level().isClientSide) return;
 
         activeModule.set(bot.getActiveModuleIndex());
+        moduleCapacity.set(bot.getModuleCapacity());
     }
 
     public NeoBotEntity getBot() {
@@ -110,7 +114,7 @@ public class NeoBotMenu extends AbstractContainerMenu {
         addRectangleShapedSlots(inv, w, h, x, y, offset, limit, null);
     }
     public void addRectangleShapedSlots(Container inv, int w, int h, int x, int y, int offset, int limit, MenuSlotCreator creator) {
-        if (creator == null) creator = Slot::new;
+        if (creator == null) creator = net.minecraft.world.inventory.Slot::new;
         int maxByGrid = offset + w * h;
         int maxByLimit = limit > -1 ? offset + limit : Integer.MAX_VALUE;
         int last = Math.min(Math.min(maxByGrid, maxByLimit), inv.getContainerSize());
@@ -118,7 +122,7 @@ public class NeoBotMenu extends AbstractContainerMenu {
             int index = i - offset;
             int px = x + (index % w) * 18;
             int py = y + (index / w) * 18;
-            creator.create(inv, i, px, py);
+            this.addSlot(creator.create(inv, i, px, py));
         }
     }
 

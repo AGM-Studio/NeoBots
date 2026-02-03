@@ -27,7 +27,7 @@ public class NeoBotScreen extends AbstractContainerScreen<NeoBotMenu> {
         g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
 
         int activeModule = menu.activeModule.get();
-        for (int i = 0; i < menu.getBot().getModuleInventory().getContainerSize(); i++) {
+        for (int i = 0; i < menu.getBot().getModuleCapacity(); i++) {
             int px = 5 + (i % 4) * 18;
             int py = 18 + (i / 4) * 18;
             if (i == activeModule) g.blit(ACTIVE_SLOT_TEXTURE, leftPos + px, topPos + py, 0, 0, 18, 18, 18, 18);
