@@ -26,6 +26,7 @@ import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.menus.WithdrawModuleMenu;
 import xyz.agmstudio.neobots.menus.WithdrawModuleScreen;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
+import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,8 +65,7 @@ public interface WithdrawModule {
         public ModuleItem(Properties props) {
             super(props);
         }
-    
-        /* ---------------- BOT STATE ---------------- */
+
         private int getProgress(NeoBotEntity bot) {
             return bot.getPersistentData().getInt("WithdrawProgress");
         }
@@ -75,17 +75,6 @@ public interface WithdrawModule {
         private void resetProgress(NeoBotEntity bot) {
             bot.getPersistentData().remove("WithdrawProgress");
         }
-    
-        /* ---------------- FILTER ---------------- */
-        private boolean matchesFilter(ItemStack stack, ItemStack filter) {
-            if (stack.isEmpty()) return false;
-            if (filter.isEmpty()) return true;
-    
-            if (!ItemStack.isSameItem(stack, filter)) return false;
-            return stack.getItem() == filter.getItem();  // TODO: Create filters
-        }
-    
-        /* ---------------- MODULE LIFECYCLE ---------------- */
     
         @Override public void onStart(NeoBotEntity bot, ItemStack stack) {
             resetProgress(bot);
@@ -114,7 +103,7 @@ public interface WithdrawModule {
                 if (remaining <= 0) break;
     
                 ItemStack slotStack = container.getItem(i);
-                if (!matchesFilter(slotStack, cfg.filter().orElse(ItemStack.EMPTY))) continue;
+                if (!NeoBotsHelper.matchesFilter(bot.level(), slotStack, cfg.filter().orElse(ItemStack.EMPTY))) continue;
     
                 int toTake = Math.min(slotStack.getCount(), remaining);
                 ItemStack extracted = slotStack.split(toTake);

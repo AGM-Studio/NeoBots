@@ -18,7 +18,7 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
     private final ItemStack moduleStack;
     private final SimpleContainer filterContainer;
 
-    public WithdrawModuleMenu(int id, Inventory inv, FriendlyByteBuf buf) {
+    public WithdrawModuleMenu(int id, Inventory inv, FriendlyByteBuf ignored) {
         this(id, inv);
     }
     public WithdrawModuleMenu(int id, Inventory inv) {
@@ -59,14 +59,6 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
 
         WithdrawModule.DataComponent component = getComponent().withFilter(filter);
         moduleStack.set(WithdrawModule.COMPONENT.get(), component);
-    }
-
-    public int updateCount(int value) {
-        int count = Math.max(1, Math.min(64, value));
-
-        WithdrawModule.DataComponent component = getComponent().withCount(count);
-        moduleStack.set(WithdrawModule.COMPONENT.get(), component);
-        return count;
     }
 
     public int getCount() {

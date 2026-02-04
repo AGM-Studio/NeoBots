@@ -25,6 +25,7 @@ import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.menus.DepositModuleMenu;
 import xyz.agmstudio.neobots.menus.DepositModuleScreen;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
+import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +66,6 @@ public interface DepositModule {
             super(props);
         }
 
-        /* ---------------- BOT STATE ---------------- */
         private int getProgress(NeoBotEntity bot) {
             return bot.getPersistentData().getInt("DepositProgress");
         }
@@ -76,16 +76,6 @@ public interface DepositModule {
             bot.getPersistentData().remove("DepositProgress");
         }
 
-        /* ---------------- FILTER ---------------- */
-        private boolean matchesFilter(ItemStack stack, ItemStack filter) {
-            if (stack.isEmpty()) return false;
-            if (filter.isEmpty()) return true;
-
-            if (!ItemStack.isSameItem(stack, filter)) return false;
-            return stack.getItem() == filter.getItem(); // TODO: Create filters
-        }
-
-        /* ---------------- MODULE LIFECYCLE ---------------- */
         @Override public void onStart(NeoBotEntity bot, ItemStack stack) {
             resetProgress(bot);
         }
@@ -112,7 +102,7 @@ public interface DepositModule {
 
                 ItemStack botStack = bot.getInventory().getItem(i);
                 if (botStack.isEmpty()) continue;
-                if (!matchesFilter(botStack, cfg.filter().orElse(ItemStack.EMPTY))) continue;
+                if (!NeoBotsHelper.matchesFilter(bot.level(), botStack, cfg.filter().orElse(ItemStack.EMPTY))) continue;
 
                 // Try merge into existing stacks first
                 for (int s = 0; s < container.getContainerSize() && remaining > 0; s++) {

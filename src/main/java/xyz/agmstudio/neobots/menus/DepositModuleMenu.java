@@ -18,7 +18,7 @@ public class DepositModuleMenu extends AbstractNeoMenu {
     private final ItemStack moduleStack;
     private final SimpleContainer filterContainer;
 
-    public DepositModuleMenu(int id, Inventory inv, FriendlyByteBuf buf) {
+    public DepositModuleMenu(int id, Inventory inv, FriendlyByteBuf ignored) {
         this(id, inv);
     }
     public DepositModuleMenu(int id, Inventory inv) {
@@ -59,14 +59,6 @@ public class DepositModuleMenu extends AbstractNeoMenu {
 
         DepositModule.DataComponent component = getComponent().withFilter(filter);
         moduleStack.set(DepositModule.COMPONENT.get(), component);
-    }
-
-    public int updateCount(int value) {
-        int count = Math.max(1, Math.min(64, value));
-
-        DepositModule.DataComponent component = getComponent().withCount(count);
-        moduleStack.set(DepositModule.COMPONENT.get(), component);
-        return count;
     }
 
     public int getCount() {
