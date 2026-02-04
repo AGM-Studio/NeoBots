@@ -10,8 +10,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.components.DepositModuleComponent;
+import xyz.agmstudio.neobots.modules.DepositModule;
 
 import java.util.Optional;
 
@@ -23,7 +22,7 @@ public class DepositModuleMenu extends AbstractNeoMenu {
         this(id, inv);
     }
     public DepositModuleMenu(int id, Inventory inv) {
-        super(NeoBots.DEPOSIT_MENU.get(), id);
+        super(DepositModule.MENU.get(), id);
 
         this.moduleStack = inv.player.getMainHandItem();
         this.filterContainer = new SimpleContainer(1) {
@@ -36,7 +35,7 @@ public class DepositModuleMenu extends AbstractNeoMenu {
             }
         };
 
-        DepositModuleComponent data = getComponent();
+        DepositModule.DataComponent data = getComponent();
         if (data.filter().isPresent()) filterContainer.setItem(0, data.filter().get().copy());
         this.addSlot(new Slot(filterContainer, 0, 152, 16) {
             @Override public int getMaxStackSize() {
@@ -49,24 +48,24 @@ public class DepositModuleMenu extends AbstractNeoMenu {
         addRectangleShapedSlots(inv, 9, 1, 8, 113, 0, 9, SlotCreator.lockedSlotCreator(inv, moduleStack));
     }
 
-    private DepositModuleComponent getComponent() {
-        DepositModuleComponent component = moduleStack.get(NeoBots.DEPOSIT.get());
+    private DepositModule.DataComponent getComponent() {
+        DepositModule.DataComponent component = moduleStack.get(DepositModule.COMPONENT.get());
         if (component != null) return component;
-        return new DepositModuleComponent(null, null, 1, Optional.empty());
+        return new DepositModule.DataComponent(null, null, 1, Optional.empty());
     }
 
     private void updateComponentFromSlot() {
         ItemStack filter = filterContainer.getItem(0);
 
-        DepositModuleComponent component = getComponent().withFilter(filter);
-        moduleStack.set(NeoBots.DEPOSIT.get(), component);
+        DepositModule.DataComponent component = getComponent().withFilter(filter);
+        moduleStack.set(DepositModule.COMPONENT.get(), component);
     }
 
     public int updateCount(int value) {
         int count = Math.max(1, Math.min(64, value));
 
-        DepositModuleComponent component = getComponent().withCount(count);
-        moduleStack.set(NeoBots.DEPOSIT.get(), component);
+        DepositModule.DataComponent component = getComponent().withCount(count);
+        moduleStack.set(DepositModule.COMPONENT.get(), component);
         return count;
     }
 
@@ -111,8 +110,8 @@ public class DepositModuleMenu extends AbstractNeoMenu {
     @Override public boolean clickMenuButton(@NotNull Player player, int id) {
         if (id < 1 || id > 64) return false;
 
-        DepositModuleComponent component = getComponent().withCount(id);
-        moduleStack.set(NeoBots.DEPOSIT.get(), component);
+        DepositModule.DataComponent component = getComponent().withCount(id);
+        moduleStack.set(DepositModule.COMPONENT.get(), component);
         return true;
     }
 }

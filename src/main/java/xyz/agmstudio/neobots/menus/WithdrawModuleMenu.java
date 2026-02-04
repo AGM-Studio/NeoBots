@@ -10,8 +10,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.components.WithdrawModuleComponent;
+import xyz.agmstudio.neobots.modules.WithdrawModule;
 
 import java.util.Optional;
 
@@ -23,7 +22,7 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
         this(id, inv);
     }
     public WithdrawModuleMenu(int id, Inventory inv) {
-        super(NeoBots.WITHDRAW_MENU.get(), id);
+        super(WithdrawModule.MENU.get(), id);
 
         this.moduleStack = inv.player.getMainHandItem();
         this.filterContainer = new SimpleContainer(1) {
@@ -36,7 +35,7 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
             }
         };
 
-        WithdrawModuleComponent data = getComponent();
+        WithdrawModule.DataComponent data = getComponent();
         if (data.filter().isPresent()) filterContainer.setItem(0, data.filter().get().copy());
         this.addSlot(new Slot(filterContainer, 0, 152, 16) {
             @Override public int getMaxStackSize() {
@@ -49,24 +48,24 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
         addRectangleShapedSlots(inv, 9, 1, 8, 113, 0, 9, SlotCreator.lockedSlotCreator(inv, moduleStack));
     }
 
-    private WithdrawModuleComponent getComponent() {
-        WithdrawModuleComponent component = moduleStack.get(NeoBots.WITHDRAW.get());
+    private WithdrawModule.DataComponent getComponent() {
+        WithdrawModule.DataComponent component = moduleStack.get(WithdrawModule.COMPONENT.get());
         if (component != null) return component;
-        return new WithdrawModuleComponent(null, null, 1, Optional.empty());
+        return new WithdrawModule.DataComponent(null, null, 1, Optional.empty());
     }
 
     private void updateComponentFromSlot() {
         ItemStack filter = filterContainer.getItem(0);
 
-        WithdrawModuleComponent component = getComponent().withFilter(filter);
-        moduleStack.set(NeoBots.WITHDRAW.get(), component);
+        WithdrawModule.DataComponent component = getComponent().withFilter(filter);
+        moduleStack.set(WithdrawModule.COMPONENT.get(), component);
     }
 
     public int updateCount(int value) {
         int count = Math.max(1, Math.min(64, value));
 
-        WithdrawModuleComponent component = getComponent().withCount(count);
-        moduleStack.set(NeoBots.WITHDRAW.get(), component);
+        WithdrawModule.DataComponent component = getComponent().withCount(count);
+        moduleStack.set(WithdrawModule.COMPONENT.get(), component);
         return count;
     }
 
@@ -111,8 +110,8 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
     @Override public boolean clickMenuButton(@NotNull Player player, int id) {
         if (id < 1 || id > 64) return false;
 
-        WithdrawModuleComponent component = getComponent().withCount(id);
-        moduleStack.set(NeoBots.WITHDRAW.get(), component);
+        WithdrawModule.DataComponent component = getComponent().withCount(id);
+        moduleStack.set(WithdrawModule.COMPONENT.get(), component);
         return true;
     }
 }

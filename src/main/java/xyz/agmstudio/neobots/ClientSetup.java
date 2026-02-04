@@ -1,15 +1,25 @@
 package xyz.agmstudio.neobots;
 
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-
-import xyz.agmstudio.neobots.menus.DepositModuleScreen;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import xyz.agmstudio.neobots.menus.AbstractNeoMenu;
 import xyz.agmstudio.neobots.menus.NeoBotScreen;
-import xyz.agmstudio.neobots.menus.WithdrawModuleScreen;
 import xyz.agmstudio.neobots.robos.NeoBotRenderer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClientSetup {
+    private static final List<ScreenEntry<?, ?>> SCREENS = new ArrayList<>();
+    public static <M extends AbstractNeoMenu, S extends AbstractContainerScreen<M>> void registerScreen(DeferredHolder<MenuType<?>, MenuType<M>> menu, MenuScreens.ScreenConstructor<M, S> constructor) {
+        SCREENS.add(new ScreenEntry<>(menu, constructor));
+    }
+
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(NeoBots.BOT_V0.get(), NeoBotRenderer::new);
@@ -17,8 +27,15 @@ public class ClientSetup {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
+        for (ScreenEntry<?, ?> entry: SCREENS)
+            entry.register(event);
+
         event.register(NeoBots.NEOBOT_INVENTORY.get(), NeoBotScreen::new);
-        event.register(NeoBots.WITHDRAW_MENU.get(), WithdrawModuleScreen::new);
-        event.register(NeoBots.DEPOSIT_MENU.get(), DepositModuleScreen::new);
+    }
+
+    private record ScreenEntry<M extends AbstractNeoMenu, S extends AbstractContainerScreen<M>>(DeferredHolder<MenuType<?>, MenuType<M>> menu, MenuScreens.ScreenConstructor<M, S> constructor) {
+        void register(RegisterMenuScreensEvent event) {
+            event.register(menu.get(), constructor);
+        }
     }
 }
