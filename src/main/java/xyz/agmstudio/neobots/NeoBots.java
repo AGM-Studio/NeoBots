@@ -16,8 +16,11 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.agmstudio.neobots.components.MoveTarget;
+import xyz.agmstudio.neobots.components.WithdrawModuleComponent;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
+import xyz.agmstudio.neobots.menus.WithdrawModuleMenu;
 import xyz.agmstudio.neobots.modules.MoveToModuleItem;
+import xyz.agmstudio.neobots.modules.WithdrawModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
@@ -44,6 +47,12 @@ public class NeoBots {
                             .persistent(MoveTarget.CODEC)
                             .build()
             );
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<WithdrawModuleComponent>> WITHDRAW =
+            COMPONENTS.register("withdraw", () ->
+                    DataComponentType.<WithdrawModuleComponent>builder()
+                            .persistent(WithdrawModuleComponent.CODEC)
+                            .build()
+            );
 
     // Bots
     public static final DeferredHolder<EntityType<?>, EntityType<NeoBotEntity>> BOT_V0 =
@@ -61,6 +70,12 @@ public class NeoBots {
                             new Item.Properties().stacksTo(1)
                     )
             );
+    public static final DeferredHolder<Item, WithdrawModuleItem> WITHDRAW_MODULE =
+            ITEMS.register("withdraw_module", () ->
+                    new WithdrawModuleItem(
+                            new Item.Properties().stacksTo(1)
+                    )
+            );
     public static final DeferredHolder<Item, MemoryUpgradeItem> MEMORY_UPGRADE =
             ITEMS.register("memory_upgrade", () ->
                     new MemoryUpgradeItem(
@@ -72,6 +87,10 @@ public class NeoBots {
     public static final DeferredHolder<MenuType<?>, MenuType<NeoBotMenu>> NEOBOT_INVENTORY =
             MENUS.register("neobot", () ->
                     IMenuTypeExtension.create(NeoBotMenu::new)
+            );
+    public static final DeferredHolder<MenuType<?>, MenuType<WithdrawModuleMenu>> WITHDRAW_MENU =
+            MENUS.register("withdraw_menu", () ->
+                    IMenuTypeExtension.create(WithdrawModuleMenu::new)
             );
 
 

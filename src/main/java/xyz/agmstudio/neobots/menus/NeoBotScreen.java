@@ -35,6 +35,8 @@ public class NeoBotScreen extends AbstractContainerScreen<NeoBotMenu> {
         }
         for (int i = 0; i < menu.getBot().getUpgradeInventory().getContainerSize(); i++)
             g.blit(UPGRADE_SLOT_TEXTURE, leftPos + 257, topPos + i * 18 + 11, 0, 0, 18, 18, 18, 18);
+        for (int i = 0; i < menu.getBot().getInventoryCapacity(); i++)
+            g.blit(SLOT_TEXTURE, leftPos + 86 + (i * 18), topPos + 50, 0, 0, 18, 18, 18, 18);
     }
 
     @Override protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {

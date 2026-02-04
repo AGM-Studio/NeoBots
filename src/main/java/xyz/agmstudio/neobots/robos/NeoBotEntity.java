@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -17,6 +18,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.containers.InventoryContainer;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
@@ -24,13 +26,17 @@ import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     // Attributes
-    protected final static int UPGRADE_SLOTS     = 3;
-    protected final static int BASE_MODULE_SLOTS = 6;
-    protected final static int MAX_MODULE_SLOTS  = 32;
+    protected final static int UPGRADE_SLOTS        = 3;
+    protected final static int BASE_MODULE_SLOTS    = 6;
+    protected final static int MAX_MODULE_SLOTS     = 32;
+    protected final static int BASE_INVENTORY_SLOTS = 1;
+    protected final static int MAX_INVENTORY_SLOTS  = 9;
 
     // Execution values
     private int moduleCapacity = BASE_MODULE_SLOTS;
+    private int inventoryCapacity = BASE_INVENTORY_SLOTS;
 
+    private final InventoryContainer inventory = new InventoryContainer(this, MAX_INVENTORY_SLOTS);
     private final ModuleContainer moduleInventory = new ModuleContainer(this, MAX_MODULE_SLOTS);
     private final UpgradeContainer upgradeInventory = new UpgradeContainer(this, UPGRADE_SLOTS);
 
@@ -38,6 +44,9 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     }
 
+    public InventoryContainer getInventory() {
+        return inventory;
+    }
     public ModuleContainer getModuleInventory() {
         return moduleInventory;
     }
@@ -45,6 +54,9 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         return upgradeInventory;
     }
 
+    public int getInventoryCapacity() {
+        return inventoryCapacity;
+    }
     public int getModuleCapacity() {
         return moduleCapacity;
     }
@@ -103,6 +115,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
+        tag.put("inventory", inventory.createTag(access));
         moduleInventory.saveTag(tag, "Modules", access);
         upgradeInventory.saveTag(tag, "Upgrades", access);
     }
@@ -110,9 +123,11 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
+        inventory.fromTag(tag.getList("inventory", 10), access);
         moduleInventory.loadTag(tag, "Modules", access);
         upgradeInventory.loadTag(tag, "Upgrades", access);
 
+        recalculateInventoryCapacity();
         recalculateModuleCapacity();
     }
 
@@ -125,5 +140,12 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         }
 
         moduleCapacity = Math.min(BASE_MODULE_SLOTS + upgrades, MAX_MODULE_SLOTS);
+    }
+    public void recalculateInventoryCapacity() {
+        int upgrades = 0;
+        for (ItemStack stack: upgradeInventory.getItems()) {
+            // TODO: Inventory Upgrades
+        }
+        inventoryCapacity = Math.min(BASE_INVENTORY_SLOTS + upgrades, MAX_INVENTORY_SLOTS);
     }
 }
