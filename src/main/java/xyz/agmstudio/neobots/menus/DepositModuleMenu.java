@@ -73,7 +73,7 @@ public class DepositModuleMenu extends AbstractNeoMenu {
         return getComponent().count();
     }
     public BlockPos getPos() {
-        return getComponent().target();
+        return getComponent().target().orElse(null);
     }
     public ResourceKey<Level> getDimension() {
         return getComponent().dimension();

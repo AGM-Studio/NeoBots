@@ -94,7 +94,8 @@ public class WithdrawModuleScreen extends AbstractContainerScreen<WithdrawModule
     @Override protected void renderLabels(@NotNull GuiGraphics g, int mouseX, int mouseY) {
         g.drawString(font, title, 8, 6, 0x404040, false);
         g.drawString(font, Component.literal("Target:"), 8, 18, 0x404040, false);
-        g.drawString(font, Component.literal(menu.getPos().toShortString()), 50, 18, 0x404040, false);
+        String target = menu.getPos() == null ? "Right click on a container to set" : menu.getPos().toShortString();
+        g.drawString(font, Component.literal(target), 50, 18, 0x404040, false);
         g.drawString(font, Component.literal("Count:"), 8, 30, 0x404040, false);
         g.drawString(font, Component.literal((count < 10 ? "0": "") + count), 64, 30, 0x404040, false);
         g.drawString(font, playerInventoryTitle, 8, 41, 0x404040, false);

@@ -36,18 +36,18 @@ public interface DepositModule {
     static void register() {
     }
 
-    record DataComponent(BlockPos target, ResourceKey<Level> dimension, int count, Optional<ItemStack> filter) {
+    record DataComponent(Optional<BlockPos> target, ResourceKey<Level> dimension, int count, Optional<ItemStack> filter) {
         public static final Codec<DataComponent> CODEC =
                 RecordCodecBuilder.create(instance -> instance.group(
-                        BlockPos.CODEC.fieldOf("target").forGetter(DataComponent::target),
+                        BlockPos.CODEC.optionalFieldOf("target").forGetter(DataComponent::target),
                         Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(DataComponent::dimension),
                         Codec.INT.fieldOf("count").forGetter(DataComponent::count),
                         ItemStack.CODEC.optionalFieldOf("filter").forGetter(DataComponent::filter)
                 ).apply(instance, DataComponent::new));
 
         @Contract("_, _ -> new")
-        public @NotNull DepositModule.DataComponent withTarget(BlockPos source, ResourceKey<Level> dimension) {
-            return new DataComponent(source, dimension, this.count, this.filter);
+        public @NotNull DepositModule.DataComponent withTarget(BlockPos target, ResourceKey<Level> dimension) {
+            return new DataComponent(Optional.ofNullable(target), dimension, this.count, this.filter);
         }
         @Contract("_ -> new")
         public @NotNull DepositModule.DataComponent withCount(int count) {
@@ -96,12 +96,12 @@ public interface DepositModule {
             if (bot.level().isClientSide) return;
 
             if (cfg.dimension() != bot.level().dimension()) return;
-            if (bot.blockPosition().distSqr(cfg.target()) > REACH_SQR) return;
+            if (cfg.target().isEmpty() || bot.blockPosition().distSqr(cfg.target().get()) > REACH_SQR) return;
 
             int deposited = getProgress(bot);
             if (deposited >= cfg.count()) return;
 
-            BlockEntity be = bot.level().getBlockEntity(cfg.target());
+            BlockEntity be = bot.level().getBlockEntity(cfg.target().get());
             if (!(be instanceof Container container)) return;
 
             int remaining = cfg.count() - deposited;
@@ -214,12 +214,8 @@ public interface DepositModule {
 
             tooltip.add(net.minecraft.network.chat.Component.literal("Deposit:").withStyle(ChatFormatting.GRAY));
             tooltip.add(net.minecraft.network.chat.Component.literal("• Count: " + cfg.count()).withStyle(ChatFormatting.AQUA));
-            tooltip.add(net.minecraft.network.chat.Component.literal(
-                    "• To: " + cfg.target().getX() + ", "
-                            + cfg.target().getY() + ", "
-                            + cfg.target().getZ()
-            ).withStyle(ChatFormatting.AQUA));
-
+            if (cfg.target().isPresent()) tooltip.add(net.minecraft.network.chat.Component.literal("• To: " + cfg.target().get().toShortString()).withStyle(ChatFormatting.AQUA));
+            else tooltip.add(net.minecraft.network.chat.Component.literal("• To: Not set (Right click on container to set)").withStyle(ChatFormatting.RED));
             if (cfg.filter().isPresent()) {
                 tooltip.add(net.minecraft.network.chat.Component.literal("• Filter:").withStyle(ChatFormatting.GRAY));
                 tooltip.add(

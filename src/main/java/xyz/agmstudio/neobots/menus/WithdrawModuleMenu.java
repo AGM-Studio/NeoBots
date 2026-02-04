@@ -73,7 +73,7 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
         return getComponent().count();
     }
     public BlockPos getPos() {
-        return getComponent().source();
+        return getComponent().source().orElse(null);
     }
     public ResourceKey<Level> getDimension() {
         return getComponent().dimension();

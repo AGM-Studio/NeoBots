@@ -23,9 +23,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.menus.DepositModuleMenu;
-import xyz.agmstudio.neobots.menus.DepositModuleScreen;
 import xyz.agmstudio.neobots.menus.WithdrawModuleMenu;
+import xyz.agmstudio.neobots.menus.WithdrawModuleScreen;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import java.util.List;
@@ -34,13 +33,13 @@ import java.util.Optional;
 public interface WithdrawModule {
     DeferredHolder<DataComponentType<?>, DataComponentType<DataComponent>> COMPONENT = NeoBots.registerDataComponent("withdraw_data", DataComponent.CODEC);
     DeferredHolder<Item, ModuleItem> ITEM = NeoBots.registerItem("withdraw_module", ModuleItem::new, 1);
-    DeferredHolder<MenuType<?>, MenuType<DepositModuleMenu>> MENU = NeoBots.registerMenu("withdraw_menu", DepositModuleMenu::new, DepositModuleScreen::new);
+    DeferredHolder<MenuType<?>, MenuType<WithdrawModuleMenu>> MENU = NeoBots.registerMenu("withdraw_menu", WithdrawModuleMenu::new, WithdrawModuleScreen::new);
     static void register() {}
 
-    record DataComponent(BlockPos source, ResourceKey<Level> dimension, int count, Optional<ItemStack> filter) {
+    record DataComponent(Optional<BlockPos> source, ResourceKey<Level> dimension, int count, Optional<ItemStack> filter) {
         public static final Codec<DataComponent> CODEC =
                 RecordCodecBuilder.create(instance -> instance.group(
-                        BlockPos.CODEC.fieldOf("source").forGetter(DataComponent::source),
+                        BlockPos.CODEC.optionalFieldOf("source").forGetter(DataComponent::source),
                         Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(DataComponent::dimension),
                         Codec.INT.fieldOf("count").forGetter(DataComponent::count),
                         ItemStack.CODEC.optionalFieldOf("filter").forGetter(DataComponent::filter)
@@ -48,7 +47,7 @@ public interface WithdrawModule {
 
         @Contract("_, _ -> new")
         public @NotNull WithdrawModule.DataComponent withSource(BlockPos source, ResourceKey<Level> dimension) {
-            return new DataComponent(source, dimension, this.count, this.filter);
+            return new DataComponent(Optional.ofNullable(source), dimension, this.count, this.filter);
         }
         @Contract("_ -> new")
         public @NotNull WithdrawModule.DataComponent withCount(int count) {
@@ -101,12 +100,12 @@ public interface WithdrawModule {
             if (cfg.dimension() != bot.level().dimension()) return;
     
             // Not in reach → silently wait
-            if (bot.blockPosition().distSqr(cfg.source()) > REACH_SQR) return;
+            if (cfg.source().isEmpty() || bot.blockPosition().distSqr(cfg.source().get()) > REACH_SQR) return;
     
             int taken = getProgress(bot);
             if (taken >= cfg.count()) return;
     
-            BlockEntity be = bot.level().getBlockEntity(cfg.source());
+            BlockEntity be = bot.level().getBlockEntity(cfg.source().get());
             if (!(be instanceof Container container)) return;
     
             int remaining = cfg.count() - taken;
@@ -182,12 +181,8 @@ public interface WithdrawModule {
     
             tooltip.add(Component.literal("Withdraw:").withStyle(ChatFormatting.GRAY));
             tooltip.add(Component.literal("• Count: " + cfg.count()).withStyle(ChatFormatting.AQUA));
-            tooltip.add(Component.literal(
-                    "• From: " + cfg.source().getX() + ", "
-                            + cfg.source().getY() + ", "
-                            + cfg.source().getZ()
-            ).withStyle(ChatFormatting.AQUA));
-    
+            if (cfg.source().isPresent()) tooltip.add(net.minecraft.network.chat.Component.literal("• From: " + cfg.source().get().toShortString()).withStyle(ChatFormatting.AQUA));
+            else tooltip.add(net.minecraft.network.chat.Component.literal("• From: Not set (Right click on container to set)").withStyle(ChatFormatting.RED));
             if (cfg.filter().isPresent()) {
                 tooltip.add(Component.literal("• Filter:").withStyle(ChatFormatting.GRAY));
                 tooltip.add(cfg.filter().orElse(ItemStack.EMPTY).getHoverName().copy().withStyle(ChatFormatting.YELLOW));
