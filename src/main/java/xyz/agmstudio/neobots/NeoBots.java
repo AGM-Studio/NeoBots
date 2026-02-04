@@ -15,10 +15,13 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.agmstudio.neobots.components.DepositModuleComponent;
 import xyz.agmstudio.neobots.components.MoveTarget;
 import xyz.agmstudio.neobots.components.WithdrawModuleComponent;
+import xyz.agmstudio.neobots.menus.DepositModuleMenu;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.menus.WithdrawModuleMenu;
+import xyz.agmstudio.neobots.modules.DepositModuleItem;
 import xyz.agmstudio.neobots.modules.MoveToModuleItem;
 import xyz.agmstudio.neobots.modules.WithdrawModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
@@ -53,6 +56,12 @@ public class NeoBots {
                             .persistent(WithdrawModuleComponent.CODEC)
                             .build()
             );
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<DepositModuleComponent>> DEPOSIT =
+            COMPONENTS.register("deposit", () ->
+                    DataComponentType.<DepositModuleComponent>builder()
+                            .persistent(DepositModuleComponent.CODEC)
+                            .build()
+            );
 
     // Bots
     public static final DeferredHolder<EntityType<?>, EntityType<NeoBotEntity>> BOT_V0 =
@@ -76,6 +85,12 @@ public class NeoBots {
                             new Item.Properties().stacksTo(1)
                     )
             );
+    public static final DeferredHolder<Item, DepositModuleItem> DEPOSIT_MODULE =
+            ITEMS.register("deposit_module", () ->
+                    new DepositModuleItem(
+                            new Item.Properties().stacksTo(1)
+                    )
+            );
     public static final DeferredHolder<Item, MemoryUpgradeItem> MEMORY_UPGRADE =
             ITEMS.register("memory_upgrade", () ->
                     new MemoryUpgradeItem(
@@ -91,6 +106,10 @@ public class NeoBots {
     public static final DeferredHolder<MenuType<?>, MenuType<WithdrawModuleMenu>> WITHDRAW_MENU =
             MENUS.register("withdraw_menu", () ->
                     IMenuTypeExtension.create(WithdrawModuleMenu::new)
+            );
+    public static final DeferredHolder<MenuType<?>, MenuType<DepositModuleMenu>> DEPOSIT_MENU =
+            MENUS.register("deposit_menu", () ->
+                    IMenuTypeExtension.create(DepositModuleMenu::new)
             );
 
 
