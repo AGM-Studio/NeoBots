@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -76,93 +77,11 @@ public interface DepositModule {
             return component != null ? component : getDefault();
         }
     }
-    class ModuleItem extends BotModuleItem implements MenuProvider {
+    class ModuleItem extends BotModuleItem<ModuleTask> implements MenuProvider {
         private static final int REACH_SQR = 4;
 
         public ModuleItem(Properties props) {
-            super(props);
-        }
-
-        private int getProgress(NeoBotEntity bot) {
-            return bot.getPersistentData().getInt("DepositProgress");
-        }
-        private void setProgress(NeoBotEntity bot, int value) {
-            bot.getPersistentData().putInt("DepositProgress", value);
-        }
-        private void resetProgress(NeoBotEntity bot) {
-            bot.getPersistentData().remove("DepositProgress");
-        }
-
-        @Override public void onStart(NeoBotEntity bot, ItemStack stack) {
-            resetProgress(bot);
-        }
-
-        @Override public void tick(NeoBotEntity bot, ItemStack stack) {
-            if (bot.level().isClientSide) return;
-            DataComponent cfg = DataComponent.extract(stack);
-            Container container = cfg.getContainer(bot, REACH_SQR);
-            if (container == null) return;
-            
-            int deposited = getProgress(bot);
-            if (deposited >= cfg.count()) return;
-            int remaining = cfg.count() - deposited;
-
-            // Iterate bot inventory
-            for (int i = 0; i < bot.getInventory().getContainerSize(); i++) {
-                if (remaining <= 0) break;
-
-                ItemStack botStack = bot.getInventory().getItem(i);
-                if (botStack.isEmpty()) continue;
-                if (!NeoBotsHelper.matchesFilter(bot.level(), botStack, cfg.filter().orElse(ItemStack.EMPTY))) continue;
-
-                // Try merge into existing stacks first
-                for (int s = 0; s < container.getContainerSize() && remaining > 0; s++) {
-                    ItemStack target = container.getItem(s);
-                    if (target.isEmpty()) continue;
-                    if (!ItemStack.isSameItemSameComponents(botStack, target)) continue;
-
-                    int space = target.getMaxStackSize() - target.getCount();
-                    if (space <= 0) continue;
-
-                    int move = Math.min(space, Math.min(botStack.getCount(), remaining));
-                    target.grow(move);
-                    botStack.shrink(move);
-
-                    remaining -= move;
-                    deposited += move;
-                }
-
-                // Then try empty slots
-                for (int s = 0; s < container.getContainerSize() && remaining > 0; s++) {
-                    ItemStack target = container.getItem(s);
-                    if (!target.isEmpty()) continue;
-
-                    int move = Math.min(botStack.getCount(), remaining);
-                    ItemStack placed = botStack.split(move);
-                    container.setItem(s, placed);
-
-                    remaining -= move;
-                    deposited += move;
-                }
-
-                if (botStack.isEmpty())
-                    bot.getInventory().setItem(i, ItemStack.EMPTY);
-            }
-
-            if (deposited > getProgress(bot)) {
-                setProgress(bot, deposited);
-                container.setChanged();
-            }
-        }
-
-        @Override public boolean isFinished(NeoBotEntity bot, ItemStack stack) {
-            DataComponent cfg = stack.get(COMPONENT.get());
-            if (cfg == null) return true;
-            return getProgress(bot) >= cfg.count();
-        }
-
-        @Override public void onStop(NeoBotEntity bot, ItemStack stack) {
-            resetProgress(bot);
+            super(props, (bot, stack) -> new ModuleTask(bot, stack, REACH_SQR));
         }
 
         @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
@@ -231,6 +150,60 @@ public interface DepositModule {
 
         @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
             return new DepositModuleMenu(id, inv);
+        }
+    }
+
+    class ModuleTask extends BotTask {
+        private final DataComponent data;
+        private final double reach;
+        private int deposited = 0;
+
+        public ModuleTask(NeoBotEntity bot, ItemStack module, double reach) {
+            super(bot, module);
+            data = DataComponent.extract(module);
+            this.reach = reach;
+        }
+
+        @Override public String getType() {
+            return "deposit";
+        }
+
+        @Override public void load(@NotNull CompoundTag tag) {
+            this.deposited = tag.getInt("deposited");
+        }
+
+        @Override public CompoundTag save() {
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("deposited", deposited);
+            return tag;
+        }
+
+        private void setDeposited(int value) {
+            this.deposited = value;
+            this.setDirty();
+        }
+
+        @Override public void onStart() {}
+
+        @Override public void onStop() {}
+
+        @Override public boolean isDone() {
+            if (data.target.isEmpty()) return true;
+            return deposited >= data.count();
+        }
+
+        @Override public void tick() {
+            if (bot.level().isClientSide) return;
+            Container container = data.getContainer(bot, reach);
+            if (container == null || deposited >= data.count()) return;
+
+            int remaining = data.count() - deposited;
+            int moved = NeoBotsHelper.moveItems(bot.level(), bot.getInventory(), container, data.filter.orElse(ItemStack.EMPTY), remaining);
+            if (moved > 0) setDeposited(deposited + moved);
+        }
+
+        @Override public Component getStatus() {
+            return Component.literal("Depositing (" + deposited + "/" + data.count + ")").withStyle(ChatFormatting.YELLOW);
         }
     }
 }

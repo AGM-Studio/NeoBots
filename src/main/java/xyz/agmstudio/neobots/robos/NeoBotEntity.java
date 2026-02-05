@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -22,6 +21,7 @@ import xyz.agmstudio.neobots.containers.InventoryContainer;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
+import xyz.agmstudio.neobots.modules.BotTask;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
@@ -36,13 +36,17 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private int moduleCapacity = BASE_MODULE_SLOTS;
     private int inventoryCapacity = BASE_INVENTORY_SLOTS;
 
+    private int cooldownTicks = 0;
+    private boolean onCooldown = false;
+
+    private BotTask task = null;
+    private CompoundTag taskData = null;
+
     private final InventoryContainer inventory = new InventoryContainer(this, MAX_INVENTORY_SLOTS);
     private final ModuleContainer moduleInventory = new ModuleContainer(this, MAX_MODULE_SLOTS);
     private final UpgradeContainer upgradeInventory = new UpgradeContainer(this, UPGRADE_SLOTS);
 
-    public void setChanged() {
-
-    }
+    public void setChanged() {}
 
     public InventoryContainer getInventory() {
         return inventory;
@@ -71,6 +75,16 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         moduleInventory.setActiveModuleIndex(index);
     }
 
+    public BotTask getTask() {
+        return task;
+    }
+    public void reloadTask() {
+        task = moduleInventory.getTask();
+    }
+    public CompoundTag getTaskData() {
+        return taskData;
+    }
+
     public NeoBotEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
     }
@@ -90,8 +104,28 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void tick() {
         super.tick();
         if (level().isClientSide) return;
+        if (cooldownTicks > 0) {
+            cooldownTicks--;
+            return;
+        }
+        if (onCooldown) {
+            onCooldown = false;
+            task = moduleInventory.nextTask();
+        }
+        if (task == null) {
+            task = moduleInventory.getTask();
+        }
+        if (task.hasJustStarted()) {
+            task.onStart();
+            task.setStarted();
+        }
 
-        moduleInventory.tickModules();
+        task.tick();
+        if (task.isDone()) {
+            task.onStop();
+            cooldownTicks = task.getCooldown();
+            onCooldown = true;
+        }
     }
 
     // Attributes
@@ -115,17 +149,30 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
-        tag.put("inventory", inventory.createTag(access));
+        tag.put("Inventory", inventory.createTag(access));
         moduleInventory.saveTag(tag, "Modules", access);
         upgradeInventory.saveTag(tag, "Upgrades", access);
+
+        tag.putInt("Cooldown", cooldownTicks);
+        tag.putBoolean("OnCooldown", onCooldown);
+
+        if (task == null) return;
+        CompoundTag taskTag = task.save();
+        taskTag.putString("id", task.getId());
+        tag.put("Task", taskTag);
     }
 
     @Override public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
-        inventory.fromTag(tag.getList("inventory", 10), access);
+        inventory.fromTag(tag.getList("Inventory", 10), access);
         moduleInventory.loadTag(tag, "Modules", access);
         upgradeInventory.loadTag(tag, "Upgrades", access);
+
+        cooldownTicks = tag.getInt("Cooldown");
+        onCooldown = tag.getBoolean("OnCooldown");
+
+        taskData = tag.getCompound("Task");
 
         recalculateInventoryCapacity();
         recalculateModuleCapacity();

@@ -5,14 +5,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
+import xyz.agmstudio.neobots.modules.BotTask;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public class ModuleContainer extends BotFilteredContainer {
     private int activeModuleIndex = 0;
     private boolean moduleJustStarted = true;
-
-    private int cooldownTicks = 0;
-    private boolean onCooldown = false;
 
     private boolean hasModules = false;
 
@@ -23,14 +21,27 @@ public class ModuleContainer extends BotFilteredContainer {
     public int getActiveModuleIndex() {
         return activeModuleIndex;
     }
-    public boolean isModuleJustStarted() {
-        return moduleJustStarted;
-    }
 
     public void setActiveModuleIndex(int index) {
         if (index < 0 || index >= getContainerSize()) index = 0;
         activeModuleIndex = index;
         moduleJustStarted = true;
+    }
+
+    public BotTask nextTask() {
+        advance();
+        return getTask();
+    }
+    public BotTask getTask() {
+        ItemStack stack = getItem(activeModuleIndex);
+        if (!(stack.getItem() instanceof BotModuleItem)) {
+            if (!advance()) return null;
+            stack = getItem(activeModuleIndex);
+        }
+        BotModuleItem<?> module = (BotModuleItem<?>) stack.getItem();
+        BotTask task = module.getTask(bot, stack);
+        if (moduleJustStarted) task.setJustStarted();
+        return task;
     }
 
     private boolean advance() {
@@ -48,43 +59,8 @@ public class ModuleContainer extends BotFilteredContainer {
             return false;
         }
 
-        activeModuleIndex = index;
-        moduleJustStarted = true;
+        setActiveModuleIndex(index);
         return true;
-    }
-
-    public void tickModules() {
-        if (cooldownTicks > 0) {
-            cooldownTicks--;
-            return;
-        }
-        if (onCooldown) {
-            onCooldown = false;
-            advance();
-        }
-
-        if (!hasModules) return;
-        if (activeModuleIndex >= bot.getModuleCapacity())
-            activeModuleIndex = 0;
-
-        ItemStack stack = getItem(activeModuleIndex);
-        if (!(stack.getItem() instanceof BotModuleItem)) {
-            if (!advance()) return;
-            stack = getItem(activeModuleIndex);
-        }
-
-        BotModuleItem module = (BotModuleItem) stack.getItem();
-        if (moduleJustStarted) {
-            module.onStart(bot, stack);
-            moduleJustStarted = false;
-        }
-
-        module.tick(bot, stack);
-        if (module.isFinished(bot, stack)) {
-            module.onStop(bot, stack);
-            cooldownTicks = module.getCooldown(bot, stack);
-            onCooldown = true;
-        }
     }
 
     @Override public void setChanged() {
@@ -96,14 +72,14 @@ public class ModuleContainer extends BotFilteredContainer {
                 break;
             }
         }
+
+        bot.reloadTask();
     }
 
     @Override public void loadTag(@NotNull CompoundTag tag, String key, HolderLookup.@NotNull Provider access) {
         CompoundTag data = tag.getCompound(key);
         this.fromTag(data.getList("inv", 10), access);
         this.activeModuleIndex = data.getInt("current");
-        this.cooldownTicks = data.getInt("cooldown");
-        this.onCooldown = data.getBoolean("on_cooldown");
 
         moduleJustStarted = true;
     }
@@ -111,8 +87,6 @@ public class ModuleContainer extends BotFilteredContainer {
         CompoundTag data = new CompoundTag();
         data.put("inv", this.createTag(access));
         data.putInt("current", activeModuleIndex);
-        data.putInt("cooldown", cooldownTicks);
-        data.putBoolean("on_cooldown", onCooldown);
 
         tag.put(key, data);
     }

@@ -38,54 +38,11 @@ public interface MoveToModule {
                         Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(DataComponent::dimension)
                 ).apply(instance, DataComponent::new));
     }
-    class ModuleItem extends BotModuleItem {
+    class ModuleItem extends BotModuleItem<ModuleTask> {
         public ModuleItem(Properties props) {
-            super(props);
+            super(props, ModuleTask::new);
         }
-    
-        @Override public void onStart(NeoBotEntity bot, ItemStack stack) {
-            DataComponent target = stack.get(COMPONENT.get());
-            if (target == null || target.dimension() != bot.level().dimension()) return;
-    
-            Vec3 pos = Vec3.atCenterOf(target.pos()).add(0, -0.5, 0);
-            bot.getNavigation().moveTo(pos.x, pos.y, pos.z, 0, 1.0);
-        }
-    
-        @Override
-        public void tick(NeoBotEntity bot, ItemStack stack) {
-            DataComponent target = stack.get(COMPONENT.get());
-            if (target == null) return;
-            if (!bot.getNavigation().isDone()) return;
-            // Manually move to exact position
-            Vec3 center = Vec3.atCenterOf(target.pos()).add(0, -0.5, 0);
-            Vec3 delta = center.subtract(bot.position());
-            double distance = delta.lengthSqr();
-            if (delta.lengthSqr() < 0.02) {
-                bot.setDeltaMovement(Vec3.ZERO);
-                return;
-            }
-    
-            Vec3 dir = delta.normalize();
-            double speed = bot.getAttributeValue(Attributes.MOVEMENT_SPEED) / 2.0;
-            double maxStep = Math.min(speed, Math.sqrt(distance));
-    
-            Vec3 motion = dir.scale(maxStep);
-            bot.setDeltaMovement(motion.x, bot.getDeltaMovement().y, motion.z);
-        }
-    
-        @Override public boolean isFinished(NeoBotEntity bot, ItemStack stack) {
-            DataComponent target = stack.get(COMPONENT.get());
-            if (target == null) return true;
-    
-            Vec3 center = Vec3.atCenterOf(target.pos()).add(0, -0.5, 0);
-            return bot.position().distanceToSqr(center) < 0.02;
-        }
-    
-        @Override public void onStop(NeoBotEntity bot, ItemStack stack) {
-            bot.level().playSound(null, bot.blockPosition(), AllSoundEvents.STEAM.getMainEventHolder().value(), SoundSource.NEUTRAL);
-        }
-    
-        // Configura
+
         @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
             if (ctx.getLevel().isClientSide)
                 return InteractionResult.SUCCESS;
@@ -94,11 +51,7 @@ public interface MoveToModule {
             DataComponent target = new DataComponent(pos, ctx.getLevel().dimension());
     
             ctx.getItemInHand().set(COMPONENT.get(), target);
-            if (ctx.getPlayer() instanceof ServerPlayer player) player.displayClientMessage(
-                    Component.literal("§aMove target set to: §f" +
-                            pos.getX() + ", " + pos.getY() + ", " + pos.getZ()),
-                    true
-            );
+            if (ctx.getPlayer() instanceof ServerPlayer player) player.displayClientMessage(Component.literal("§aMove target set to: §f" + pos.toShortString()), true);
     
             return InteractionResult.CONSUME;
         }
@@ -107,17 +60,68 @@ public interface MoveToModule {
             DataComponent target = stack.get(COMPONENT.get());
     
             if (target != null) {
-                components.add(Component.literal("Target:")
-                        .withStyle(ChatFormatting.GRAY));
-                components.add(Component.literal(
-                        target.pos().getX() + ", " +
-                                target.pos().getY() + ", " +
-                                target.pos().getZ()
-                ).withStyle(ChatFormatting.AQUA));
-            } else {
-                components.add(Component.literal("No target set")
-                        .withStyle(ChatFormatting.DARK_GRAY));
+                components.add(Component.literal("Target:").withStyle(ChatFormatting.GRAY));
+                components.add(Component.literal(target.pos.toShortString()).withStyle(ChatFormatting.AQUA));
+            } else
+                components.add(Component.literal("No target set").withStyle(ChatFormatting.DARK_GRAY));
+        }
+    }
+    class ModuleTask extends BotTask {
+        private final Vec3 target;
+        private final DataComponent data;
+        public ModuleTask(NeoBotEntity bot, ItemStack module) {
+            super(bot, module);
+
+            this.data = module.get(COMPONENT.get());
+            if (this.data == null) target = null;
+            else target = Vec3.atCenterOf(data.pos()).add(0, -0.5, 0);
+        }
+
+        @Override public String getType() {
+            return "move_to";
+        }
+
+        @Override public void onStart() {
+            if (data == null || data.dimension() != bot.level().dimension()) return;
+            bot.getNavigation().moveTo(target.x, target.y, target.z, 0, 1.0);
+        }
+
+        @Override public void onStop() {
+            bot.level().playSound(null, bot.blockPosition(), AllSoundEvents.STEAM.getMainEventHolder().value(), SoundSource.NEUTRAL);
+        }
+
+        @Override public boolean isDone() {
+            if (target == null) return true;
+            return bot.position().distanceToSqr(target) < 0.02;
+        }
+
+        @Override public void tick() {
+            if (target == null) return;
+            if (!bot.getNavigation().isDone()) return;
+            // Manually move to exact position
+            Vec3 delta = target.subtract(bot.position());
+            if (delta.lengthSqr() < 0.02) {
+                bot.setDeltaMovement(Vec3.ZERO);
+                return;
             }
+
+            double speed = bot.getAttributeValue(Attributes.MOVEMENT_SPEED) / 2.0;
+            double maxStep = Math.min(speed, Math.sqrt(delta.lengthSqr()));
+
+            Vec3 motion = delta.normalize().scale(maxStep);
+            bot.setDeltaMovement(motion.x, bot.getDeltaMovement().y, motion.z);
+        }
+
+        @Override public Component getStatus() {
+            DataComponent data = stack.get(COMPONENT.get());
+            if (data == null)
+                return Component.literal("No target set").withStyle(ChatFormatting.DARK_GRAY);
+            if (data.dimension() != bot.level().dimension())
+                return Component.literal("Unable to find the target").withStyle(ChatFormatting.RED);
+            if (!bot.getNavigation().isDone() || !isDone())
+                return Component.literal("Moving to target").withStyle(ChatFormatting.YELLOW);
+
+            return Component.literal("Arrived").withStyle(ChatFormatting.GREEN);
         }
     }
 }

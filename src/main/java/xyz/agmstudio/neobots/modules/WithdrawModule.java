@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -75,67 +76,13 @@ public interface WithdrawModule {
             return component != null ? component : getDefault();
         }
     }
-    class ModuleItem extends BotModuleItem implements MenuProvider {
+    class ModuleItem extends BotModuleItem<ModuleTask> implements MenuProvider {
         private static final int REACH_SQR = 4;
     
         public ModuleItem(Properties props) {
-            super(props);
+            super(props, (bot, stack) -> new ModuleTask(bot, stack, REACH_SQR));
         }
 
-        private int getProgress(NeoBotEntity bot) {
-            return bot.getPersistentData().getInt("WithdrawProgress");
-        }
-        private void setProgress(NeoBotEntity bot, int value) {
-            bot.getPersistentData().putInt("WithdrawProgress", value);
-        }
-        private void resetProgress(NeoBotEntity bot) {
-            bot.getPersistentData().remove("WithdrawProgress");
-        }
-    
-        @Override public void onStart(NeoBotEntity bot, ItemStack stack) {
-            resetProgress(bot);
-        }
-    
-        @Override public void tick(NeoBotEntity bot, ItemStack stack) {
-            if (bot.level().isClientSide) return;
-            DepositModule.DataComponent cfg = DepositModule.DataComponent.extract(stack);
-            Container container = cfg.getContainer(bot, REACH_SQR);
-            if (container == null) return;
-
-            int taken = getProgress(bot);
-            if (taken >= cfg.count()) return;
-            int remaining = cfg.count() - taken;
-    
-            for (int i = 0; i < container.getContainerSize(); i++) {
-                if (remaining <= 0) break;
-    
-                ItemStack slotStack = container.getItem(i);
-                if (!NeoBotsHelper.matchesFilter(bot.level(), slotStack, cfg.filter().orElse(ItemStack.EMPTY))) continue;
-    
-                int toTake = Math.min(slotStack.getCount(), remaining);
-                ItemStack extracted = slotStack.split(toTake);
-    
-                if (!extracted.isEmpty()) {
-                    container.setChanged();
-                    bot.getInventory().addItem(extracted);
-    
-                    remaining -= extracted.getCount();
-                    taken += extracted.getCount();
-                    setProgress(bot, taken);
-                }
-            }
-        }
-    
-        @Override public boolean isFinished(NeoBotEntity bot, ItemStack stack) {
-            DataComponent cfg = stack.get(COMPONENT.get());
-            if (cfg == null) return true;
-            return getProgress(bot) >= cfg.count();
-        }
-    
-        @Override public void onStop(NeoBotEntity bot, ItemStack stack) {
-            resetProgress(bot);
-        }
-    
         @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
             if (ctx.getLevel().isClientSide)
                 return InteractionResult.SUCCESS;
@@ -191,6 +138,64 @@ public interface WithdrawModule {
     
         @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
             return new WithdrawModuleMenu(id, inv);
+        }
+    }
+    class ModuleTask extends BotTask {
+        private final DataComponent data;
+        private final double reach;
+        private int withdrawn = 0;
+
+        public ModuleTask(NeoBotEntity bot, ItemStack module, double reach) {
+            super(bot, module);
+            data = DataComponent.extract(module);
+            this.reach = reach;
+        }
+
+        @Override public String getType() {
+            return "withdraw";
+        }
+
+        @Override public void load(@NotNull CompoundTag tag) {
+            this.withdrawn = tag.getInt("withdrawn");
+        }
+
+        @Override public CompoundTag save() {
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("withdrawn", withdrawn);
+            return tag;
+        }
+
+        private void setWithdrawn(int value) {
+            NeoBots.LOGGER.info("set withdrawn {} @ {}", value, this);
+            this.withdrawn = value;
+            this.setDirty();
+        }
+
+        @Override public void onStart() {}
+
+        @Override public void onStop() {
+            NeoBots.LOGGER.info("Stopped {}", this);
+        }
+
+        @Override public boolean isDone() {
+            if (data.source.isEmpty()) return true;
+            NeoBots.LOGGER.debug("Check {}: {} of {} @ {}", getType(), withdrawn, data.count, this);
+            return withdrawn >= data.count();
+        }
+
+        @Override
+        public void tick() {
+            if (bot.level().isClientSide) return;
+            Container container = data.getContainer(bot, reach);
+            if (container == null || withdrawn >= data.count()) return;
+
+            int remaining = data.count() - withdrawn;
+            int moved = NeoBotsHelper.moveItems(bot.level(), container, bot.getInventory(), data.filter.orElse(ItemStack.EMPTY), remaining);
+            if (moved > 0) setWithdrawn(withdrawn + moved);
+        }
+
+        @Override public Component getStatus() {
+            return Component.literal("Withdrawing (" + withdrawn + "/" + data.count + ")").withStyle(ChatFormatting.YELLOW);
         }
     }
 }
