@@ -20,7 +20,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.agmstudio.neobots.menus.AbstractNeoMenu;
+import xyz.agmstudio.neobots.menus.AbstractMenu;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.DepositModule;
 import xyz.agmstudio.neobots.modules.MoveToModule;
@@ -81,7 +81,10 @@ public class NeoBots {
                     IMenuTypeExtension.create(NeoBotMenu::new)
             );
 
-    public static <T extends AbstractNeoMenu, S extends AbstractContainerScreen<T>> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory, MenuScreens.ScreenConstructor<T, S> constructor) {
+    public static <T extends AbstractMenu> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory) {
+        return registerMenu(name, factory, AbstractMenu.Screen<T>::new);
+    }
+    public static <T extends AbstractMenu, S extends AbstractContainerScreen<T>> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory, MenuScreens.ScreenConstructor<T, S> constructor) {
         DeferredHolder<MenuType<?>, MenuType<T>> menu = MENUS.register(name, () -> IMenuTypeExtension.create(factory));
         ClientSetup.registerScreen(menu, constructor);
         return menu;

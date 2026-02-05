@@ -18,45 +18,61 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.menus.WithdrawModuleMenu;
-import xyz.agmstudio.neobots.menus.WithdrawModuleScreen;
+import xyz.agmstudio.neobots.menus.modules.WithdrawModuleMenu;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Optional;
 
 public interface WithdrawModule {
     DeferredHolder<DataComponentType<?>, DataComponentType<DataComponent>> COMPONENT = NeoBots.registerDataComponent("withdraw_data", DataComponent.CODEC);
     DeferredHolder<Item, ModuleItem> ITEM = NeoBots.registerItem("withdraw_module", ModuleItem::new, 1);
-    DeferredHolder<MenuType<?>, MenuType<WithdrawModuleMenu>> MENU = NeoBots.registerMenu("withdraw_menu", WithdrawModuleMenu::new, WithdrawModuleScreen::new);
+    DeferredHolder<MenuType<?>, MenuType<WithdrawModuleMenu>> MENU = NeoBots.registerMenu("withdraw_menu", WithdrawModuleMenu::new);
     static void register() {}
 
-    record DataComponent(Optional<BlockPos> source, ResourceKey<Level> dimension, int count, Optional<ItemStack> filter) {
+    @ParametersAreNonnullByDefault
+    record DataComponent(Optional<BlockPos> source, Optional<ResourceKey<Level>> dimension, int count, Optional<ItemStack> filter) {
+        public static DataComponent getDefault() {
+            return new DataComponent(Optional.empty(), Optional.empty(), 1, Optional.empty());
+        }
         public static final Codec<DataComponent> CODEC =
                 RecordCodecBuilder.create(instance -> instance.group(
                         BlockPos.CODEC.optionalFieldOf("source").forGetter(DataComponent::source),
-                        Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(DataComponent::dimension),
+                        Level.RESOURCE_KEY_CODEC.optionalFieldOf("dimension").forGetter(DataComponent::dimension),
                         Codec.INT.fieldOf("count").forGetter(DataComponent::count),
                         ItemStack.CODEC.optionalFieldOf("filter").forGetter(DataComponent::filter)
                 ).apply(instance, DataComponent::new));
 
         @Contract("_, _ -> new")
-        public @NotNull WithdrawModule.DataComponent withSource(BlockPos source, ResourceKey<Level> dimension) {
-            return new DataComponent(Optional.ofNullable(source), dimension, this.count, this.filter);
+        public @NotNull DataComponent withSource(@Nullable BlockPos source, @Nullable ResourceKey<Level> dimension) {
+            return new DataComponent(Optional.ofNullable(source), Optional.ofNullable(dimension), this.count, this.filter);
         }
         @Contract("_ -> new")
-        public @NotNull WithdrawModule.DataComponent withCount(int count) {
+        public @NotNull DataComponent withCount(int count) {
             return new DataComponent(this.source, this.dimension, count, this.filter);
         }
         @Contract("_ -> new")
-        public @NotNull WithdrawModule.DataComponent withFilter(@NotNull ItemStack filter) {
+        public @NotNull DataComponent withFilter(@NotNull ItemStack filter) {
             return new DataComponent(this.source, this.dimension, this.count, filter.isEmpty() ? Optional.empty() : Optional.of(filter.copy()));
+        }
+
+        public @Nullable Container getContainer(NeoBotEntity bot, double distSqr) {
+            if (this.source.isEmpty() || this.dimension.isEmpty()) return null;
+            if (bot.level().dimension() != this.dimension.get() || this.source.get().distSqr(bot.blockPosition()) > distSqr) return null;
+            if (bot.level().getBlockEntity(this.source.get()) instanceof Container container) return container;
+            return null;
+        }
+
+        public static @NotNull DataComponent extract(ItemStack stack) {
+            DataComponent component = stack.get(COMPONENT.get());
+            return component != null ? component : getDefault();
         }
     }
     class ModuleItem extends BotModuleItem implements MenuProvider {
@@ -81,22 +97,13 @@ public interface WithdrawModule {
         }
     
         @Override public void tick(NeoBotEntity bot, ItemStack stack) {
-            DataComponent cfg = stack.get(COMPONENT.get());
-            if (cfg == null) return;
             if (bot.level().isClientSide) return;
-    
-            // Wrong dimension
-            if (cfg.dimension() != bot.level().dimension()) return;
-    
-            // Not in reach → silently wait
-            if (cfg.source().isEmpty() || bot.blockPosition().distSqr(cfg.source().get()) > REACH_SQR) return;
-    
+            DepositModule.DataComponent cfg = DepositModule.DataComponent.extract(stack);
+            Container container = cfg.getContainer(bot, REACH_SQR);
+            if (container == null) return;
+
             int taken = getProgress(bot);
             if (taken >= cfg.count()) return;
-    
-            BlockEntity be = bot.level().getBlockEntity(cfg.source().get());
-            if (!(be instanceof Container container)) return;
-    
             int remaining = cfg.count() - taken;
     
             for (int i = 0; i < container.getContainerSize(); i++) {
@@ -137,10 +144,8 @@ public interface WithdrawModule {
             Level level = ctx.getLevel();
             if (!(level.getBlockEntity(pos) instanceof Container))
                 return InteractionResult.PASS;
-    
-            DataComponent old = ctx.getItemInHand().get(COMPONENT.get());
-            if (old == null) old = new DataComponent(null, null, 1, Optional.empty());
-            DataComponent component = old.withSource(pos, level.dimension());
+
+            DataComponent component = DataComponent.extract(ctx.getItemInHand()).withSource(pos, level.dimension());
     
             ctx.getItemInHand().set(COMPONENT.get(), component);
             if (ctx.getPlayer() instanceof ServerPlayer player) {

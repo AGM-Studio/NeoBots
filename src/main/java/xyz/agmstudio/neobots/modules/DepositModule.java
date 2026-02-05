@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
@@ -17,38 +18,42 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.menus.DepositModuleMenu;
-import xyz.agmstudio.neobots.menus.DepositModuleScreen;
+import xyz.agmstudio.neobots.menus.modules.DepositModuleMenu;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Optional;
 
 public interface DepositModule {
     DeferredHolder<DataComponentType<?>, DataComponentType<DataComponent>> COMPONENT = NeoBots.registerDataComponent("deposit_data", DataComponent.CODEC);
     DeferredHolder<Item, ModuleItem> ITEM = NeoBots.registerItem("deposit_module", ModuleItem::new, 1);
-    DeferredHolder<MenuType<?>, MenuType<DepositModuleMenu>> MENU = NeoBots.registerMenu("deposit_menu", DepositModuleMenu::new, DepositModuleScreen::new);
+    DeferredHolder<MenuType<?>, MenuType<DepositModuleMenu>> MENU = NeoBots.registerMenu("deposit_menu", DepositModuleMenu::new);
     static void register() {
     }
 
-    record DataComponent(Optional<BlockPos> target, ResourceKey<Level> dimension, int count, Optional<ItemStack> filter) {
+    @ParametersAreNonnullByDefault
+    record DataComponent(Optional<BlockPos> target, Optional<ResourceKey<Level>> dimension, int count, Optional<ItemStack> filter) {
+        public static DataComponent getDefault() {
+            return new DataComponent(Optional.empty(), Optional.empty(), 1, Optional.empty());
+        }
         public static final Codec<DataComponent> CODEC =
                 RecordCodecBuilder.create(instance -> instance.group(
                         BlockPos.CODEC.optionalFieldOf("target").forGetter(DataComponent::target),
-                        Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(DataComponent::dimension),
+                        Level.RESOURCE_KEY_CODEC.optionalFieldOf("dimension").forGetter(DataComponent::dimension),
                         Codec.INT.fieldOf("count").forGetter(DataComponent::count),
                         ItemStack.CODEC.optionalFieldOf("filter").forGetter(DataComponent::filter)
                 ).apply(instance, DataComponent::new));
 
         @Contract("_, _ -> new")
-        public @NotNull DepositModule.DataComponent withTarget(BlockPos target, ResourceKey<Level> dimension) {
-            return new DataComponent(Optional.ofNullable(target), dimension, this.count, this.filter);
+        public @NotNull DepositModule.DataComponent withTarget(@Nullable BlockPos target, @Nullable ResourceKey<Level> dimension) {
+            return new DataComponent(Optional.ofNullable(target), Optional.ofNullable(dimension), this.count, this.filter);
         }
         @Contract("_ -> new")
         public @NotNull DepositModule.DataComponent withCount(int count) {
@@ -57,6 +62,18 @@ public interface DepositModule {
         @Contract("_ -> new")
         public @NotNull DepositModule.DataComponent withFilter(@NotNull ItemStack filter) {
             return new DataComponent(this.target, this.dimension, this.count, filter.isEmpty() ? Optional.empty() : Optional.of(filter.copy()));
+        }
+        
+        public @Nullable Container getContainer(NeoBotEntity bot, double distSqr) {
+            if (this.target.isEmpty() || this.dimension.isEmpty()) return null;
+            if (bot.level().dimension() != this.dimension.get() || this.target.get().distSqr(bot.blockPosition()) > distSqr) return null;
+            if (bot.level().getBlockEntity(this.target.get()) instanceof Container container) return container;
+            return null;
+        }
+        
+        public static @NotNull DataComponent extract(ItemStack stack) {
+            DataComponent component = stack.get(COMPONENT.get());
+            return component != null ? component : getDefault();
         }
     }
     class ModuleItem extends BotModuleItem implements MenuProvider {
@@ -81,19 +98,13 @@ public interface DepositModule {
         }
 
         @Override public void tick(NeoBotEntity bot, ItemStack stack) {
-            DataComponent cfg = stack.get(COMPONENT.get());
-            if (cfg == null) return;
             if (bot.level().isClientSide) return;
-
-            if (cfg.dimension() != bot.level().dimension()) return;
-            if (cfg.target().isEmpty() || bot.blockPosition().distSqr(cfg.target().get()) > REACH_SQR) return;
-
+            DataComponent cfg = DataComponent.extract(stack);
+            Container container = cfg.getContainer(bot, REACH_SQR);
+            if (container == null) return;
+            
             int deposited = getProgress(bot);
             if (deposited >= cfg.count()) return;
-
-            BlockEntity be = bot.level().getBlockEntity(cfg.target().get());
-            if (!(be instanceof Container container)) return;
-
             int remaining = cfg.count() - deposited;
 
             // Iterate bot inventory
@@ -164,17 +175,12 @@ public interface DepositModule {
             if (!(level.getBlockEntity(pos) instanceof Container))
                 return InteractionResult.PASS;
 
-            DataComponent old = ctx.getItemInHand().get(COMPONENT.get());
-            if (old == null) old = new DataComponent(null, null, 1, Optional.empty());
-
-            DataComponent component =
-                    old.withTarget(pos, level.dimension());
-
+            DataComponent component = DataComponent.extract(ctx.getItemInHand()).withTarget(pos, level.dimension());
             ctx.getItemInHand().set(COMPONENT.get(), component);
 
             if (ctx.getPlayer() instanceof ServerPlayer player) {
                 player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("Target container set")
+                        Component.literal("Target container set")
                                 .withStyle(ChatFormatting.GREEN),
                         true
                 );
@@ -195,19 +201,19 @@ public interface DepositModule {
         /* ---------------- TOOLTIP ---------------- */
 
         @Override
-        public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext ctx, @NotNull List<net.minecraft.network.chat.Component> tooltip, @NotNull TooltipFlag flags) {
+        public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext ctx, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
             DataComponent cfg = stack.get(COMPONENT.get());
             if (cfg == null) {
-                tooltip.add(net.minecraft.network.chat.Component.literal("No target set").withStyle(ChatFormatting.DARK_GRAY));
+                tooltip.add(Component.literal("No target set").withStyle(ChatFormatting.DARK_GRAY));
                 return;
             }
 
-            tooltip.add(net.minecraft.network.chat.Component.literal("Deposit:").withStyle(ChatFormatting.GRAY));
-            tooltip.add(net.minecraft.network.chat.Component.literal("• Count: " + cfg.count()).withStyle(ChatFormatting.AQUA));
-            if (cfg.target().isPresent()) tooltip.add(net.minecraft.network.chat.Component.literal("• To: " + cfg.target().get().toShortString()).withStyle(ChatFormatting.AQUA));
-            else tooltip.add(net.minecraft.network.chat.Component.literal("• To: Not set (Right click on container to set)").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.literal("Deposit:").withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.literal("• Count: " + cfg.count()).withStyle(ChatFormatting.AQUA));
+            if (cfg.target().isPresent()) tooltip.add(Component.literal("• To: " + cfg.target().get().toShortString()).withStyle(ChatFormatting.AQUA));
+            else tooltip.add(Component.literal("• To: Not set (Right click on container to set)").withStyle(ChatFormatting.RED));
             if (cfg.filter().isPresent()) {
-                tooltip.add(net.minecraft.network.chat.Component.literal("• Filter:").withStyle(ChatFormatting.GRAY));
+                tooltip.add(Component.literal("• Filter:").withStyle(ChatFormatting.GRAY));
                 tooltip.add(
                         cfg.filter().orElse(ItemStack.EMPTY)
                                 .getHoverName()
@@ -215,12 +221,12 @@ public interface DepositModule {
                                 .withStyle(ChatFormatting.YELLOW)
                 );
             } else {
-                tooltip.add(net.minecraft.network.chat.Component.literal("• Filter: Any").withStyle(ChatFormatting.DARK_GRAY));
+                tooltip.add(Component.literal("• Filter: Any").withStyle(ChatFormatting.DARK_GRAY));
             }
         }
 
-        @Override public @NotNull net.minecraft.network.chat.Component getDisplayName() {
-            return net.minecraft.network.chat.Component.literal("Deposit Module");
+        @Override public @NotNull Component getDisplayName() {
+            return Component.literal("Deposit Module");
         }
 
         @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {

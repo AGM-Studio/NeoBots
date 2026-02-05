@@ -1,8 +1,10 @@
-package xyz.agmstudio.neobots.menus;
+package xyz.agmstudio.neobots.menus.modules;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -10,22 +12,32 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.NeoBots;
+import xyz.agmstudio.neobots.menus.AbstractMenu;
 import xyz.agmstudio.neobots.modules.WithdrawModule;
+import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
-import java.util.Optional;
+public class WithdrawModuleMenu extends AbstractMenu {
+    private static final ResourceLocation BG =
+            ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/one_slot_panel.png");
 
-public class WithdrawModuleMenu extends AbstractNeoMenu {
     private final ItemStack moduleStack;
     private final SimpleContainer filterContainer;
+
+    // GUI Variables - Not synced!
+    private int count;
 
     public WithdrawModuleMenu(int id, Inventory inv, FriendlyByteBuf ignored) {
         this(id, inv);
     }
     public WithdrawModuleMenu(int id, Inventory inv) {
-        super(WithdrawModule.MENU.get(), id);
+        super(WithdrawModule.MENU.get(), id, inv);
 
         this.moduleStack = inv.player.getMainHandItem();
         this.filterContainer = new SimpleContainer(1) {
+            @Override public int getMaxStackSize() {
+                return 1;
+            }
             @Override public boolean canPlaceItem(int slot, @NotNull ItemStack stack) {
                 return !stack.isEmpty();
             }
@@ -36,22 +48,36 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
         };
 
         WithdrawModule.DataComponent data = getComponent();
-        if (data.filter().isPresent()) filterContainer.setItem(0, data.filter().get().copy());
-        this.addSlot(new Slot(filterContainer, 0, 152, 16) {
-            @Override public int getMaxStackSize() {
-                return 1;
-            }
-        });
+        data.filter().ifPresent(filter -> filterContainer.setItem(0, filter.copy()));
+        count = data.count();
 
-        // Player inventory
-        addRectangleShapedSlots(inv, 9, 3, 8, 55, 9, -1, SlotCreator.lockedSlotCreator(inv, moduleStack));
-        addRectangleShapedSlots(inv, 9, 1, 8, 113, 0, 9, SlotCreator.lockedSlotCreator(inv, moduleStack));
+        this.addSlot(new Slot(filterContainer, 0, 26, 48));
+        addPlayerInventory(8, 92,  moduleStack);
+
+        // Setup GUI
+        addScrollInput(51, 51, 96, 10).withRange(1, 577)
+                .setState(getCount())
+                .titled(Component.literal("Count"))
+                .calling(value -> {
+                    count = value;
+                    sendInventoryClickPacket(this.count);
+                });
+
+        addTitleCentered(4).withColor(0x582424);
+        addLabel(s -> NeoBotsHelper.countAsStacks(count), 54, 52).withColor(0xffffff).withShadow();
+
+        int targetColor = 0x990000;
+        Component target = Component.literal("Right click to set target");
+        if (getPos() != null) {
+            targetColor = 0xffffff;
+            target = inventory.player.level().getBlockState(getPos()).getBlock().getName()
+                    .append(Component.literal(" (" + getPos().toShortString() + ")"));
+        }
+        addLabel(target, 30, 28).withColor(targetColor).withShadow();
     }
 
     private WithdrawModule.DataComponent getComponent() {
-        WithdrawModule.DataComponent component = moduleStack.get(WithdrawModule.COMPONENT.get());
-        if (component != null) return component;
-        return new WithdrawModule.DataComponent(null, null, 1, Optional.empty());
+        return WithdrawModule.DataComponent.extract(moduleStack != null ? moduleStack : inventory.player.getMainHandItem());
     }
 
     private void updateComponentFromSlot() {
@@ -68,7 +94,7 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
         return getComponent().source().orElse(null);
     }
     public ResourceKey<Level> getDimension() {
-        return getComponent().dimension();
+        return getComponent().dimension().orElse(null);
     }
 
     @Override
@@ -105,5 +131,15 @@ public class WithdrawModuleMenu extends AbstractNeoMenu {
         WithdrawModule.DataComponent component = getComponent().withCount(id);
         moduleStack.set(WithdrawModule.COMPONENT.get(), component);
         return true;
+    }
+
+    @Override protected ResourceLocation getBackground() {
+        return BG;
+    }
+    @Override protected int getWidth() {
+        return 176;
+    }
+    @Override protected int getHeight() {
+        return 174;
     }
 }

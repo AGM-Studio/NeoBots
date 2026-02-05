@@ -1,7 +1,8 @@
 package xyz.agmstudio.neobots.menus;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.SimpleContainer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -11,14 +12,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.containers.InventoryContainer;
-import xyz.agmstudio.neobots.containers.ModuleContainer;
-import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
 
-public class NeoBotMenu extends AbstractNeoMenu {
+public class NeoBotMenu extends AbstractMenu {
+    private static final ResourceLocation BG =
+            ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/neobot.png");
+
     private final NeoBotEntity bot;
     protected final DataSlot activeModule = DataSlot.standalone();
     protected final DataSlot moduleCapacity = DataSlot.standalone();
@@ -37,31 +38,25 @@ public class NeoBotMenu extends AbstractNeoMenu {
     }
 
     public NeoBotMenu(int id, Inventory inv, NeoBotEntity bot) {
-        super(NeoBots.NEOBOT_INVENTORY.get(), id);
+        super(NeoBots.NEOBOT_INVENTORY.get(), id, inv);
         this.bot = bot;
+
+        moduleSlotSize = bot.getModuleInventory().getContainerSize();
+        upgradeSlotSize = bot.getUpgradeInventory().getContainerSize();
+        inventorySlotSize = bot.getInventory().getContainerSize();
 
         addDataSlot(activeModule);
         addDataSlot(moduleCapacity);
 
-        ModuleContainer modules = bot.getModuleInventory();
-        addRectangleShapedSlots(modules, 4, 8, 6, 19, 0, -1);
-        moduleSlotSize = modules.getContainerSize();
+        addSlotGroup(bot.getModuleInventory(), 4, 8, 6, 19).withTexture(i -> i == activeModule.get() ? ACTIVE_SLOT_TEXTURE : SLOT_TEXTURE).build(this);
+        addSlotGroup(bot.getUpgradeInventory(), 1, 7, 258, 12).withTexture(UPGRADE_SLOT_TEXTURE).build(this);
+        addSlotGroup(bot.getInventory(), 4, 7, 87, 51).withTexture(SLOT_TEXTURE).build(this);
 
-        UpgradeContainer upgrades = bot.getUpgradeInventory();
-        addRectangleShapedSlots(upgrades, 1, 7, 258, 12,0, 7);
-        upgradeSlotSize = upgrades.getContainerSize();
+        addPlayerInventory(87, 84);
 
-        InventoryContainer inventory = bot.getInventory();
-        addRectangleShapedSlots(inventory, 4, 7, 87, 51,0, 7);
-        inventorySlotSize = inventory.getContainerSize();
-
-        // Player inventory
-        addRectangleShapedSlots(inv, 9, 3, 87, 84, 9);
-        addRectangleShapedSlots(inv, 9, 1, 87, 142, 0, 9);
-    }
-
-    public NeoBotEntity getBot() {
-        return bot;
+        // Setup GUI
+        addLabel(s -> bot.getDisplayName(), 87, 6);
+        addLabel(Component.literal("Modules"), 5, 8);
     }
 
     @Override public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
@@ -103,5 +98,15 @@ public class NeoBotMenu extends AbstractNeoMenu {
 
         activeModule.set(bot.getActiveModuleIndex());
         moduleCapacity.set(bot.getModuleCapacity());
+    }
+
+    @Override protected ResourceLocation getBackground() {
+        return BG;
+    }
+    @Override protected int getWidth() {
+        return 280;
+    }
+    @Override protected int getHeight() {
+        return 166;
     }
 }

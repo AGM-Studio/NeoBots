@@ -7,8 +7,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import xyz.agmstudio.neobots.menus.AbstractNeoMenu;
-import xyz.agmstudio.neobots.menus.NeoBotScreen;
+import xyz.agmstudio.neobots.menus.AbstractMenu;
+import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.robos.NeoBotRenderer;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ClientSetup {
     private static final List<ScreenEntry<?, ?>> SCREENS = new ArrayList<>();
-    public static <M extends AbstractNeoMenu, S extends AbstractContainerScreen<M>> void registerScreen(DeferredHolder<MenuType<?>, MenuType<M>> menu, MenuScreens.ScreenConstructor<M, S> constructor) {
+    public static <M extends AbstractMenu, S extends AbstractContainerScreen<M>> void registerScreen(DeferredHolder<MenuType<?>, MenuType<M>> menu, MenuScreens.ScreenConstructor<M, S> constructor) {
         SCREENS.add(new ScreenEntry<>(menu, constructor));
     }
 
@@ -30,10 +30,10 @@ public class ClientSetup {
         for (ScreenEntry<?, ?> entry: SCREENS)
             entry.register(event);
 
-        event.register(NeoBots.NEOBOT_INVENTORY.get(), NeoBotScreen::new);
+        event.register(NeoBots.NEOBOT_INVENTORY.get(), AbstractMenu.Screen<NeoBotMenu>::new);
     }
 
-    private record ScreenEntry<M extends AbstractNeoMenu, S extends AbstractContainerScreen<M>>(DeferredHolder<MenuType<?>, MenuType<M>> menu, MenuScreens.ScreenConstructor<M, S> constructor) {
+    private record ScreenEntry<M extends AbstractMenu, S extends AbstractContainerScreen<M>>(DeferredHolder<MenuType<?>, MenuType<M>> menu, MenuScreens.ScreenConstructor<M, S> constructor) {
         void register(RegisterMenuScreensEvent event) {
             event.register(menu.get(), constructor);
         }
