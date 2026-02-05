@@ -11,7 +11,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
@@ -22,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.containers.BotFilteredContainer;
+import xyz.agmstudio.neobots.containers.slots.LockedSlot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -222,29 +222,6 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
                 int py = y + (index / w) * padY;
                 g.blit(texture.apply(i), px, py, 0, 0, textureX, textureY, textureX, textureY);
             }
-        }
-    }
-    protected static class LockedSlot extends Slot {
-        public LockedSlot(Container container, int index, int x, int y) {
-            super(container, index, x, y);
-        }
-
-        @Override public boolean mayPickup(@NotNull Player player) {
-            return false;
-        }
-        @Override public boolean mayPlace(@NotNull ItemStack stack) {
-            return false;
-        }
-    }
-    protected static class LimitedSlot extends Slot {
-        private final int count;
-
-        public LimitedSlot(Container container, int index, int x, int y, int count) {
-            super(container, index, x, y);
-            this.count = count;
-        }
-        @Override public int getMaxStackSize() {
-            return count;
         }
     }
 
