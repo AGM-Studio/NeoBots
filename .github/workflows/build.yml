@@ -23,6 +23,6 @@ jobs:
           body: ⚠️ This is an automated release of latest changes. There might be issues and untested features.
           files: build/libs/*.jar
           draft: false
-          prerelease: true
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
