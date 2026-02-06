@@ -166,20 +166,16 @@ public interface WithdrawModule {
         }
 
         private void setWithdrawn(int value) {
-            NeoBots.LOGGER.info("set withdrawn {} @ {}", value, this);
             this.withdrawn = value;
             this.setDirty();
         }
 
         @Override public void onStart() {}
 
-        @Override public void onStop() {
-            NeoBots.LOGGER.info("Stopped {}", this);
-        }
+        @Override public void onStop() {}
 
         @Override public boolean isDone() {
             if (data.source.isEmpty()) return true;
-            NeoBots.LOGGER.debug("Check {}: {} of {} @ {}", getType(), withdrawn, data.count, this);
             return withdrawn >= data.count();
         }
 
