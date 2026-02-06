@@ -35,8 +35,8 @@ public class SlotGroup {
     }
 
     protected Function<Integer, Texture> texture = null;
-    protected int textureSizeX = 18;
-    protected int textureSizeY = 18;
+    protected int textureSizeX = 20;
+    protected int textureSizeY = 20;
     protected int textureOffsetX = 1;
     protected int textureOffsetY = 1;
 

@@ -29,9 +29,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class AbstractMenu extends AbstractContainerMenu {
-    protected static final Texture SLOT_TEXTURE = new Texture("textures/gui/single_slot.png", 18, 18);
-    protected static final Texture ACTIVE_SLOT_TEXTURE = new Texture("textures/gui/single_slot_active.png", 18 , 18);
-    protected static final Texture UPGRADE_SLOT_TEXTURE = new Texture("textures/gui/upgrade_slot.png", 18, 18);
+    protected static final Texture SLOT_TEXTURE = new Texture("textures/gui/single_slot.png", 20, 20);
+    protected static final Texture ACTIVE_SLOT_TEXTURE = new Texture("textures/gui/single_slot_active.png", 20 , 20);
+    protected static final Texture UPGRADE_SLOT_TEXTURE = new Texture("textures/gui/upgrade_slot.png", 20, 20);
     protected static final Texture SIMPLE_FRAME = new Texture("textures/gui/simple_frame.png", 64, 64);
 
     protected final List<Consumer<Screen<?>>> onInitActions = new ArrayList<>();
@@ -53,15 +53,20 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     }
     protected void addPlayerInventory(int x, int y) {
         addPlayerInventoryTitle(x, y - 12);
-        addSlotGroup(inventory, 9, 3, x, y).offset(9).build(this);
-        addSlotGroup(inventory, 9, 1, x, y + 58).limit(9).build(this);
+        addSlotGroup(inventory, 9, 3, x, y).offset(9).withTextureSize(18, 18).build(this);
+        addSlotGroup(inventory, 9, 1, x, y + 58).limit(9).withTextureSize(18, 18).build(this);
     }
     protected void addPlayerInventory(int x, int y, ItemStack lockedStack) {
         addPlayerInventoryTitle(x, y - 12);
         SlotCreator<Slot> creator = SlotCreator.lockedSlotCreator(inventory, lockedStack);
-        addSlotGroup(inventory, 9, 3, x, y).offset(9).withSlotCreator(creator).build(this);
-        addSlotGroup(inventory, 9, 1, x, y + 58).limit(9).withSlotCreator(creator).build(this);
+        addSlotGroup(inventory, 9, 3, x, y).offset(9).withSlotCreator(creator).withTextureSize(18, 18).build(this);
+        addSlotGroup(inventory, 9, 1, x, y + 58).limit(9).withSlotCreator(creator).withTextureSize(18, 18).build(this);
     }
+    protected void addPlayerInventory(int x, int y, int p, int o, int s) {
+        addSlotGroup(inventory, 9, 3, x, y).offset(9).pad(p).withTextureSize(s, s).build(this);
+        addSlotGroup(inventory, 9, 1, x, y + o + 2 * p + 54).limit(9).pad(p).withTextureSize(s, s).build(this);
+    }
+
 
     protected Label addLabel(Function<Screen<?>, Component> text, int x, int y) {
         Label label = new Label(text, x, y);
@@ -187,6 +192,17 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
 
         @Override protected void renderLabels(@NotNull GuiGraphics g, int mouseX, int mouseY) {
             menu.labels.forEach(l -> l.render(this, g));
+        }
+
+        public void offsetTop(int i) {
+            this.topPos += i;
+        }
+        public void offsetLeft(int i) {
+            this.leftPos += i;
+        }
+        public void offset(int t, int l) {
+            this.topPos += t;
+            this.leftPos += l;
         }
     }
 
