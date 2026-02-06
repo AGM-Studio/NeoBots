@@ -5,8 +5,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
 import xyz.agmstudio.neobots.containers.slots.BotFilteredSlot;
-import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public abstract class BotFilteredContainer extends SimpleContainer {
@@ -16,10 +16,8 @@ public abstract class BotFilteredContainer extends SimpleContainer {
         this.bot = bot;
     }
 
-    /**
-     * Creates the slot for the Menus using it
-     */
-    public NeoBotMenu.SlotCreator slotBuilder() {
+    /** Creates the slot for the Menus using it */
+    public SlotCreator<BotFilteredSlot> slotBuilder() {
         return (i, x, y) -> new BotFilteredSlot(this, i, x, y);
     }
 

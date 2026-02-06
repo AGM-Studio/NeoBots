@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,14 +11,13 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
+import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
 import xyz.agmstudio.neobots.modules.WithdrawModule;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
 public class WithdrawModuleMenu extends AbstractMenu {
-    private static final ResourceLocation BG =
-            ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/one_slot_panel.png");
+    private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 174);
 
     private final ItemStack moduleStack;
     private final SimpleContainer filterContainer;
@@ -133,13 +131,7 @@ public class WithdrawModuleMenu extends AbstractMenu {
         return true;
     }
 
-    @Override protected ResourceLocation getBackground() {
+    @Override protected Texture getBackground() {
         return BG;
-    }
-    @Override protected int getWidth() {
-        return 176;
-    }
-    @Override protected int getHeight() {
-        return 174;
     }
 }

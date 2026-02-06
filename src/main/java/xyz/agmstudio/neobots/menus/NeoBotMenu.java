@@ -2,7 +2,6 @@ package xyz.agmstudio.neobots.menus;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,13 +11,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
+import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
 
 public class NeoBotMenu extends AbstractMenu {
-    private static final ResourceLocation BG =
-            ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/neobot.png");
+    private static final Texture BG = new Texture("textures/gui/neobot.png", 280, 166);
 
     private final NeoBotEntity bot;
     protected final DataSlot activeModule = DataSlot.standalone();
@@ -100,13 +99,7 @@ public class NeoBotMenu extends AbstractMenu {
         moduleCapacity.set(bot.getModuleCapacity());
     }
 
-    @Override protected ResourceLocation getBackground() {
+    @Override protected Texture getBackground() {
         return BG;
-    }
-    @Override protected int getWidth() {
-        return 280;
-    }
-    @Override protected int getHeight() {
-        return 166;
     }
 }

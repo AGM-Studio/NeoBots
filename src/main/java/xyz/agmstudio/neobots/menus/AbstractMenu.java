@@ -5,10 +5,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -19,22 +19,23 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.containers.BotFilteredContainer;
-import xyz.agmstudio.neobots.containers.slots.LockedSlot;
+import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
+import xyz.agmstudio.neobots.containers.slotgroups.SlotGroup;
+import xyz.agmstudio.neobots.gui.Texture;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class AbstractMenu extends AbstractContainerMenu {
-    protected static final ResourceLocation SLOT_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/single_slot.png");
-    protected static final ResourceLocation ACTIVE_SLOT_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/single_slot_active.png");
-    protected static final ResourceLocation UPGRADE_SLOT_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, "textures/gui/upgrade_slot.png");
+    protected static final Texture SLOT_TEXTURE = new Texture("textures/gui/single_slot.png", 18, 18);
+    protected static final Texture ACTIVE_SLOT_TEXTURE = new Texture("textures/gui/single_slot_active.png", 18 , 18);
+    protected static final Texture UPGRADE_SLOT_TEXTURE = new Texture("textures/gui/upgrade_slot.png", 18, 18);
+    protected static final Texture SIMPLE_FRAME = new Texture("textures/gui/simple_frame.png", 64, 64);
 
+    protected final List<Consumer<Screen<?>>> onInitActions = new ArrayList<>();
+    protected final List<Texture.Drawer> drawers = new ArrayList<>();
     protected final List<WidgetFactory<AbstractWidget>> widgets = new ArrayList<>();
     protected final List<SlotGroup> slotGroups = new ArrayList<>();
     protected final List<Label> labels = new ArrayList<>();
@@ -57,7 +58,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     }
     protected void addPlayerInventory(int x, int y, ItemStack lockedStack) {
         addPlayerInventoryTitle(x, y - 12);
-        SlotCreator creator = SlotCreator.lockedSlotCreator(inventory, lockedStack);
+        SlotCreator<Slot> creator = SlotCreator.lockedSlotCreator(inventory, lockedStack);
         addSlotGroup(inventory, 9, 3, x, y).offset(9).withSlotCreator(creator).build(this);
         addSlotGroup(inventory, 9, 1, x, y + 58).limit(9).withSlotCreator(creator).build(this);
     }
@@ -89,10 +90,33 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         });
         return input;
     }
+    protected Button addButton(String text, Button.OnPress onPress, int x, int y, int w, int h) {
+        return addButton(Component.literal(text), onPress, x, y, w, h);
+    }
+    protected Button addButton(Component text, Button.OnPress onPress, int x, int y, int w, int h) {
+        Button button = Button.builder(text, onPress).pos(x, y).size(w, h).build();
+        this.widgets.add(s -> {
+            button.setX(x + s.getGuiLeft());
+            button.setY(y + s.getGuiTop());
+            return button;
+        });
+        return button;
+    }
 
-    protected abstract ResourceLocation getBackground();
-    protected abstract int getWidth();
-    protected abstract int getHeight();
+    protected void addTextureDrawer(Texture.Drawer drawer) {
+        this.drawers.add(drawer);
+    }
+    public void addInitListener(Consumer<Screen<?>> consumer) {
+        this.onInitActions.add(consumer);
+    }
+
+    protected abstract Texture getBackground();
+    protected int getWidth() {
+        return getBackground().sizeX;
+    }
+    protected int getHeight() {
+        return getBackground().sizeY;
+    }
 
     protected static class Label {
         private final Function<Screen<?>, Component> text;
@@ -128,120 +152,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         }
 
     }
-    protected static class SlotGroup {
-        private Function<Integer, ResourceLocation> texture = null;
-        private int textureX = 18;
-        private int textureY = 18;
 
-        private SlotCreator creator;
-        private final Container container;
-        private final int w;
-        private final int h;
-        private final int x;
-        private final int y;
-        private int limit    = -1;
-        private int offset   = 0;
-        private int paddingX = 0;
-        private int paddingY = 0;
-
-        protected SlotGroup(Container container, int w, int h, int x, int y) {
-            if (container instanceof BotFilteredContainer bfc) this.creator = bfc.slotBuilder();
-            else this.creator = (i, px, py) -> new Slot(container, i, px, py);
-
-            this.container = container;
-            this.w = w;
-            this.h = h;
-            this.x = x;
-            this.y = y;
-        }
-        public SlotGroup offset(int offset) {
-            this.offset = offset;
-            return this;
-        }
-        public SlotGroup limit(int limit) {
-            this.limit = limit;
-            return this;
-        }
-        public SlotGroup pad(int pad) {
-            this.paddingX = pad;
-            this.paddingY = pad;
-            return this;
-        }
-        public SlotGroup pad(int padX, int padY) {
-            this.paddingX = padX;
-            this.paddingY = padY;
-            return this;
-        }
-        public SlotGroup withTexture(Function<Integer, ResourceLocation> provider) {
-            this.texture = provider;
-            return this;
-        }
-        public SlotGroup withTexture(Function<Integer, ResourceLocation> provider, int textureX, int textureY) {
-            this.texture = provider;
-            this.textureX = textureX;
-            this.textureY = textureY;
-            return this;
-        }
-        public SlotGroup withTexture(ResourceLocation texture) {
-            return withTexture(i ->  texture);
-        }
-        public SlotGroup withTexture(ResourceLocation texture, int textureX, int textureY) {
-            return withTexture(i ->  texture, textureX, textureY);
-        }
-        public SlotGroup withSlotCreator(@NotNull SlotCreator slotCreator) {
-            this.creator = slotCreator;
-            return this;
-        }
-
-        public void build(AbstractMenu menu) {
-            int maxByGrid = offset + w * h;
-            int maxByLimit = limit > -1 ? offset + limit : Integer.MAX_VALUE;
-            int last = Math.min(Math.min(maxByGrid, maxByLimit), container.getContainerSize());
-            int padX = paddingX + textureX;
-            int padY = paddingY + textureY;
-            for (int i = offset; i < last; i++) {
-                int index = i - offset;
-                int px = x + (index % w) * padX;
-                int py = y + (index / w) * padY;
-                menu.addSlot(creator.create(i, px, py));
-            }
-        }
-        public void render(Screen<?> screen, GuiGraphics g) {
-            if (texture == null) return;
-            int maxByGrid = offset + w * h;
-            int maxByLimit = limit > -1 ? offset + limit : Integer.MAX_VALUE;
-            int maxByActive = (container instanceof  BotFilteredContainer bfc) ? bfc.getActiveSlots() : container.getContainerSize();
-            int last = Math.min(Math.min(maxByGrid, maxByLimit), maxByActive);
-            int x = this.x + screen.getGuiLeft() - 1;
-            int y = this.y + screen.getGuiTop() - 1;
-            int padX = paddingX + textureX;
-            int padY = paddingY + textureY;
-            for (int i = offset; i < last; i++) {
-                int index = i - offset;
-                int px = x + (index % w) * padX;
-                int py = y + (index / w) * padY;
-                g.blit(texture.apply(i), px, py, 0, 0, textureX, textureY, textureX, textureY);
-            }
-        }
-    }
-
-    public interface SlotCreator {
-        Slot create(int index, int x, int y);
-
-        static SlotCreator lockedSlotCreator(Container container, int locked) {
-            return (i, x, y) -> {
-                if (i == locked) return new LockedSlot(container, i, x, y);
-                return new Slot(container, i, x, y);
-            };
-        }
-
-        static SlotCreator lockedSlotCreator(Container container, ItemStack locked) {
-            return (i, x, y) -> {
-                if (container.getItem(i) == locked) return new LockedSlot(container, i, x, y);
-                return new Slot(container, i, x, y);
-            };
-        }
-    }
     public interface WidgetFactory<T extends AbstractWidget> {
         T create(Screen<?> screen);
     }
@@ -249,8 +160,6 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     public static class Screen<T extends AbstractMenu> extends AbstractContainerScreen<T> {
         public Screen(T menu, Inventory inv, Component title) {
             super(menu, inv, title);
-            this.imageWidth = menu.getWidth();
-            this.imageHeight = menu.getHeight();
         }
         public Component getPlayerInventoryTitle() {
             return playerInventoryTitle;
@@ -260,10 +169,18 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
             super.init();
 
             menu.widgets.forEach(w -> addRenderableWidget(w.create(this)));
+            menu.onInitActions.forEach(c -> c.accept(this));
+        }
+
+        @Override public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+            super.render(g, mouseX, mouseY, partialTick);
+            this.renderTooltip(g, mouseX, mouseY);
         }
 
         @Override protected void renderBg(@NotNull GuiGraphics g, float partialTick, int x, int y) {
-            g.blit(getMenu().getBackground(), leftPos, topPos, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
+            menu.drawers.stream().filter(Texture.Drawer::drawBeforeBg).forEach(d -> d.draw(this, g));
+            getMenu().getBackground().draw(g, leftPos, topPos);
+            menu.drawers.stream().filter(d -> !d.drawBeforeBg()).forEach(d -> d.draw(this, g));
 
             menu.slotGroups.forEach(group -> group.render(this, g));
         }
