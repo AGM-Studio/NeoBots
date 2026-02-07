@@ -18,6 +18,7 @@ import java.util.function.Function;
 
 public class SlotGroup {
     protected static final BiConsumer<AbstractMenu, Slot> ADD_SLOT_METHOD = captureAddSlotMethod();
+
     private static @NotNull BiConsumer<AbstractMenu, Slot> captureAddSlotMethod() {
         try {
             Method method = AbstractContainerMenu.class.getDeclaredMethod("addSlot", Slot.class);
@@ -40,6 +41,7 @@ public class SlotGroup {
     protected int textureOffsetX = 1;
     protected int textureOffsetY = 1;
 
+    private final SlotGroup root;
     protected SlotCreator<? extends Slot> creator;
     protected final Container container;
     public final int w;
@@ -52,17 +54,37 @@ public class SlotGroup {
     protected int paddingY = 0;
 
     protected final List<Slot> slots = new ArrayList<>();
+    protected final List<SlotGroup> children = new ArrayList<>();
 
     public SlotGroup(Container container, int w, int h, int x, int y) {
         if (container instanceof BotFilteredContainer bfc) this.creator = bfc.slotBuilder();
         else this.creator = (i, px, py) -> new Slot(container, i, px, py);
 
+        this.root = this;
         this.container = container;
         this.w = w;
         this.h = h;
         this.x = x;
         this.y = y;
     }
+    private SlotGroup(SlotGroup parent, int w, int h, int x, int y) {
+        this.container = parent.container;
+        this.creator = parent.creator;
+        this.root = parent.root;
+        this.w = w;
+        this.h = h;
+        this.x = x;
+        this.y = y;
+        // Inherit important stuff
+        this.texture = parent.texture;
+        this.textureSizeX = parent.textureSizeX;
+        this.textureSizeY = parent.textureSizeY;
+        this.textureOffsetX = parent.textureOffsetX;
+        this.textureOffsetY = parent.textureOffsetY;
+        this.paddingX = parent.paddingX;
+        this.paddingY = parent.paddingY;
+    }
+
     public SlotGroup offset(int offset) {
         this.offset = offset;
         return this;
@@ -107,12 +129,28 @@ public class SlotGroup {
         return this;
     }
 
+    public SlotGroup then(int w, int h, int x, int y) {
+        SlotGroup child = new SlotGroup(this, w, h, x, y);
+        this.children.add(child);
+        return child;
+    }
+
     public int indexOf(int i) {
         return i;
     }
 
-    public void build(AbstractMenu menu) {
-        this.slots.clear();
+    public SlotGroupHolder build(AbstractMenu menu) {
+        if (this != root)
+            return root.build(menu);
+
+        int startIndex = menu.slots.size();
+        SlotGroupHolder holder = new SlotGroupHolder(startIndex);
+        buildInto(menu, holder);
+        menu.registerSlotGroup(holder);
+        return holder;
+    }
+    private void buildInto(@NotNull AbstractMenu menu, SlotGroupHolder holder) {
+        slots.clear();
         int maxByGrid = offset + w * h;
         int maxByLimit = limit > -1 ? offset + limit : Integer.MAX_VALUE;
         int last = Math.min(Math.min(maxByGrid, maxByLimit), container.getContainerSize());
@@ -120,11 +158,19 @@ public class SlotGroup {
             int index = i - offset;
             int px = x + (index % w) * (paddingX + textureSizeX);
             int py = y + (index / w) * (paddingY + textureSizeY);
+
             Slot slot = creator.create(indexOf(i), px, py);
             ADD_SLOT_METHOD.accept(menu, slot);
-            this.slots.add(slot);
+            slots.add(slot);
         }
+
+        int width = w * (textureSizeX + paddingX) - paddingX;
+        int height = h * (textureSizeY + paddingY) - paddingY;
+        holder.append(menu, slots, x, y, width, height);
+
+        for (SlotGroup child : children) child.buildInto(menu, holder);
     }
+
 
     public void render(AbstractMenu.Screen<?> screen, GuiGraphics g) {
         if (texture == null) return;

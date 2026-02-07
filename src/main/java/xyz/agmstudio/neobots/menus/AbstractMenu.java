@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroup;
+import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
 
 import java.util.ArrayList;
@@ -38,8 +39,11 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     protected final List<Texture.Drawer> drawers = new ArrayList<>();
     protected final List<WidgetFactory<AbstractWidget>> widgets = new ArrayList<>();
     protected final List<SlotGroup> slotGroups = new ArrayList<>();
+    protected final List<SlotGroupHolder> slotHolders = new ArrayList<>();
     protected final List<Label> labels = new ArrayList<>();
     protected final Inventory inventory;
+
+    protected SlotGroupHolder playerInventoryGroup = null;
 
     protected AbstractMenu(@Nullable MenuType<?> type, int id, Inventory inv) {
         super(type, id);
@@ -52,21 +56,27 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         return group;
     }
     protected void addPlayerInventory(int x, int y) {
-        addPlayerInventoryTitle(x, y - 12);
-        addSlotGroup(inventory, 9, 3, x, y).offset(9).withTextureSize(18, 18).build(this);
-        addSlotGroup(inventory, 9, 1, x, y + 58).limit(9).withTextureSize(18, 18).build(this);
+        addPlayerInventory(x, y, 0, 4, 18, null);
     }
     protected void addPlayerInventory(int x, int y, ItemStack lockedStack) {
-        addPlayerInventoryTitle(x, y - 12);
-        SlotCreator<Slot> creator = SlotCreator.lockedSlotCreator(inventory, lockedStack);
-        addSlotGroup(inventory, 9, 3, x, y).offset(9).withSlotCreator(creator).withTextureSize(18, 18).build(this);
-        addSlotGroup(inventory, 9, 1, x, y + 58).limit(9).withSlotCreator(creator).withTextureSize(18, 18).build(this);
+        addPlayerInventory(x, y, 0, 4, 18, SlotCreator.lockedSlotCreator(inventory, lockedStack));
     }
-    protected void addPlayerInventory(int x, int y, int p, int o, int s) {
-        addSlotGroup(inventory, 9, 3, x, y).offset(9).pad(p).withTextureSize(s, s).build(this);
-        addSlotGroup(inventory, 9, 1, x, y + o + 2 * p + 54).limit(9).pad(p).withTextureSize(s, s).build(this);
+    protected void addPlayerInventory(int x, int y, int slotPadding, int hotbarPadding, int textureSize) {
+        addPlayerInventory(x, y, slotPadding, hotbarPadding, textureSize, null);
+    }
+    protected void addPlayerInventory(int x, int y, int slotPadding, int hotbarPadding, int textureSize, SlotCreator<Slot> creator) {
+        if (creator == null) creator = SlotCreator.defaultCreator(inventory);
+        playerInventoryGroup = addSlotGroup(inventory, 9, 3, x, y).offset(9).pad(slotPadding).withTextureSize(textureSize, textureSize).withSlotCreator(creator)
+                .then(9, 1, x, y + hotbarPadding + 2 * slotPadding + 54).limit(9).build(this);
     }
 
+    protected SlotGroupHolder findGroup(int index) {
+        return slotHolders.stream().filter(g -> g.containsIndex(index)).findFirst().orElseThrow();
+    }
+
+    protected boolean moveTo(@NotNull SlotGroupHolder group, ItemStack stack, boolean reverse) {
+        return moveItemStackTo(stack, group.firstIndex(), group.lastIndexExclusive(), reverse);
+    }
 
     protected Label addLabel(Function<Screen<?>, Component> text, int x, int y) {
         Label label = new Label(text, x, y);
@@ -121,6 +131,9 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     }
     protected int getHeight() {
         return getBackground().sizeY;
+    }
+    public void registerSlotGroup(SlotGroupHolder holder) {
+        slotHolders.add(holder);
     }
 
     protected static class Label {

@@ -11,6 +11,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
 import xyz.agmstudio.neobots.modules.DepositModule;
@@ -21,6 +22,7 @@ public class DepositModuleMenu extends AbstractMenu {
 
     private final ItemStack moduleStack;
     private final SimpleContainer filterContainer;
+    private final SlotGroupHolder filterHolder;
 
     // GUI Variables - Not synced!
     private int count;
@@ -49,7 +51,9 @@ public class DepositModuleMenu extends AbstractMenu {
         data.filter().ifPresent(filter -> filterContainer.setItem(0, filter.copy()));
         count = data.count();
 
-        this.addSlot(new Slot(filterContainer, 0, 26, 48));
+        filterHolder = SlotGroupHolder.of(this, new Slot(filterContainer, 0, 26, 48));
+
+        addPlayerInventoryTitle(8, 80);
         addPlayerInventory(8, 92, moduleStack);
 
         // Setup GUI
@@ -64,7 +68,7 @@ public class DepositModuleMenu extends AbstractMenu {
         addTitleCentered(4).withColor(0x582424);
         addLabel(s -> NeoBotsHelper.countAsStacks(count), 54, 52).withColor(0xffffff).withShadow();
 
-        int targetColor = 0x990000;
+        int targetColor = 0xcc0000;
         Component target = Component.literal("Right click to set target");
         if (getPos() != null) {
             targetColor = 0xffffff;
@@ -93,8 +97,7 @@ public class DepositModuleMenu extends AbstractMenu {
         return getComponent().dimension().orElse(null);
     }
 
-    @Override
-    public boolean stillValid(@NotNull Player player) {
+    @Override public boolean stillValid(@NotNull Player player) {
         return player.getMainHandItem() == moduleStack || player.getOffhandItem() == moduleStack;
     }
 
@@ -104,16 +107,17 @@ public class DepositModuleMenu extends AbstractMenu {
 
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
+
         if (stack == moduleStack) return ItemStack.EMPTY;
+        SlotGroupHolder source = findGroup(index);
+        if (source == null) return ItemStack.EMPTY;
 
-        if (index == 0) {
-            if (!moveItemStackTo(stack, 1, 37, true))
-                return ItemStack.EMPTY;
-        } else {
-            if (!moveItemStackTo(stack, 0, 1, false))
-                return ItemStack.EMPTY;
-        }
+        boolean moved;
+        if (source == filterHolder) moved = moveTo(playerInventoryGroup, stack, true);
+        else if (source == playerInventoryGroup) moved = moveTo(filterHolder, stack, false);
+        else return ItemStack.EMPTY;
 
+        if (!moved) return ItemStack.EMPTY;
         if (stack.isEmpty()) slot.set(ItemStack.EMPTY);
         else slot.setChanged();
 

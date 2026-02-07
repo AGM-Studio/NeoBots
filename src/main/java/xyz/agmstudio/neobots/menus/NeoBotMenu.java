@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
+import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.modules.BotModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
@@ -23,9 +24,9 @@ public class NeoBotMenu extends AbstractMenu {
     protected final DataSlot activeModule = DataSlot.standalone();
     protected final DataSlot moduleCapacity = DataSlot.standalone();
 
-    private final int moduleSlotSize;
-    private final int upgradeSlotSize;
-    private final int inventorySlotSize;
+    private final SlotGroupHolder moduleGroup;
+    private final SlotGroupHolder upgradeGroup;
+    private final SlotGroupHolder botInventoryGroup;
 
     private static NeoBotEntity captureBot(Level level, FriendlyByteBuf buf) {
         Entity entity = level.getEntity(buf.readInt());
@@ -40,24 +41,20 @@ public class NeoBotMenu extends AbstractMenu {
         super(NeoBots.NEOBOT_INVENTORY.get(), id, inv);
         this.bot = bot;
 
-        moduleSlotSize = bot.getModuleInventory().getContainerSize();
-        upgradeSlotSize = bot.getUpgradeInventory().getContainerSize();
-        inventorySlotSize = bot.getInventory().getContainerSize();
-
         addDataSlot(activeModule);
         addDataSlot(moduleCapacity);
 
-        addSlotGroup(bot.getModuleInventory(), 5, 8, -108, 40).pad(2).withTextureOffset(2, 2).withTexture(i -> i == activeModule.get() ? ACTIVE_SLOT_TEXTURE : SLOT_TEXTURE).build(this);
-        addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2).withTexture(UPGRADE_SLOT_TEXTURE).build(this);
-        addSlotGroup(bot.getInventory(), 4, 7, 24, 64).build(this);
+        moduleGroup       = addSlotGroup(bot.getModuleInventory(), 5, 8, -108, 40).pad(2).withTextureOffset(2, 2).withTexture(i -> i == activeModule.get() ? ACTIVE_SLOT_TEXTURE : SLOT_TEXTURE).build(this);
+        upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2).withTexture(UPGRADE_SLOT_TEXTURE).build(this);
+        botInventoryGroup = addSlotGroup(bot.getInventory(), 4, 7, 24, 64).build(this);
 
         addPlayerInventoryTitle(112, 100).centered().withColor(0x000000);
         addPlayerInventory(24, 116, 2, 5, 18);
 
         // Setup GUI // Todo: SlotGroup Framing and shift click support.
         addLabel(s -> bot.getDisplayName(), 112, 4).withColor(0xffffff).withShadow().centered();
-        addLabel(Component.literal("Modules"), -112, 23).withColor(0x000000);
-        addLabel(Component.literal("Upgrades"), 225, 23).withColor(0x000000);
+        addLabel(Component.literal("Modules"), -112, 23).withColor(0x582424);
+        addLabel(Component.literal("Upgrades"), 225, 23).withColor(0x582424);
         addTextureDrawer(SIMPLE_FRAME.frameDrawer(-116, 19, 128, 128, 3, 16, true, true));
         addTextureDrawer(SIMPLE_FRAME.frameDrawer(210, 19, 86, 128, 3, 16, true, true));
 
@@ -65,35 +62,38 @@ public class NeoBotMenu extends AbstractMenu {
         addInitListener(s -> s.offset(-20, -24));
     }
 
-    @Override public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
+    @Override
+    public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
         Slot slot = slots.get(index);
-        if (!slot.hasItem()) return ItemStack.EMPTY;
+        if (!slot.hasItem())
+            return ItemStack.EMPTY;
 
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
 
-        if (index < moduleSlotSize +  upgradeSlotSize) { // --- FROM BOT → PLAYER ---
-            if (!moveItemStackTo(stack, moduleSlotSize + upgradeSlotSize + inventorySlotSize, moduleSlotSize + upgradeSlotSize + inventorySlotSize + 36, true))
-                return ItemStack.EMPTY;
-        } else { // --- FROM PLAYER → BOT ---
-            if (BotModuleItem.isModule(stack)) {
-                if (!moveItemStackTo(stack, 0, moduleSlotSize, false))
-                    return ItemStack.EMPTY;
-            } else if (BotUpgradeItem.isUpgrade(stack)) {
-                if (!moveItemStackTo(stack, moduleSlotSize, moduleSlotSize + upgradeSlotSize, false))
-                    return ItemStack.EMPTY;
-            } else {
-                if (!moveItemStackTo(stack, moduleSlotSize + upgradeSlotSize, moduleSlotSize + upgradeSlotSize + inventorySlotSize, false))
-                    return ItemStack.EMPTY;
-            }
-        }
+        SlotGroupHolder from = findGroup(index);
+        if (from == null)
+            return ItemStack.EMPTY;
 
+        boolean moved;
+
+        if (from == moduleGroup || from == upgradeGroup || from == botInventoryGroup) {
+            moved = moveTo(playerInventoryGroup, stack, true);
+
+        } else if (from == playerInventoryGroup) {
+            if (BotModuleItem.isModule(stack)) moved = moveTo(moduleGroup, stack, false);
+            else if (BotUpgradeItem.isUpgrade(stack)) moved = moveTo(upgradeGroup, stack, false);
+            else moved = moveTo(botInventoryGroup, stack, false);
+        } else return ItemStack.EMPTY;
+
+        if (!moved) return ItemStack.EMPTY;
         if (stack.isEmpty()) slot.set(ItemStack.EMPTY);
         else slot.setChanged();
 
         slot.onTake(player, stack);
         return copy;
     }
+
 
     @Override public boolean stillValid(@NotNull Player player) {
         return bot.isAlive() && player.distanceTo(bot) < 8.0F;
