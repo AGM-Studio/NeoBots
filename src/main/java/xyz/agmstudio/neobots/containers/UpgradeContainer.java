@@ -36,4 +36,8 @@ public class UpgradeContainer extends BotFilteredContainer {
 
         return removed;
     }
+
+    @Override public int getMaxStackSize() {
+        return 1;
+    }
 }

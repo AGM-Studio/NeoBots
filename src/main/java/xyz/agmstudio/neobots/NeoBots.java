@@ -5,9 +5,11 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -46,9 +48,33 @@ public class NeoBots {
             DeferredRegister.create(Registries.ITEM, MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, MOD_ID);
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
+            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
+
+    public static final Supplier<CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("neobot_items", () -> CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup." + MOD_ID + ".example"))
+            .icon(() -> NeoBots.MEMORY_UPGRADE.get().getDefaultInstance())
+            .displayItems((params, output) -> ITEMS.getEntries().forEach(entry -> output.accept(entry.get())))
+            .build()
+    );
 
     public static <T> DeferredHolder<DataComponentType<?>, DataComponentType<T>> registerDataComponent(String name, Codec<T> codec) {
         return COMPONENTS.register(name, () -> DataComponentType.<T>builder().persistent(codec).build());
+    }
+
+    public static <T extends Item> @NotNull DeferredHolder<Item, T> registerItem(String name, Function<Item.Properties, T> init, int stacksTo) {
+        return ITEMS.register(name, () -> init.apply(new Item.Properties().stacksTo(stacksTo)));
+    }
+    public static <T extends Item> @NotNull DeferredHolder<Item, T> registerItem(String name, Function<Item.Properties, T> init, Supplier<Item.Properties> properties) {
+        return ITEMS.register(name, () -> init.apply(properties.get()));
+    }
+    public static <T extends AbstractMenu> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory) {
+        return registerMenu(name, factory, AbstractMenu.Screen<T>::new);
+    }
+    public static <T extends AbstractMenu, S extends AbstractContainerScreen<T>> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory, MenuScreens.ScreenConstructor<T, S> constructor) {
+        DeferredHolder<MenuType<?>, MenuType<T>> menu = MENUS.register(name, () -> IMenuTypeExtension.create(factory));
+        ClientSetup.registerScreen(menu, constructor);
+        return menu;
     }
 
     // Bots
@@ -62,33 +88,11 @@ public class NeoBots {
 
     // Items
     public static final DeferredHolder<Item, MemoryUpgradeItem> MEMORY_UPGRADE =
-            ITEMS.register("memory_upgrade", () ->
-                    new MemoryUpgradeItem(
-                            new Item.Properties().stacksTo(1)
-                    )
-            );
-
-    public static <T extends Item> @NotNull DeferredHolder<Item, T> registerItem(String name, Function<Item.Properties, T> init, int stacksTo) {
-        return ITEMS.register(name, () -> init.apply(new Item.Properties().stacksTo(stacksTo)));
-    }
-    public static <T extends Item> @NotNull DeferredHolder<Item, T> registerItem(String name, Function<Item.Properties, T> init, Supplier<Item.Properties> properties) {
-        return ITEMS.register(name, () -> init.apply(properties.get()));
-    }
+            registerItem("memory_upgrade", MemoryUpgradeItem::new, 16);
 
     // Menus
     public static final DeferredHolder<MenuType<?>, MenuType<NeoBotMenu>> NEOBOT_INVENTORY =
-            MENUS.register("neobot", () ->
-                    IMenuTypeExtension.create(NeoBotMenu::new)
-            );
-
-    public static <T extends AbstractMenu> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory) {
-        return registerMenu(name, factory, AbstractMenu.Screen<T>::new);
-    }
-    public static <T extends AbstractMenu, S extends AbstractContainerScreen<T>> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory, MenuScreens.ScreenConstructor<T, S> constructor) {
-        DeferredHolder<MenuType<?>, MenuType<T>> menu = MENUS.register(name, () -> IMenuTypeExtension.create(factory));
-        ClientSetup.registerScreen(menu, constructor);
-        return menu;
-    }
+            registerMenu("neobot_menu", NeoBotMenu::new);
 
     public NeoBots(IEventBus bus, ModContainer container) {
         MoveToModule.register();
@@ -99,6 +103,7 @@ public class NeoBots {
         ENTITIES.register(bus);
         ITEMS.register(bus);
         MENUS.register(bus);
+        CREATIVE_MODE_TABS.register(bus);
 
         bus.addListener(this::registerAttributes);
         bus.register(ClientSetup.class);

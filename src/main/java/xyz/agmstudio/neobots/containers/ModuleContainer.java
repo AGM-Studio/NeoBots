@@ -98,4 +98,8 @@ public class ModuleContainer extends BotFilteredContainer {
     @Override public int getActiveSlots() {
         return bot.getModuleCapacity();
     }
+
+    @Override public int getMaxStackSize() {
+        return 1;
+    }
 }

@@ -8,7 +8,6 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
-import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.robos.NeoBotRenderer;
 
 import java.util.ArrayList;
@@ -27,10 +26,7 @@ public class ClientSetup {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
-        for (ScreenEntry<?, ?> entry: SCREENS)
-            entry.register(event);
-
-        event.register(NeoBots.NEOBOT_INVENTORY.get(), AbstractMenu.Screen<NeoBotMenu>::new);
+        for (ScreenEntry<?, ?> entry: SCREENS) entry.register(event);
     }
 
     private record ScreenEntry<M extends AbstractMenu, S extends AbstractContainerScreen<M>>(DeferredHolder<MenuType<?>, MenuType<M>> menu, MenuScreens.ScreenConstructor<M, S> constructor) {
