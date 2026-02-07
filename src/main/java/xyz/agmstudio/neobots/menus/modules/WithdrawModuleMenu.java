@@ -1,5 +1,7 @@
 package xyz.agmstudio.neobots.menus.modules;
 
+import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.widget.IconButton;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -18,14 +20,16 @@ import xyz.agmstudio.neobots.modules.WithdrawModule;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
 public class WithdrawModuleMenu extends AbstractMenu {
-    private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 174);
+    private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 204);
 
     private final ItemStack moduleStack;
     private final SimpleContainer filterContainer;
     private final SlotGroupHolder filterHolder;
+    private final IconButton skipButton;
 
     // GUI Variables - Not synced!
     private int count;
+    public boolean skip = false;
 
     public WithdrawModuleMenu(int id, Inventory inv, FriendlyByteBuf ignored) {
         this(id, inv);
@@ -50,11 +54,12 @@ public class WithdrawModuleMenu extends AbstractMenu {
         WithdrawModule.DataComponent data = getComponent();
         data.filter().ifPresent(filter -> filterContainer.setItem(0, filter.copy()));
         count = data.count();
+        skip = false;  // TODO Save in the module
 
         filterHolder = SlotGroupHolder.of(this, new Slot(filterContainer, 0, 26, 48));
 
-        addPlayerInventoryTitle(8, 80);
-        addPlayerInventory(8, 92, moduleStack);
+        addPlayerInventoryTitle(8, 110);
+        addPlayerInventory(8, 122, moduleStack);
 
         // Setup GUI
         addScrollInput(51, 51, 96, 10).withRange(1, 577)
@@ -62,8 +67,13 @@ public class WithdrawModuleMenu extends AbstractMenu {
                 .titled(Component.literal("Count"))
                 .calling(value -> {
                     count = value;
-                    sendInventoryClickPacket(this.count);
+                    sendPacket(0, value);
                 });
+        skipButton = addIconButton(40, 80, AllIcons.I_SKIP_MISSING).withCallback(() -> {
+            skip = !skip;
+            sendPacket(0, skip);
+            updateIconButtons();
+        });
 
         addTitleCentered(4).withColor(0x582424);
         addLabel(s -> NeoBotsHelper.countAsStacks(count), 54, 52).withColor(0xffffff).withShadow();
@@ -76,6 +86,19 @@ public class WithdrawModuleMenu extends AbstractMenu {
                     .append(Component.literal(" (" + getPos().toShortString() + ")"));
         }
         addLabel(target, 30, 28).withColor(targetColor).withShadow();
+    }
+
+    @Override protected boolean isIconButtonActive(IconButton button) {
+        return button == skipButton && skip;
+    }
+    @Override public void handlePacket(int id, boolean value) {
+        skip = value;
+    }
+    @Override public void handlePacket(int id, int value) {
+        if (value < 1 || value > 576) return;
+
+        WithdrawModule.DataComponent component = getComponent().withCount(value);
+        moduleStack.set(WithdrawModule.COMPONENT.get(), component);
     }
 
     private WithdrawModule.DataComponent getComponent() {
@@ -125,14 +148,6 @@ public class WithdrawModuleMenu extends AbstractMenu {
 
         slot.onTake(player, stack);
         return copy;
-    }
-
-    @Override public boolean clickMenuButton(@NotNull Player player, int id) {
-        if (id < 1 || id > 64) return false;
-
-        WithdrawModule.DataComponent component = getComponent().withCount(id);
-        moduleStack.set(WithdrawModule.COMPONENT.get(), component);
-        return true;
     }
 
     @Override protected Texture getBackground() {

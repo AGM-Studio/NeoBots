@@ -1,6 +1,8 @@
 package xyz.agmstudio.neobots.menus;
 
+import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
+import net.createmod.catnip.gui.element.ScreenElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,12 +19,14 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroup;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
+import xyz.agmstudio.neobots.network.MenuPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +41,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
 
     protected final List<Consumer<Screen<?>>> onInitActions = new ArrayList<>();
     protected final List<Texture.Drawer> drawers = new ArrayList<>();
-    protected final List<WidgetFactory<AbstractWidget>> widgets = new ArrayList<>();
+    protected final List<WidgetHolder<?>> widgets = new ArrayList<>();
     protected final List<SlotGroup> slotGroups = new ArrayList<>();
     protected final List<SlotGroupHolder> slotHolders = new ArrayList<>();
     protected final List<Label> labels = new ArrayList<>();
@@ -98,11 +102,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
 
     protected ScrollInput addScrollInput(int x, int y, int w, int h) {
         ScrollInput input = new ScrollInput(x, y, w, h);
-        this.widgets.add(s -> {
-            input.setX(x + s.getGuiLeft());
-            input.setY(y + s.getGuiTop());
-            return input;
-        });
+        this.widgets.add(new WidgetHolder<>(input, x, y));
         return input;
     }
     protected Button addButton(String text, Button.OnPress onPress, int x, int y, int w, int h) {
@@ -110,12 +110,21 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     }
     protected Button addButton(Component text, Button.OnPress onPress, int x, int y, int w, int h) {
         Button button = Button.builder(text, onPress).pos(x, y).size(w, h).build();
-        this.widgets.add(s -> {
-            button.setX(x + s.getGuiLeft());
-            button.setY(y + s.getGuiTop());
-            return button;
-        });
+        this.widgets.add(new  WidgetHolder<>(button, x, y));
         return button;
+    }
+
+    protected IconButton addIconButton(int x, int y, ScreenElement element) {
+        IconButton button = new IconButton(x, y, element);
+        this.widgets.add(new WidgetHolder<>(button, x, y));
+        return button;
+    }
+    protected void updateIconButtons() {
+        for (WidgetHolder<?> widget: widgets)
+            if (widget.widget instanceof IconButton button) button.green = isIconButtonActive(button);
+    }
+    protected boolean isIconButtonActive(IconButton button) {
+        return false;
     }
 
     protected void addTextureDrawer(Texture.Drawer drawer) {
@@ -170,11 +179,25 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         }
 
     }
+    public static class WidgetHolder<T extends AbstractWidget> {
+        private final T widget;
+        public final int x;
+        public final int y;
 
-    public interface WidgetFactory<T extends AbstractWidget> {
-        T create(Screen<?> screen);
+        public WidgetHolder(T widget, int x, int y) {
+            this.widget = widget;
+            this.x = x;
+            this.y = y;
+        }
+        public T get() {
+            return widget;
+        }
+        public T init(Screen<?> screen) {
+            widget.setX(x + screen.getGuiLeft());
+            widget.setY(y + screen.getGuiTop());
+            return widget;
+        }
     }
-
     public static class Screen<T extends AbstractMenu> extends AbstractContainerScreen<T> {
         public Screen(T menu, Inventory inv, Component title) {
             super(menu, inv, title);
@@ -186,7 +209,8 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         @Override protected void init() {
             super.init();
 
-            menu.widgets.forEach(w -> addRenderableWidget(w.create(this)));
+            for (WidgetHolder<?> widget: menu.widgets) addRenderableWidget(widget.init(this));
+
             menu.onInitActions.forEach(c -> c.accept(this));
         }
 
@@ -225,5 +249,24 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         if (mode == null) return false;
         mode.handleInventoryButtonClick(containerId, value);
         return true;
+    }
+
+    // Packet Handlers
+    public void handlePacket(int id, int value) {}
+    public void handlePacket(int id, double value) {}
+    public void handlePacket(int id, boolean value) {}
+    public void handlePacket(int id, String value) {}
+
+    protected void sendPacket(int id, int value) {
+        PacketDistributor.sendToServer(new MenuPacket.IntegerPayload(id, value));
+    }
+    protected void sendPacket(int id, double value) {
+        PacketDistributor.sendToServer(new MenuPacket.DoublePayload(id, value));
+    }
+    protected void sendPacket(int id, boolean value) {
+        PacketDistributor.sendToServer(new MenuPacket.BooleanPayload(id, value));
+    }
+    protected void sendPacket(int id, String value) {
+        PacketDistributor.sendToServer(new MenuPacket.StringPayload(id, value));
     }
 }

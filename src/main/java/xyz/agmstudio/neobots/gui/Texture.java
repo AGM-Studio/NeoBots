@@ -1,5 +1,6 @@
 package xyz.agmstudio.neobots.gui;
 
+import net.createmod.catnip.gui.element.ScreenElement;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import xyz.agmstudio.neobots.NeoBots;
@@ -9,7 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.function.BiConsumer;
 
 @ParametersAreNonnullByDefault
-public class Texture {
+public class Texture implements ScreenElement {
     public final ResourceLocation texture;
     public final int sizeX, sizeY;
     public Texture(ResourceLocation texture, int sizeX, int sizeY) {
@@ -21,9 +22,13 @@ public class Texture {
         this(ResourceLocation.fromNamespaceAndPath(NeoBots.MOD_ID, texture), sizeX, sizeY);
     }
 
+    @Override public void render(GuiGraphics graphics, int x, int y) {
+        graphics.blit(texture, x, y, 0, 0, sizeX, sizeY, sizeX, sizeY);
+    }
+
     // --- Simple draw, 1:1 ---
     public void draw(GuiGraphics g, int x, int y) {
-        g.blit(texture, x, y, 0, 0, sizeX, sizeY, sizeX, sizeY);
+        render(g, x, y);
     }
     // --- Draw with scaling ---
     public void draw(GuiGraphics g, int x, int y, int width, int height) {
@@ -107,7 +112,6 @@ public class Texture {
             }
         }
     }
-
 
     public record Drawer(BiConsumer<AbstractMenu.Screen<?>, GuiGraphics> drawer, boolean drawBeforeBg) {
         public void draw(AbstractMenu.Screen<?> screen, GuiGraphics g) {

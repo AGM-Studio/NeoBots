@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.MenuType;
@@ -19,6 +20,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,7 @@ import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.DepositModule;
 import xyz.agmstudio.neobots.modules.MoveToModule;
 import xyz.agmstudio.neobots.modules.WithdrawModule;
+import xyz.agmstudio.neobots.network.NetworkHandler;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
@@ -94,6 +97,10 @@ public class NeoBots {
     public static final DeferredHolder<MenuType<?>, MenuType<NeoBotMenu>> NEOBOT_INVENTORY =
             registerMenu("neobot_menu", NeoBotMenu::new);
 
+    @Contract("_ -> new")
+    public static @NotNull ResourceLocation rl(String value) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, value);
+    }
     public NeoBots(IEventBus bus, ModContainer container) {
         MoveToModule.register();
         WithdrawModule.register();
@@ -105,9 +112,11 @@ public class NeoBots {
         MENUS.register(bus);
         CREATIVE_MODE_TABS.register(bus);
 
+        NetworkHandler.registerPackets(bus);
         bus.addListener(this::registerAttributes);
         bus.register(ClientSetup.class);
     }
+
 
     public void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(BOT_V0.get(), NeoBotEntity.createAttributes().build());
