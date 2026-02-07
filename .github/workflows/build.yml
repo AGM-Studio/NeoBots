@@ -20,7 +20,12 @@ jobs:
         with:
           tag_name: experimental-build
           name: Experimental Build
-          body: ⚠️ This is an automated release of latest changes. There might be issues and untested features.
+          body: |
+            ## ⚠️ **Experimental Build**
+            This is an automated release of the latest changes.
+            
+            > ⚠️ Features and changes in this build may be **unstable** or **untested**.
+            > Please use with caution and report any issues you encounter.
           files: build/libs/*.jar
           draft: false
           prerelease: false
