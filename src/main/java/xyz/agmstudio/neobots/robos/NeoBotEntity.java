@@ -3,6 +3,8 @@ package xyz.agmstudio.neobots.robos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -23,8 +25,12 @@ import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
+import xyz.agmstudio.neobots.utils.NeoEntityDataAccessor;
 
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
+    public static final NeoEntityDataAccessor<Component> TASK_STATUS =
+            new NeoEntityDataAccessor<>(NeoBotEntity.class, EntityDataSerializers.COMPONENT);
+
     // Attributes
     protected final static int UPGRADE_SLOTS        = 3;
     protected final static int BASE_MODULE_SLOTS    = 6;
@@ -104,6 +110,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void tick() {
         super.tick();
         if (level().isClientSide) return;
+        TASK_STATUS.set(this, task != null ? task.getStatus() : Component.empty());
         if (cooldownTicks > 0) {
             cooldownTicks--;
             return;
@@ -114,7 +121,10 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         }
         if (task == null) {
             task = moduleInventory.getTask();
-            if (task == null) return;
+            if (task == null) {
+                cooldownTicks += 20;
+                return;
+            }
         }
         if (task.hasJustStarted()) {
             task.onStart();
@@ -144,6 +154,11 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
         return new NeoBotMenu(id, inv, this);
+    }
+
+    @Override protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
+        TASK_STATUS.build(builder, task != null ? task.getStatus() : Component.empty());
+        super.defineSynchedData(builder);
     }
 
     // Data management

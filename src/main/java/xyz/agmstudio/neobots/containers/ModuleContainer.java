@@ -9,7 +9,7 @@ import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public class ModuleContainer extends BotFilteredContainer {
-    private int activeModuleIndex = 0;
+    private int activeModuleIndex = -1;
     private boolean moduleJustStarted = true;
 
     private boolean hasModules = false;
@@ -33,6 +33,7 @@ public class ModuleContainer extends BotFilteredContainer {
         return getTask();
     }
     public ModuleTask<?> getTask() {
+        if (activeModuleIndex < 0) return null;
         ItemStack stack = getItem(activeModuleIndex);
         if (!(stack.getItem() instanceof ModuleItem)) {
             if (!advance()) return null;
@@ -43,8 +44,11 @@ public class ModuleContainer extends BotFilteredContainer {
         if (moduleJustStarted) task.setJustStarted();
         return task;
     }
+    public ItemStack getModuleStack() {
+        return getItem(activeModuleIndex);
+    }
 
-    private boolean advance() {
+    public boolean advance() {
         int size = bot.getModuleCapacity();
         int index = -1;
         for (int i = 0; i < size; i++) {

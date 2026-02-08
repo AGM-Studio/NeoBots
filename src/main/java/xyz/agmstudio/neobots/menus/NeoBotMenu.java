@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
+import xyz.agmstudio.neobots.containers.slots.PreviewSlot;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
@@ -27,6 +28,7 @@ public class NeoBotMenu extends AbstractMenu {
     private final SlotGroupHolder moduleGroup;
     private final SlotGroupHolder upgradeGroup;
     private final SlotGroupHolder botInventoryGroup;
+    private final PreviewSlot modulePreviewSlot;
 
     private static NeoBotEntity captureBot(Level level, FriendlyByteBuf buf) {
         Entity entity = level.getEntity(buf.readInt());
@@ -51,8 +53,12 @@ public class NeoBotMenu extends AbstractMenu {
         addPlayerInventoryTitle(112, 100).centered().withColor(0x000000);
         addPlayerInventory(24, 116, 2, 5, 18);
 
+        modulePreviewSlot = new PreviewSlot(bot.getModuleInventory().getModuleStack(), 16, 27);
+        addSlot(modulePreviewSlot);
+
         // Setup GUI // Todo: SlotGroup Framing and shift click support.
         addLabel(s -> bot.getDisplayName(), 112, 4).withColor(0xffffff).withShadow().centered();
+        addLabel(s -> NeoBotEntity.TASK_STATUS.get(bot), 43, 31).withColor(0xffffff).withShadow();
         addLabel(Component.literal("Modules"), -112, 23).withColor(0x582424);
         addLabel(Component.literal("Upgrades"), 225, 23).withColor(0x582424);
         addTextureDrawer(SIMPLE_FRAME.frameDrawer(-116, 19, 128, 128, 3, 16, true, true));
@@ -104,6 +110,7 @@ public class NeoBotMenu extends AbstractMenu {
 
         activeModule.set(bot.getActiveModuleIndex());
         moduleCapacity.set(bot.getModuleCapacity());
+        modulePreviewSlot.set(bot.getModuleInventory().getModuleStack());
     }
 
     @Override protected Texture getBackground() {
