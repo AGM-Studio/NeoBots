@@ -1,5 +1,7 @@
 package xyz.agmstudio.neobots.menus;
 
+import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.widget.IconButton;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
@@ -19,9 +21,10 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
 
 public class NeoBotMenu extends AbstractMenu {
-    private static final Texture BG = new Texture("textures/gui/neobot.png", 224, 215);
+    private static final Texture BG = new Texture("textures/gui/neobot.png", 224, 226);
 
     private final NeoBotEntity bot;
+    protected final DataSlot botState = DataSlot.standalone();
     protected final DataSlot activeModule = DataSlot.standalone();
     protected final DataSlot moduleCapacity = DataSlot.standalone();
 
@@ -29,6 +32,10 @@ public class NeoBotMenu extends AbstractMenu {
     private final SlotGroupHolder upgradeGroup;
     private final SlotGroupHolder botInventoryGroup;
     private final PreviewSlot modulePreviewSlot;
+
+    private boolean active;
+    private final IconButton stop;
+    private final IconButton start;
 
     private static NeoBotEntity captureBot(Level level, FriendlyByteBuf buf) {
         Entity entity = level.getEntity(buf.readInt());
@@ -43,6 +50,7 @@ public class NeoBotMenu extends AbstractMenu {
         super(NeoBots.NEOBOT_INVENTORY.get(), id, inv);
         this.bot = bot;
 
+        addDataSlot(botState);
         addDataSlot(activeModule);
         addDataSlot(moduleCapacity);
 
@@ -50,11 +58,23 @@ public class NeoBotMenu extends AbstractMenu {
         upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2).withTexture(UPGRADE_SLOT_TEXTURE).build(this);
         botInventoryGroup = addSlotGroup(bot.getInventory(), 4, 7, 24, 64).build(this);
 
-        addPlayerInventoryTitle(112, 100).centered().withColor(0x000000);
-        addPlayerInventory(24, 116, 2, 5, 18);
+        addPlayerInventoryTitle(112, 215).centered().withColor(0x000000);
+        addPlayerInventory(24, 127, 2, 5, 18);
 
         modulePreviewSlot = new PreviewSlot(bot.getModuleInventory().getModuleStack(), 16, 27);
         addSlot(modulePreviewSlot);
+
+        stop = addIconButton(179, 100, AllIcons.I_STOP).withCallback(() -> {
+            sendPacket(0, false);
+            updateIconButtons();
+        });
+        start = addIconButton(201, 100, AllIcons.I_PLAY).withCallback(() -> {
+            sendPacket(0, true);
+            updateIconButtons();
+        });
+
+        addIconButton(151, 100, AllIcons.I_REFRESH).withCallback(() -> sendPacket(1, true));
+        updateIconButtons();
 
         // Setup GUI // Todo: SlotGroup Framing and shift click support.
         addLabel(s -> bot.getDisplayName(), 112, 4).withColor(0xffffff).withShadow().centered();
@@ -65,11 +85,25 @@ public class NeoBotMenu extends AbstractMenu {
         addTextureDrawer(SIMPLE_FRAME.frameDrawer(210, 19, 86, 128, 3, 16, true, true));
 
         // Offset the screen upward (GUI SCALE 4)
-        addInitListener(s -> s.offset(-20, -24));
+        addInitListener(s -> s.offset(-30, -24));
     }
 
-    @Override
-    public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
+    @Override public void handlePacket(int id, boolean value) {
+        if (id == 0) {
+            if (value) bot.setState(NeoBotEntity.State.RUNNING);
+            else bot.setState(NeoBotEntity.State.STOPPED);
+        } else if (id == 1 && value) {
+            bot.setActiveModule(0);
+        }
+    }
+
+    @Override protected void updateIconButtons() {
+        super.updateIconButtons();
+        stop.active = botState.get() == 1;
+        start.active = botState.get() != 1 && botState.get() != -1;
+    }
+
+    @Override public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
         Slot slot = slots.get(index);
         if (!slot.hasItem())
             return ItemStack.EMPTY;
@@ -108,6 +142,7 @@ public class NeoBotMenu extends AbstractMenu {
         super.broadcastChanges();
         if (bot == null || bot.level().isClientSide) return;
 
+        botState.set(bot.getState().getValue());
         activeModule.set(bot.getActiveModuleIndex());
         moduleCapacity.set(bot.getModuleCapacity());
         modulePreviewSlot.set(bot.getModuleInventory().getModuleStack());

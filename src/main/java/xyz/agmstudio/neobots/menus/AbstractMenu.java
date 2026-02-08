@@ -212,9 +212,8 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         @Override protected void init() {
             super.init();
 
-            for (WidgetHolder<?> widget: menu.widgets) addRenderableWidget(widget.init(this));
-
             menu.onInitActions.forEach(c -> c.accept(this));
+            for (WidgetHolder<?> widget: menu.widgets) addRenderableWidget(widget.init(this));
         }
 
         @Override public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {

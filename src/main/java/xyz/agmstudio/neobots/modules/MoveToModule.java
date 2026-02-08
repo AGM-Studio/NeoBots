@@ -65,6 +65,10 @@ public class MoveToModule extends ModuleItem<MoveToModule.Data, MoveToModule.Tas
         }
 
         @Override public void onStop() {
+            bot.getNavigation().stop();
+        }
+
+        @Override public void onFinish() {
             bot.level().playSound(null, bot.blockPosition(), AllSoundEvents.STEAM.getMainEventHolder().value(), SoundSource.NEUTRAL);
         }
 

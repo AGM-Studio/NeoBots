@@ -101,6 +101,8 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
 
         @Override public void onStop() {}
 
+        @Override public void onFinish() {}
+
         @Override public boolean isDone() {
             if (data.getTarget() == null) return true;
             return withdrawn >= data.getCount();

@@ -104,6 +104,8 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
 
         @Override public void onStop() {}
 
+        @Override public void onFinish() {}
+
         @Override public boolean isDone() {
             if (data.getTarget() == null) return true;
             return deposited >= data.getCount();

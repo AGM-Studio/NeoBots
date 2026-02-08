@@ -41,6 +41,7 @@ public abstract class ModuleTask<D extends ModuleData> {
 
     public abstract void onStart();
     public abstract void onStop();
+    public abstract void onFinish();
     public abstract boolean isDone();
     public abstract void tick();
     public abstract Component getStatus();

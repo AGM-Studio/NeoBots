@@ -19,6 +19,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.containers.InventoryContainer;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
@@ -30,6 +31,24 @@ import xyz.agmstudio.neobots.utils.NeoEntityDataAccessor;
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     public static final NeoEntityDataAccessor<Component> TASK_STATUS =
             new NeoEntityDataAccessor<>(NeoBotEntity.class, EntityDataSerializers.COMPONENT);
+
+    public enum State {
+        LOADING(-1), STOPPED(0), RUNNING(1), CRASHED(2);
+        private final int value;
+
+        State(int value) {
+            this.value = value;
+        }
+        public int getValue() {
+            return value;
+        }
+    }
+    public static class BotCrash extends Exception {
+        public final Component message;
+        public BotCrash(Component message) {
+            this.message = message;
+        }
+    }
 
     // Attributes
     protected final static int UPGRADE_SLOTS        = 3;
@@ -44,6 +63,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     private int cooldownTicks = 0;
     private boolean onCooldown = false;
+    private State state = State.LOADING;
 
     private ModuleTask<?> task = null;
     private CompoundTag taskData = null;
@@ -79,6 +99,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     }
     public void setActiveModule(int index) {
         moduleInventory.setActiveModuleIndex(index);
+        task = moduleInventory.getTask();
     }
 
     public ModuleTask<?> getTask() {
@@ -91,6 +112,18 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         return taskData;
     }
 
+    public State getState() {
+        return state;
+    }
+    public void setState(State state) {
+        this.state = state;
+        updateStatus();
+        if (state == State.STOPPED) {
+            task.onStop();
+            task = null;
+        }
+    }
+
     public NeoBotEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
     }
@@ -98,9 +131,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public boolean canBeLeashed() {
         return false;
     }
-
-    @Override
-    public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
+    @Override public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         if (!level().isClientSide && player instanceof ServerPlayer sp)
             sp.openMenu(this, buf -> buf.writeInt(this.getId()));
 
@@ -109,8 +140,12 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide) return;
-        TASK_STATUS.set(this, task != null ? task.getStatus() : Component.empty());
+        if (level().isClientSide || state != State.RUNNING) return;
+        tickModules();
+        updateStatus();
+    }
+
+    private void tickModules() {
         if (cooldownTicks > 0) {
             cooldownTicks--;
             return;
@@ -133,7 +168,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
         task.tick();
         if (task.isDone()) {
-            task.onStop();
+            task.onFinish();
             cooldownTicks = task.getCooldown();
             onCooldown = true;
         }
@@ -157,8 +192,19 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     }
 
     @Override protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
-        TASK_STATUS.build(builder, task != null ? task.getStatus() : Component.empty());
         super.defineSynchedData(builder);
+        TASK_STATUS.build(builder, Component.translatable("state.neobots.loading"));
+    }
+
+    private void updateStatus() {
+        Component status;
+        if (state == State.LOADING) status = Component.translatable("state.neobots.loading");
+        else if (state == State.STOPPED) status = Component.translatable("state.neobots.stopped");
+        else if (state == State.CRASHED) status = Component.translatable("state.neobots.crashed").withColor(0xff0000);
+        else if (cooldownTicks > 0) status =  Component.translatable("state.neobots.cooldown");
+        else if (task == null) status = Component.translatable("state.neobots.idle");
+        else status = task.getStatus();
+        TASK_STATUS.set(this, status);
     }
 
     // Data management
@@ -171,6 +217,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
         tag.putInt("Cooldown", cooldownTicks);
         tag.putBoolean("OnCooldown", onCooldown);
+        tag.putInt("State", state.getValue());
 
         if (task == null) return;
         CompoundTag taskTag = task.save();
@@ -187,11 +234,19 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
         cooldownTicks = tag.getInt("Cooldown");
         onCooldown = tag.getBoolean("OnCooldown");
+        int state = tag.getInt("State");
+        switch (state) {
+            case 0: setState(State.STOPPED); break;
+            case 1: setState(State.RUNNING); break;
+            default: setState(State.CRASHED); break;
+        }
 
         taskData = tag.getCompound("Task");
 
         recalculateInventoryCapacity();
         recalculateModuleCapacity();
+
+        NeoBots.LOGGER.info("NeoBot Load Complete: {}", state);
     }
 
     public void recalculateModuleCapacity() {
