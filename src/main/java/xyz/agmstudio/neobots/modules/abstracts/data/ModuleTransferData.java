@@ -1,14 +1,19 @@
 package xyz.agmstudio.neobots.modules.abstracts.data;
 
+import com.simibubi.create.content.logistics.filter.FilterItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.ArrayList;
 import java.util.List;
 
 @ParametersAreNonnullByDefault
@@ -60,17 +65,22 @@ public abstract class ModuleTransferData extends ModuleBlockPosData {
     @Override public int getCooldown() {
         return 50;
     }
-    @Override public void addTooltip(List<Component> tooltip) {
+    @Override public void addTooltip(List<Component> tooltip, Item.@NotNull TooltipContext ctx, @NotNull TooltipFlag flags) {
         String trans = "module.neobots." + getTranslateKey() + ".tooltip.";
-        tooltip.add(Component.translatable(trans + "title").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable(trans + "count", count).withStyle(ChatFormatting.AQUA));
         if (target != null) tooltip.add(Component.translatable(trans + "target", target.toShortString()).withStyle(ChatFormatting.AQUA));
         else tooltip.add(Component.translatable(trans + "no_target").withStyle(ChatFormatting.RED));
+        if (skip) tooltip.add(Component.translatable(trans + "skip").withStyle(ChatFormatting.GRAY));
         if (!filter.isEmpty()) {
-            tooltip.add(Component.translatable(trans + "filter").withStyle(ChatFormatting.GRAY));
-            tooltip.add(filter.getHoverName().copy().withStyle(ChatFormatting.YELLOW));
-        } else
-            tooltip.add(Component.translatable(trans + "no_filter").withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.translatable(trans + "filter").withStyle(ChatFormatting.GRAY).append(filter.getHoverName().copy().withStyle(ChatFormatting.YELLOW)));
+            if (filter.getItem() instanceof FilterItem filterItem) {
+                List<Component> filterTooltip = new ArrayList<>();
+                filterItem.appendHoverText(filter, ctx, filterTooltip, flags);
+                if (!filterTooltip.isEmpty()) filterTooltip.removeFirst();
+                for (Component line: filterTooltip)
+                    tooltip.add(Component.literal("  ").append(line.copy()));
+            }
+        } else tooltip.add(Component.translatable(trans + "no_filter").withStyle(ChatFormatting.DARK_GRAY));
     }
 
     protected abstract String getTranslateKey();

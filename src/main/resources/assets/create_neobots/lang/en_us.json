@@ -1,15 +1,19 @@
 {
-  "module.neobots.deposit.tooltip.title": "Deposit:",
+  "module.neobots.move_to.tooltip.description": "Orders to the bot to move to the selected position.",
+
+  "module.neobots.deposit.tooltip.description": "Orders to the bot to take matching items from _its inventory_ and store them in _the container_.",
   "module.neobots.deposit.tooltip.count": "• Count: %d",
   "module.neobots.deposit.tooltip.target": "• To: %s",
   "module.neobots.deposit.tooltip.no_target": "• To: Right Click on a Container",
+  "module.neobots.deposit.tooltip.skip": "• Skip if no item is possible to be delivered",
   "module.neobots.deposit.tooltip.filter": "• Filter: ",
   "module.neobots.deposit.tooltip.no_filter": "• Filter: Any",
 
-  "module.neobots.withdraw.tooltip.title": "Withdraw:",
+  "module.neobots.withdraw.tooltip.description": "Orders to the bot to take matching items from _the container_ and store them in _its inventory_.",
   "module.neobots.withdraw.tooltip.count": "• Count: %d",
   "module.neobots.withdraw.tooltip.target": "• From: %s",
   "module.neobots.withdraw.tooltip.no_target": "• From: Right Click on a Container",
+  "module.neobots.withdraw.tooltip.skip": "• Skip if no item is possible to be delivered",
   "module.neobots.withdraw.tooltip.filter": "• Filter: ",
   "module.neobots.withdraw.tooltip.no_filter": "• Filter: Any"
 }

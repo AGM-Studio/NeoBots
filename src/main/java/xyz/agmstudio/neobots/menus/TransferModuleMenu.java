@@ -21,6 +21,7 @@ public abstract class TransferModuleMenu<D extends ModuleTransferData> extends A
 
     private final D data;
     private final ItemStack module;
+    private final FilterSlot filterSlot;
     private final SlotGroupHolder filterHolder;
     private final IconButton skipButton;
 
@@ -35,7 +36,7 @@ public abstract class TransferModuleMenu<D extends ModuleTransferData> extends A
         this.count = this.data.getCount();
         this.skip = this.data.getSkip();
 
-        FilterSlot filterSlot = new FilterSlot(data.getFilter(), 26, 48, this::updateFilter);
+        this.filterSlot = new FilterSlot(data.getFilter(), 26, 48, this::updateFilter);
         this.filterHolder = SlotGroupHolder.of(this, filterSlot);
 
         addPlayerInventoryTitle(8, 110);
@@ -111,12 +112,10 @@ public abstract class TransferModuleMenu<D extends ModuleTransferData> extends A
         SlotGroupHolder source = findGroup(index);
         if (source == null) return ItemStack.EMPTY;
 
-        boolean moved;
-        if (source == filterHolder) moved = moveTo(playerInventoryGroup, stack, true);
-        else if (source == playerInventoryGroup) moved = moveTo(filterHolder, stack, false);
+        if (source == filterHolder && filterSlot.hasItem()) filterSlot.set(ItemStack.EMPTY);
+        else if (source == playerInventoryGroup && !filterSlot.hasItem()) filterSlot.set(stack.copy());
         else return ItemStack.EMPTY;
 
-        if (!moved) return ItemStack.EMPTY;
         if (stack.isEmpty()) slot.set(ItemStack.EMPTY);
         else slot.setChanged();
 

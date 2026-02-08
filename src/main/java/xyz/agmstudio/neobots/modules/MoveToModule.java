@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -29,8 +30,8 @@ public class MoveToModule extends ModuleItem<MoveToModule.Data, MoveToModule.Tas
 
 
     public MoveToModule(Properties props) {
-            super(props, Task::new, Data::new);
-        }
+        super("move_to", props, Task::new, Data::new);
+    }
 
     @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
         if (ctx.getLevel().isClientSide)
@@ -109,7 +110,7 @@ public class MoveToModule extends ModuleItem<MoveToModule.Data, MoveToModule.Tas
             return 50;
         }
 
-        @Override public void addTooltip(@NotNull List<Component> tooltip) {
+        @Override public void addTooltip(@NotNull List<Component> tooltip, @NotNull TooltipContext ctx, @NotNull TooltipFlag flags) {
             if (target != null) {
                 tooltip.add(Component.literal("Target:").withStyle(ChatFormatting.GRAY));
                 tooltip.add(Component.literal(target.toShortString()).withStyle(ChatFormatting.AQUA));

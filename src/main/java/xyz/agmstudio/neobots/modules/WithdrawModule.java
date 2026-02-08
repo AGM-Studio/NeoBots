@@ -33,7 +33,7 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
     private static final int REACH_SQR = 4;
 
     public WithdrawModule(Properties props) {
-        super(props, (bot, stack) -> new Task(bot, stack, REACH_SQR), Data::new);
+        super("withdraw", props, (bot, stack) -> new Task(bot, stack, REACH_SQR), Data::new);
     }
 
     @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {

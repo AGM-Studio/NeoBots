@@ -1,6 +1,9 @@
 package xyz.agmstudio.neobots.modules.abstracts;
 
+import com.simibubi.create.foundation.item.TooltipHelper;
+import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 
 public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> extends Item {
+    private final String key;
     private final ModuleTask.Gen<D, T> taskGenerator;
     private final ModuleData.Gen<D> dataGenerator;
 
@@ -21,8 +25,9 @@ public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> 
         return stack.getItem() instanceof ModuleItem;
     }
 
-    public ModuleItem(Properties properties, ModuleTask.Gen<D, T> taskGenerator, ModuleData.Gen<D> dataGenerator) {
+    public ModuleItem(String key, Properties properties, ModuleTask.Gen<D, T> taskGenerator, ModuleData.Gen<D> dataGenerator) {
         super(properties);
+        this.key = key;
         this.taskGenerator = taskGenerator;
         this.dataGenerator = dataGenerator;
     }
@@ -40,7 +45,18 @@ public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> 
         return dataGenerator.generate(level, stack);
     }
 
+    public @NotNull Component getModuleDescription() {
+        return Component.translatable("module.neobots." + key + ".tooltip.description");
+    }
+    public @NotNull FontHelper.Palette getPalette() {
+        return FontHelper.Palette.GRAY_AND_GOLD;
+    }
+
     @Override public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext ctx, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
-        getData(ctx.level(), stack).addTooltip(tooltip);
+        tooltip.add(TooltipHelper.holdShift(FontHelper.Palette.GRAY_AND_BLUE, false));
+        tooltip.add(CommonComponents.SPACE);
+        if (flags.hasShiftDown())
+            tooltip.addAll(FontHelper.cutTextComponent(getModuleDescription(), FontHelper.Palette.GRAY_AND_BLUE));
+        else getData(ctx.level(), stack).addTooltip(tooltip, ctx, flags);
     }
 }
