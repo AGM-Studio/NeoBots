@@ -21,7 +21,7 @@ import xyz.agmstudio.neobots.containers.InventoryContainer;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
-import xyz.agmstudio.neobots.modules.BotTask;
+import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
@@ -39,7 +39,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private int cooldownTicks = 0;
     private boolean onCooldown = false;
 
-    private BotTask task = null;
+    private ModuleTask<?> task = null;
     private CompoundTag taskData = null;
 
     private final InventoryContainer inventory = new InventoryContainer(this, MAX_INVENTORY_SLOTS);
@@ -75,7 +75,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         moduleInventory.setActiveModuleIndex(index);
     }
 
-    public BotTask getTask() {
+    public ModuleTask<?> getTask() {
         return task;
     }
     public void reloadTask() {
@@ -114,6 +114,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         }
         if (task == null) {
             task = moduleInventory.getTask();
+            if (task == null) return;
         }
         if (task.hasJustStarted()) {
             task.onStart();
@@ -133,7 +134,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         return PathfinderMob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 5.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
-                .add(Attributes.FOLLOW_RANGE, 64.0D);
+                .add(Attributes.FOLLOW_RANGE, 128.0D);
     }
 
     // Menu

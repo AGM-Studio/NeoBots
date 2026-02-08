@@ -1,21 +1,24 @@
-package xyz.agmstudio.neobots.modules;
+package xyz.agmstudio.neobots.modules.abstracts;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
-public abstract class BotTask {
+public abstract class ModuleTask<D extends ModuleData> {
+    public interface Gen<D extends ModuleData, T> {
+        T generate(NeoBotEntity bot, D data);
+    }
+
     protected final NeoBotEntity bot;
-    protected final ItemStack stack;
     protected final String id;
+    protected final D data;
 
     private boolean dirty = false;
     private boolean justStarted = false;
 
-    public BotTask(NeoBotEntity bot, ItemStack stack) {
+    public ModuleTask(NeoBotEntity bot, D data) {
         this.bot = bot;
-        this.stack = stack;
+        this.data = data;
         this.id = getType() + "_" + bot.getActiveModuleIndex();
     }
     public CompoundTag save() {
@@ -42,7 +45,7 @@ public abstract class BotTask {
     public abstract Component getStatus();
 
     public int getCooldown() {
-        return stack.getItem() instanceof BotModuleItem<?> module ? module.getCooldown(bot, stack) : 50;
+        return data.getCooldown();
     }
 
     public void setJustStarted() {

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
-import xyz.agmstudio.neobots.modules.BotModuleItem;
+import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
 
@@ -81,7 +81,7 @@ public class NeoBotMenu extends AbstractMenu {
             moved = moveTo(playerInventoryGroup, stack, true);
 
         } else if (from == playerInventoryGroup) {
-            if (BotModuleItem.isModule(stack)) moved = moveTo(moduleGroup, stack, false);
+            if (ModuleItem.isModule(stack)) moved = moveTo(moduleGroup, stack, false);
             else if (BotUpgradeItem.isUpgrade(stack)) moved = moveTo(upgradeGroup, stack, false);
             else moved = moveTo(botInventoryGroup, stack, false);
         } else return ItemStack.EMPTY;

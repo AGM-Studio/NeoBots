@@ -4,8 +4,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.modules.BotModuleItem;
-import xyz.agmstudio.neobots.modules.BotTask;
+import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
+import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public class ModuleContainer extends BotFilteredContainer {
@@ -28,18 +28,18 @@ public class ModuleContainer extends BotFilteredContainer {
         moduleJustStarted = true;
     }
 
-    public BotTask nextTask() {
+    public ModuleTask<?> nextTask() {
         advance();
         return getTask();
     }
-    public BotTask getTask() {
+    public ModuleTask<?> getTask() {
         ItemStack stack = getItem(activeModuleIndex);
-        if (!(stack.getItem() instanceof BotModuleItem)) {
+        if (!(stack.getItem() instanceof ModuleItem)) {
             if (!advance()) return null;
             stack = getItem(activeModuleIndex);
         }
-        BotModuleItem<?> module = (BotModuleItem<?>) stack.getItem();
-        BotTask task = module.getTask(bot, stack);
+        ModuleItem<?, ?> module = (ModuleItem<?, ?>) stack.getItem();
+        ModuleTask<?> task = module.getTask(bot, stack);
         if (moduleJustStarted) task.setJustStarted();
         return task;
     }
@@ -49,7 +49,7 @@ public class ModuleContainer extends BotFilteredContainer {
         int index = -1;
         for (int i = 0; i < size; i++) {
             int idx = (activeModuleIndex + i + 1) % size;
-            if (getItem(idx).getItem() instanceof BotModuleItem) {
+            if (getItem(idx).getItem() instanceof ModuleItem) {
                 index = idx;
                 break;
             }
@@ -67,7 +67,7 @@ public class ModuleContainer extends BotFilteredContainer {
         super.setChanged();
         hasModules = false;
         for (ItemStack stack: getItems()) {
-            if (stack.getItem() instanceof BotModuleItem) {
+            if (stack.getItem() instanceof ModuleItem) {
                 hasModules = true;
                 break;
             }
@@ -92,7 +92,7 @@ public class ModuleContainer extends BotFilteredContainer {
     }
 
     @Override public boolean isItemValid(ItemStack stack) {
-        return BotModuleItem.isModule(stack);
+        return ModuleItem.isModule(stack);
     }
 
     @Override public int getActiveSlots() {

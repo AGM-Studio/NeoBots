@@ -2,16 +2,13 @@ package xyz.agmstudio.neobots.menus.modules;
 
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
@@ -22,22 +19,20 @@ import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 public class WithdrawModuleMenu extends AbstractMenu {
     private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 204);
 
-    private final ItemStack moduleStack;
+    private final WithdrawModule.Data data;
     private final SimpleContainer filterContainer;
     private final SlotGroupHolder filterHolder;
     private final IconButton skipButton;
 
     // GUI Variables - Not synced!
     private int count;
-    public boolean skip = false;
+    public boolean skip;
 
     public WithdrawModuleMenu(int id, Inventory inv, FriendlyByteBuf ignored) {
         this(id, inv);
     }
     public WithdrawModuleMenu(int id, Inventory inv) {
         super(WithdrawModule.MENU.get(), id, inv);
-
-        this.moduleStack = inv.player.getMainHandItem();
         this.filterContainer = new SimpleContainer(1) {
             @Override public int getMaxStackSize() {
                 return 1;
@@ -47,29 +42,29 @@ public class WithdrawModuleMenu extends AbstractMenu {
             }
             @Override public void setChanged() {
                 super.setChanged();
-                updateComponentFromSlot();
+                updateFilter();
             }
         };
 
-        WithdrawModule.DataComponent data = getComponent();
-        data.filter().ifPresent(filter -> filterContainer.setItem(0, filter.copy()));
-        count = data.count();
-        skip = false;  // TODO Save in the module
+        data = new WithdrawModule.Data(inv.player.level(), inv.player.getMainHandItem());
+        if (!data.getFilter().isEmpty()) filterContainer.setItem(0, data.getFilter().copy());
+        count = data.getCount();
+        skip = data.getSkip();
 
         filterHolder = SlotGroupHolder.of(this, new Slot(filterContainer, 0, 26, 48));
 
         addPlayerInventoryTitle(8, 110);
-        addPlayerInventory(8, 122, moduleStack);
+        addPlayerInventory(8, 122, data.getStack());
 
         // Setup GUI
         addScrollInput(51, 51, 96, 10).withRange(1, 577)
-                .setState(getCount())
+                .setState(data.getCount())
                 .titled(Component.literal("Count"))
                 .calling(value -> {
                     count = value;
                     sendPacket(0, value);
                 });
-        skipButton = addIconButton(40, 80, AllIcons.I_SKIP_MISSING).withCallback(() -> {
+        skipButton = addIconButton(40, 79, AllIcons.I_SKIP_MISSING).withCallback(() -> {
             skip = !skip;
             sendPacket(0, skip);
             updateIconButtons();
@@ -80,10 +75,10 @@ public class WithdrawModuleMenu extends AbstractMenu {
 
         int targetColor = 0xcc0000;
         Component target = Component.literal("Right click to set target");
-        if (getPos() != null) {
+        if (data.getTarget() != null) {
             targetColor = 0xffffff;
-            target = inventory.player.level().getBlockState(getPos()).getBlock().getName()
-                    .append(Component.literal(" (" + getPos().toShortString() + ")"));
+            target = inventory.player.level().getBlockState(data.getTarget()).getBlock().getName()
+                    .append(Component.literal(" (" + data.getTarget().toShortString() + ")"));
         }
         addLabel(target, 30, 28).withColor(targetColor).withShadow();
     }
@@ -92,38 +87,22 @@ public class WithdrawModuleMenu extends AbstractMenu {
         return button == skipButton && skip;
     }
     @Override public void handlePacket(int id, boolean value) {
-        skip = value;
+        data.setSkip(value);
+        data.save();
     }
     @Override public void handlePacket(int id, int value) {
         if (value < 1 || value > 576) return;
-
-        WithdrawModule.DataComponent component = getComponent().withCount(value);
-        moduleStack.set(WithdrawModule.COMPONENT.get(), component);
+        data.setCount(value);
+        data.save();
     }
-
-    private WithdrawModule.DataComponent getComponent() {
-        return WithdrawModule.DataComponent.extract(moduleStack != null ? moduleStack : inventory.player.getMainHandItem());
-    }
-
-    private void updateComponentFromSlot() {
+    private void updateFilter() {
         ItemStack filter = filterContainer.getItem(0);
-
-        WithdrawModule.DataComponent component = getComponent().withFilter(filter);
-        moduleStack.set(WithdrawModule.COMPONENT.get(), component);
-    }
-
-    public int getCount() {
-        return getComponent().count();
-    }
-    public BlockPos getPos() {
-        return getComponent().source().orElse(null);
-    }
-    public ResourceKey<Level> getDimension() {
-        return getComponent().dimension().orElse(null);
+        data.setFilter(filter);
+        data.save();
     }
 
     @Override public boolean stillValid(@NotNull Player player) {
-        return player.getMainHandItem() == moduleStack || player.getOffhandItem() == moduleStack;
+        return player.getMainHandItem() == data.getStack() || player.getOffhandItem() == data.getStack();
     }
 
     @Override public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
@@ -133,7 +112,7 @@ public class WithdrawModuleMenu extends AbstractMenu {
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
 
-        if (stack == moduleStack) return ItemStack.EMPTY;
+        if (stack == data.getStack()) return ItemStack.EMPTY;
         SlotGroupHolder source = findGroup(index);
         if (source == null) return ItemStack.EMPTY;
 
