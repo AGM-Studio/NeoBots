@@ -3,6 +3,7 @@ package xyz.agmstudio.neobots.modules;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
@@ -17,18 +18,16 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.menus.modules.DepositModuleMenu;
+import xyz.agmstudio.neobots.menus.TransferModuleMenu;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleBlockPosData;
+import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
-import java.util.List;
-
 public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.Task> implements MenuProvider {
     public static DeferredHolder<Item, DepositModule> ITEM = NeoBots.registerItem("deposit_module", DepositModule::new, 1);
-    public static DeferredHolder<MenuType<?>, MenuType<DepositModuleMenu>> MENU = NeoBots.registerMenu("deposit_menu", DepositModuleMenu::new);
+    public static DeferredHolder<MenuType<?>, MenuType<Menu>> MENU = NeoBots.registerMenu("deposit_menu", Menu::new);
     public static void register() {}
 
     private static final int REACH_SQR = 4;
@@ -70,7 +69,7 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
     }
 
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
-        return new DepositModuleMenu(id, inv);
+        return new Menu(id, inv);
     }
 
     public static class Task extends ModuleTask<Data> {
@@ -113,76 +112,31 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
         @Override public void tick() {
             if (bot.level().isClientSide) return;
             Container container = data.getContainer(bot, reach);
-            if (container == null || deposited >= data.count) return;
+            if (container == null || deposited >= data.getCount()) return;
 
-            int remaining = data.count - deposited;
-            int moved = NeoBotsHelper.moveItems(bot.level(), bot.getInventory(), container, data.filter, remaining);
+            int remaining = data.getCount() - deposited;
+            int moved = NeoBotsHelper.moveItems(bot.level(), bot.getInventory(), container, data.getFilter(), remaining);
             if (moved > 0) setDeposited(deposited + moved);
         }
 
         @Override public Component getStatus() {
-            return Component.literal("Depositing (" + deposited + "/" + data.count + ")").withStyle(ChatFormatting.YELLOW);
+            return Component.literal("Depositing (" + deposited + "/" + data.getCount() + ")").withStyle(ChatFormatting.YELLOW);
         }
     }
-    public static class Data extends ModuleBlockPosData {
-        private int count;
-        private ItemStack filter = ItemStack.EMPTY;
-        private boolean skip;
-
+    public static class Data extends ModuleTransferData {
         public Data(Level level, @NotNull ItemStack stack) {
             super(level, stack);
-            this.count = Math.max(1, tag.getInt("count"));
-            this.skip = tag.getBoolean("skip");
-            if (tag.contains("filter"))
-                this.filter = ItemStack.parseOptional(level.registryAccess(), tag.getCompound("filter"));
         }
-
-        public int getCount() {
-            return count;
+        @Override protected String getTranslateKey() {
+            return "deposit";
         }
-        public void setCount(int count) {
-            this.count = Math.max(1, count);
-            tag.putInt("count", this.count);
+    }
+    public static class Menu extends TransferModuleMenu<Data> {
+        public Menu(int id, Inventory inv, FriendlyByteBuf buf) {
+            this(id, inv);
         }
-
-        public ItemStack getFilter() {
-            return filter;
-        }
-        public void setFilter(ItemStack filter) {
-            this.filter = filter != null ? filter : ItemStack.EMPTY;
-            if (this.filter.isEmpty()) tag.remove("filter");
-            else tag.put("filter", this.filter.save(level.registryAccess()));
-        }
-
-        public boolean getSkip() {
-            return skip;
-        }
-        public void setSkip(boolean skip) {
-            this.skip = skip;
-            tag.putBoolean("skip", this.skip);
-        }
-
-        public Container getContainer(NeoBotEntity bot, double reach) {
-            if (target == null || !isSameDimension(bot.level().dimension())) return null;
-            if (target.distSqr(bot.blockPosition()) > reach) return null;
-            if (bot.level().getBlockEntity(target) instanceof Container container) return container;
-            return null;
-        }
-
-        @Override public int getCooldown() {
-            return 50;
-        }
-
-        @Override public void addTooltip(@NotNull List<Component> tooltip) {
-            tooltip.add(Component.literal("Deposit:").withStyle(ChatFormatting.GRAY));
-            tooltip.add(Component.literal("• Count: " + count).withStyle(ChatFormatting.AQUA));
-            if (target != null) tooltip.add(Component.literal("• To: " + target.toShortString()).withStyle(ChatFormatting.AQUA));
-            else tooltip.add(Component.literal("• To: Right click on a container to set").withStyle(ChatFormatting.RED));
-            if (!filter.isEmpty()) {
-                tooltip.add(Component.literal("• Filter:").withStyle(ChatFormatting.GRAY));
-                tooltip.add(filter.getHoverName().copy().withStyle(ChatFormatting.YELLOW));
-            } else
-                tooltip.add(Component.literal("• Filter: Any").withStyle(ChatFormatting.DARK_GRAY));
+        public Menu(int id, Inventory inv) {
+            super(MENU.get(), id, inv, new Data(inv.player.level(), inv.player.getMainHandItem()));
         }
     }
 }

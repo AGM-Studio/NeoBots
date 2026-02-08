@@ -1,25 +1,24 @@
-package xyz.agmstudio.neobots.menus.modules;
+package xyz.agmstudio.neobots.menus;
 
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
-import xyz.agmstudio.neobots.menus.AbstractMenu;
-import xyz.agmstudio.neobots.modules.WithdrawModule;
+import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
-public class WithdrawModuleMenu extends AbstractMenu {
+public abstract class TransferModuleMenu<D extends ModuleTransferData> extends AbstractMenu {
     private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 204);
 
-    private final WithdrawModule.Data data;
+    private final D data;
     private final SimpleContainer filterContainer;
     private final SlotGroupHolder filterHolder;
     private final IconButton skipButton;
@@ -28,11 +27,8 @@ public class WithdrawModuleMenu extends AbstractMenu {
     private int count;
     public boolean skip;
 
-    public WithdrawModuleMenu(int id, Inventory inv, FriendlyByteBuf ignored) {
-        this(id, inv);
-    }
-    public WithdrawModuleMenu(int id, Inventory inv) {
-        super(WithdrawModule.MENU.get(), id, inv);
+    public TransferModuleMenu(MenuType<?> menu, int id, Inventory inv, D data) {
+        super(menu, id, inv);
         this.filterContainer = new SimpleContainer(1) {
             @Override public int getMaxStackSize() {
                 return 1;
@@ -46,23 +42,23 @@ public class WithdrawModuleMenu extends AbstractMenu {
             }
         };
 
-        data = new WithdrawModule.Data(inv.player.level(), inv.player.getMainHandItem());
-        if (!data.getFilter().isEmpty()) filterContainer.setItem(0, data.getFilter().copy());
-        count = data.getCount();
-        skip = data.getSkip();
+        this.data = data;
+        if (!this.data.getFilter().isEmpty()) filterContainer.setItem(0, this.data.getFilter().copy());
+        this.count = this.data.getCount();
+        this.skip = this.data.getSkip();
 
         filterHolder = SlotGroupHolder.of(this, new Slot(filterContainer, 0, 26, 48));
 
         addPlayerInventoryTitle(8, 110);
-        addPlayerInventory(8, 122, data.getStack());
+        addPlayerInventory(8, 122, this.data.getStack());
 
         // Setup GUI
         addScrollInput(51, 51, 96, 10).withRange(1, 577)
-                .setState(data.getCount())
+                .setState(this.data.getCount())
                 .titled(Component.literal("Count"))
                 .calling(value -> {
                     count = value;
-                    sendPacket(0, value);
+                    sendPacket(0, count);
                 });
         skipButton = addIconButton(40, 79, AllIcons.I_SKIP_MISSING).withCallback(() -> {
             skip = !skip;
@@ -75,10 +71,10 @@ public class WithdrawModuleMenu extends AbstractMenu {
 
         int targetColor = 0xcc0000;
         Component target = Component.literal("Right click to set target");
-        if (data.getTarget() != null) {
+        if (this.data.getTarget() != null) {
             targetColor = 0xffffff;
-            target = inventory.player.level().getBlockState(data.getTarget()).getBlock().getName()
-                    .append(Component.literal(" (" + data.getTarget().toShortString() + ")"));
+            target = inventory.player.level().getBlockState(this.data.getTarget()).getBlock().getName()
+                    .append(Component.literal(" (" + this.data.getTarget().toShortString() + ")"));
         }
         addLabel(target, 30, 28).withColor(targetColor).withShadow();
     }

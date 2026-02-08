@@ -2,6 +2,7 @@ package xyz.agmstudio.neobots.modules.abstracts;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public abstract class ModuleTask<D extends ModuleData> {

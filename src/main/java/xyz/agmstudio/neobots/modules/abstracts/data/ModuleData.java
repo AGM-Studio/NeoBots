@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.modules.abstracts;
+package xyz.agmstudio.neobots.modules.abstracts.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

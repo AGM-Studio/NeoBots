@@ -29,7 +29,7 @@ import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.DepositModule;
 import xyz.agmstudio.neobots.modules.MoveToModule;
 import xyz.agmstudio.neobots.modules.WithdrawModule;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleData;
+import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.network.NetworkHandler;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;

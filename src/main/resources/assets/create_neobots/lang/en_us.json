@@ -1,0 +1,15 @@
+{
+  "module.neobots.deposit.tooltip.title": "Deposit:",
+  "module.neobots.deposit.tooltip.count": "• Count: %d",
+  "module.neobots.deposit.tooltip.target": "• To: %s",
+  "module.neobots.deposit.tooltip.no_target": "• To: Right Click on a Container",
+  "module.neobots.deposit.tooltip.filter": "• Filter: ",
+  "module.neobots.deposit.tooltip.no_filter": "• Filter: Any",
+
+  "module.neobots.withdraw.tooltip.title": "Withdraw:",
+  "module.neobots.withdraw.tooltip.count": "• Count: %d",
+  "module.neobots.withdraw.tooltip.target": "• From: %s",
+  "module.neobots.withdraw.tooltip.no_target": "• From: Right Click on a Container",
+  "module.neobots.withdraw.tooltip.filter": "• Filter: ",
+  "module.neobots.withdraw.tooltip.no_filter": "• Filter: Any"
+}

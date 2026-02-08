@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleBlockPosData;
+import xyz.agmstudio.neobots.modules.abstracts.data.ModuleBlockPosData;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.modules.abstracts;
+package xyz.agmstudio.neobots.modules.abstracts.data;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
