@@ -134,8 +134,7 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
             this(id, inv);
         }
         public Menu(int id, Inventory inv) {
-            super(MENU.get(), id, inv,
-                    new Data(inv.player.level(), inv.player.getMainHandItem()));
+            super(MENU.get(), id, inv, new Data(inv.player.level(), inv.player.getMainHandItem().copy()));
         }
     }
 }

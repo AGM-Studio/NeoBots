@@ -13,7 +13,9 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -25,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroup;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
+import xyz.agmstudio.neobots.containers.slots.FilterSlot;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.network.MenuPacket;
 
@@ -242,6 +245,21 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
             this.leftPos += l;
         }
     }
+
+    @Override
+    public void clicked(int id, int dragType, @NotNull ClickType clickType, @NotNull Player player) {
+        if (id >= 0 && id < slots.size()) {
+            if (slots.get(id) instanceof FilterSlot filterSlot) {
+                ItemStack carried = getCarried();
+                if (!carried.isEmpty()) filterSlot.set(carried);
+                else filterSlot.set(ItemStack.EMPTY);
+                return;
+            }
+        }
+
+        super.clicked(id, dragType, clickType, player);
+    }
+
 
     @OnlyIn(Dist.CLIENT)
     protected boolean sendInventoryClickPacket(int value) {
