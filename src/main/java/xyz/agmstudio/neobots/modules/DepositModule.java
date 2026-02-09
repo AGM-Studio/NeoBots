@@ -31,9 +31,10 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
     public static void register() {}
 
     private static final int REACH_SQR = 4;
+    private static final int COOLDOWN = 4;
 
     public DepositModule(Properties props) {
-        super("deposit", props, (bot, stack) -> new Task(bot, stack, REACH_SQR), Data::new);
+        super("deposit", props, (bot, stack) -> new Task(bot, stack, REACH_SQR, COOLDOWN), Data::new);
     }
 
     @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
@@ -74,11 +75,16 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
 
     public static class Task extends ModuleTask<Data> {
         private final double reach;
+        private final int cooldown;
+        private boolean skipped = false;
         private int deposited = 0;
+        private int tick = 0;
 
-        public Task(NeoBotEntity bot, Data data, double reach) {
+
+        public Task(NeoBotEntity bot, Data data, double reach, int cooldown) {
             super(bot, data);
             this.reach = reach;
+            this.cooldown = cooldown;
         }
 
         @Override public String getType() {
@@ -87,11 +93,13 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
 
         @Override public void load(@NotNull CompoundTag tag) {
             this.deposited = tag.getInt("deposited");
+            this.tick = tag.getInt("tick");
         }
 
         @Override public CompoundTag save() {
             CompoundTag tag = new CompoundTag();
             tag.putInt("deposited", deposited);
+            tag.putInt("tick", tick);
             return tag;
         }
 
@@ -107,18 +115,20 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
         @Override public void onFinish() {}
 
         @Override public boolean isDone() {
-            if (data.getTarget() == null) return true;
+            if (data.getTarget() == null || skipped) return true;
             return deposited >= data.getCount();
         }
 
         @Override public void tick() {
-            if (bot.level().isClientSide) return;
             Container container = data.getContainer(bot, reach);
             if (container == null || deposited >= data.getCount()) return;
+            if (tick++ < cooldown) return;
 
             int remaining = data.getCount() - deposited;
             int moved = NeoBotsHelper.moveItems(bot.level(), bot.getInventory(), container, data.getFilter(), remaining);
             if (moved > 0) setDeposited(deposited + moved);
+            else skipped = data.getSkip();
+            tick = 0;
         }
 
         @Override public Component getStatus() {

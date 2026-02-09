@@ -56,6 +56,7 @@ public interface NeoBotsHelper {
             ItemStack target = to.getItem(s);
             if (target.isEmpty()) continue;
             if (!ItemStack.isSameItemSameComponents(source, target)) continue;
+            if (!to.canPlaceItem(s, source)) continue;
 
             int space = target.getMaxStackSize() - target.getCount();
             if (space <= 0) continue;
@@ -69,6 +70,7 @@ public interface NeoBotsHelper {
         for (int s = 0; s < to.getContainerSize() && moved < limit; s++) {
             ItemStack target = to.getItem(s);
             if (!target.isEmpty()) continue;
+            if (!to.canPlaceItem(s, source)) continue;
 
             int move = Math.min(source.getCount(), limit - moved);
             ItemStack placed = source.split(move);

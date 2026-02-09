@@ -31,9 +31,10 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
     public static void register() {}
 
     private static final int REACH_SQR = 4;
+    private static final int COOLDOWN = 4;
 
     public WithdrawModule(Properties props) {
-        super("withdraw", props, (bot, stack) -> new Task(bot, stack, REACH_SQR), Data::new);
+        super("withdraw", props, (bot, stack) -> new Task(bot, stack, REACH_SQR, COOLDOWN), Data::new);
     }
 
     @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
@@ -71,11 +72,15 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
     }
     public static class Task extends ModuleTask<Data> {
         private final double reach;
+        private final int cooldown;
+        private boolean skipped = false;
         private int withdrawn = 0;
+        private int tick = 0;
 
-        public Task(NeoBotEntity bot, Data data, double reach) {
+        public Task(NeoBotEntity bot, Data data, double reach, int cooldown) {
             super(bot, data);
             this.reach = reach;
+            this.cooldown = cooldown;
         }
 
         @Override public String getType() {
@@ -84,11 +89,13 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
 
         @Override public void load(@NotNull CompoundTag tag) {
             this.withdrawn = tag.getInt("withdrawn");
+            this.tick = tag.getInt("tick");
         }
 
         @Override public CompoundTag save() {
             CompoundTag tag = new CompoundTag();
             tag.putInt("withdrawn", withdrawn);
+            tag.putInt("tick", tick);
             return tag;
         }
 
@@ -104,19 +111,19 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
         @Override public void onFinish() {}
 
         @Override public boolean isDone() {
-            if (data.getTarget() == null) return true;
+            if (data.getTarget() == null || skipped) return true;
             return withdrawn >= data.getCount();
         }
 
-        @Override
-        public void tick() {
-            if (bot.level().isClientSide) return;
+        @Override public void tick() {
             Container container = data.getContainer(bot, reach);
             if (container == null || withdrawn >= data.getCount()) return;
+            if (tick++ < cooldown) return;
 
-            int remaining = data.getCount() - withdrawn;
-            int moved = NeoBotsHelper.moveItems(bot.level(), container, bot.getInventory(), data.getFilter(), remaining);
+            int moved = NeoBotsHelper.moveItems(bot.level(), container, bot.getInventory(), data.getFilter(), 1);
             if (moved > 0) setWithdrawn(withdrawn + moved);
+            else skipped = data.getSkip();
+            tick = 0;
         }
 
         @Override public Component getStatus() {
