@@ -22,6 +22,7 @@ import xyz.agmstudio.neobots.menus.TransferModuleMenu;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
+import xyz.agmstudio.neobots.robos.NeoBotCrash;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
@@ -117,8 +118,8 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
 
         @Override public void tick() {
             Container container = data.getContainer(bot, reach);
-            if (container == null || withdrawn >= data.getCount()) return;
-            if (tick++ < cooldown) return;
+            if (container == null) throw NeoBotCrash.INVENTORY_NOT_ACCESSIBLE;
+            if (withdrawn >= data.getCount() || tick++ < cooldown) return;
 
             int moved = NeoBotsHelper.moveItems(bot.level(), container, bot.getInventory(), data.getFilter(), 1);
             if (moved > 0) setWithdrawn(withdrawn + moved);

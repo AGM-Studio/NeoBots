@@ -3,6 +3,7 @@ package xyz.agmstudio.neobots.robos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
@@ -43,12 +44,6 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
             return value;
         }
     }
-    public static class BotCrash extends Exception {
-        public final Component message;
-        public BotCrash(Component message) {
-            this.message = message;
-        }
-    }
 
     // Attributes
     protected final static int UPGRADE_SLOTS        = 3;
@@ -64,6 +59,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private int cooldownTicks = 0;
     private boolean onCooldown = false;
     private State state = State.LOADING;
+    private NeoBotCrash lastCrash = null;
 
     private ModuleTask<?> task = null;
     private CompoundTag taskData = null;
@@ -117,11 +113,14 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     }
     public void setState(State state) {
         this.state = state;
-        updateStatus();
         if (state == State.STOPPED) {
             task.onStop();
             task = null;
+        } else if (state == State.RUNNING) {
+            lastCrash = null;
         }
+
+        updateStatus();
     }
 
     public NeoBotEntity(EntityType<? extends PathfinderMob> type, Level level) {
@@ -141,7 +140,12 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void tick() {
         super.tick();
         if (level().isClientSide || state != State.RUNNING) return;
-        tickModules();
+        try {
+            tickModules();
+        } catch (NeoBotCrash crash) {
+            this.lastCrash = crash;
+            setState(State.CRASHED);
+        }
         updateStatus();
     }
 
@@ -200,8 +204,11 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         Component status;
         if (state == State.LOADING) status = Component.translatable("state.neobots.loading");
         else if (state == State.STOPPED) status = Component.translatable("state.neobots.stopped");
-        else if (state == State.CRASHED) status = Component.translatable("state.neobots.crashed").withColor(0xff0000);
-        else if (cooldownTicks > 0) status =  Component.translatable("state.neobots.cooldown");
+        else if (state == State.CRASHED) {
+            MutableComponent crash = Component.translatable("state.neobots.crashed").withColor(0xff0000);
+            if (lastCrash != null) status = crash.append(lastCrash.message);
+            else status = crash;
+        } else if (cooldownTicks > 0) status =  Component.translatable("state.neobots.cooldown");
         else if (task == null) status = Component.translatable("state.neobots.idle");
         else status = task.getStatus();
         TASK_STATUS.set(this, status);
@@ -217,7 +224,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
         tag.putInt("Cooldown", cooldownTicks);
         tag.putBoolean("OnCooldown", onCooldown);
-        tag.putInt("State", state.getValue());
+        tag.putInt("State", state == State.CRASHED ? 2 + lastCrash.id : state.getValue());
 
         if (task == null) return;
         CompoundTag taskTag = task.save();
@@ -238,7 +245,10 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         switch (state) {
             case 0: setState(State.STOPPED); break;
             case 1: setState(State.RUNNING); break;
-            default: setState(State.CRASHED); break;
+            default: {
+                lastCrash = NeoBotCrash.findById(state - 2);
+                setState(State.CRASHED);
+            }
         }
 
         taskData = tag.getCompound("Task");

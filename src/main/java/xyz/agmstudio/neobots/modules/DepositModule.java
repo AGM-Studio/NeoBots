@@ -22,6 +22,7 @@ import xyz.agmstudio.neobots.menus.TransferModuleMenu;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
+import xyz.agmstudio.neobots.robos.NeoBotCrash;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
@@ -121,8 +122,8 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
 
         @Override public void tick() {
             Container container = data.getContainer(bot, reach);
-            if (container == null || deposited >= data.getCount()) return;
-            if (tick++ < cooldown) return;
+            if (container == null) throw NeoBotCrash.INVENTORY_NOT_ACCESSIBLE;
+            if (deposited >= data.getCount() || tick++ < cooldown) return;
 
             int remaining = data.getCount() - deposited;
             int moved = NeoBotsHelper.moveItems(bot.level(), bot.getInventory(), container, data.getFilter(), remaining);
