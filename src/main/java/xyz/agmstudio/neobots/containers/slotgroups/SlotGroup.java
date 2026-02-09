@@ -171,23 +171,15 @@ public class SlotGroup {
         for (SlotGroup child : children) child.buildInto(menu, holder);
     }
 
-
     public void render(AbstractMenu.Screen<?> screen, GuiGraphics g) {
         if (texture == null) return;
-        int maxByGrid = offset + w * h;
-        int maxByLimit = limit > -1 ? offset + limit : Integer.MAX_VALUE;
-        int maxByActive = (container instanceof BotFilteredContainer bfc) ? bfc.getActiveSlots() : container.getContainerSize();
-        int last = Math.min(Math.min(maxByGrid, maxByLimit), maxByActive);
-        int x = this.x + screen.getGuiLeft() - textureOffsetX;
-        int y = this.y + screen.getGuiTop() - textureOffsetY;
-        for (int i = offset; i < last; i++) {
-            int index = i - offset;
-            Texture texture = this.texture.apply(i);
-            if (texture == null) continue;
-
-            int px = x + (index % w) * (paddingX + textureSizeX);
-            int py = y + (index / w) * (paddingY + textureSizeY);
-            texture.draw(g, px, py);
+        int offX = screen.getGuiLeft() - textureOffsetX;
+        int offY = screen.getGuiTop() - textureOffsetY;
+        for (Slot slot: slots) {
+            if (!slot.isActive()) continue;
+            Texture t = this.texture.apply(slot.index - offset);
+            if (t == null) continue;
+            t.draw(g, slot.x + offX, slot.y + offY, textureSizeX, textureSizeY);
         }
     }
 }

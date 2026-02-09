@@ -84,4 +84,31 @@ public final class SlotGroupHolder {
     public int y() { return minY; }
     public int width() { return maxX - minX; }
     public int height() { return maxY - minY; }
+    public int activeWidth() {
+        int minX = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        for (Slot slot : slots) {
+            if (!slot.isActive()) continue;
+            minX = Math.min(minX, slot.x);
+            maxX = Math.max(maxX, slot.x + 16);
+        }
+
+
+        if (minX == Integer.MAX_VALUE) return 0;
+        return maxX - minX;
+    }
+
+    public int activeHeight() {
+        int minY = Integer.MAX_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        for (Slot slot : slots) {
+            if (!slot.isActive()) continue;
+            minY = Math.min(minY, slot.y);
+            maxY = Math.max(maxY, slot.y + 16);
+        }
+
+        if (minY == Integer.MAX_VALUE) return 0;
+        return maxY - minY;
+    }
+
 }

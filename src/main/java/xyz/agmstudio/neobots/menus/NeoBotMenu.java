@@ -76,8 +76,8 @@ public class NeoBotMenu extends AbstractMenu {
         addLabel(s -> NeoBotEntity.TASK_STATUS.get(bot), 15, 27).withColor(0xffffff).withShadow().width(108).scale(0.85f);
         addLabel(Component.literal("Modules"), -112, 23).withColor(0x582424);
         addLabel(Component.literal("Upgrades"), 225, 23).withColor(0x582424);
-        addTextureDrawer(SIMPLE_FRAME.frameDrawer(-116, 19, 128, moduleGroup.height(), 3, 16, true, true));
-        addTextureDrawer(SIMPLE_FRAME.frameDrawer(210, 19, 86, upgradeGroup.height(), 3, 16, true, true));
+        addTextureDrawer(SIMPLE_FRAME.frameDrawer(-116, 19, 128, moduleGroup.activeHeight() + 42, 3, 16, true, true));
+        addTextureDrawer(SIMPLE_FRAME.frameDrawer(210, 19, 86, upgradeGroup.activeHeight() + 42, 3, 16, true, true));
 
         // Offset the screen upward (GUI SCALE 4)
         addInitListener(s -> s.offset(-30, -24));
