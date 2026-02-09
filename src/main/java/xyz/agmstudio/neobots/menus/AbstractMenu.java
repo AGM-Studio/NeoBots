@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -155,6 +156,8 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         private int color = 0x404040;
         private boolean shadow = false;
         private boolean center = false;
+        private int maxWidth = -1;
+        private float scale = 1.0f;
 
         protected Label(Function<Screen<?>, Component> text, int x, int y) {
             this.text = text;
@@ -173,14 +176,33 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
             this.shadow = true;
             return this;
         }
+        public Label width(int maxWidth) {
+            this.maxWidth = maxWidth;
+            return this;
+        }
+        public Label scale(float scale) {
+            this.scale = scale;
+            return this;
+        }
 
         public void render(Screen<?> screen, GuiGraphics g) {
             Font font = screen.getMinecraft().font;
             Component text = this.text.apply(screen);
-            int x = center ? (screen.getMenu().getWidth() - font.width(text.getVisualOrderText())) / 2 : this.x;
-            g.drawString(font, text, x, y, color, shadow);
+            if (maxWidth > 0) {
+                List<FormattedCharSequence> lines = font.split(text, (int) (maxWidth / scale));
+                for (int i = 0; i < lines.size(); i++) {
+                    int yOffset = y + i * (font.lineHeight + 1);
+                    draw(screen, g, lines.get(i), font, x, yOffset);
+                }
+            } else draw(screen, g, text.getVisualOrderText(), font, x, y);
         }
-
+        private void draw(Screen<?> screen, GuiGraphics g, FormattedCharSequence text, Font font, int x, int y) {
+            int dx = center ? (screen.getMenu().getWidth() - font.width(text)) / 2 : x;
+            g.pose().pushPose();
+            g.pose().scale(scale, scale, 1.0f);
+            g.drawString(font, text, Math.round(dx / scale), Math.round(y / scale), color, shadow);
+            g.pose().popPose();
+        }
     }
     public static class WidgetHolder<T extends AbstractWidget> {
         private final T widget;

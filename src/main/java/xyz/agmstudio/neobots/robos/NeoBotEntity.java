@@ -112,14 +112,15 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         return state;
     }
     public void setState(State state) {
-        this.state = state;
         if (state == State.STOPPED) {
             task.onStop();
             task = null;
         } else if (state == State.RUNNING) {
+            if (this.state == State.CRASHED) setActiveModule(0);
             lastCrash = null;
         }
 
+        this.state = state;
         updateStatus();
     }
 

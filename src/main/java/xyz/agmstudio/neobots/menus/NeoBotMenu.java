@@ -14,14 +14,13 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
-import xyz.agmstudio.neobots.containers.slots.PreviewSlot;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
 
 public class NeoBotMenu extends AbstractMenu {
-    private static final Texture BG = new Texture("textures/gui/neobot.png", 224, 226);
+    private static final Texture BG = new Texture("textures/gui/neobot.png", 224, 215);
 
     private final NeoBotEntity bot;
     protected final DataSlot botState = DataSlot.standalone();
@@ -31,7 +30,6 @@ public class NeoBotMenu extends AbstractMenu {
     private final SlotGroupHolder moduleGroup;
     private final SlotGroupHolder upgradeGroup;
     private final SlotGroupHolder botInventoryGroup;
-    private final PreviewSlot modulePreviewSlot;
 
     private boolean active;
     private final IconButton stop;
@@ -56,33 +54,30 @@ public class NeoBotMenu extends AbstractMenu {
 
         moduleGroup       = addSlotGroup(bot.getModuleInventory(), 5, 8, -108, 40).pad(2).withTextureOffset(2, 2).withTexture(i -> i == activeModule.get() ? ACTIVE_SLOT_TEXTURE : SLOT_TEXTURE).build(this);
         upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2).withTexture(UPGRADE_SLOT_TEXTURE).build(this);
-        botInventoryGroup = addSlotGroup(bot.getInventory(), 4, 7, 24, 64).build(this);
+        botInventoryGroup = addSlotGroup(bot.getInventory(), 3, 3, 144, 28).build(this);
 
-        addPlayerInventoryTitle(112, 215).centered().withColor(0x000000);
-        addPlayerInventory(24, 127, 2, 5, 18);
+        addPlayerInventoryTitle(112, 100).centered().withColor(0x000000);
+        addPlayerInventory(24, 116, 2, 5, 18);
 
-        modulePreviewSlot = new PreviewSlot(bot.getModuleInventory().getModuleStack(), 16, 27);
-        addSlot(modulePreviewSlot);
-
-        stop = addIconButton(179, 100, AllIcons.I_STOP).withCallback(() -> {
+        stop = addIconButton(81, 69, AllIcons.I_STOP).withCallback(() -> {
             sendPacket(0, false);
             updateIconButtons();
         });
-        start = addIconButton(201, 100, AllIcons.I_PLAY).withCallback(() -> {
+        start = addIconButton(103, 69, AllIcons.I_PLAY).withCallback(() -> {
             sendPacket(0, true);
             updateIconButtons();
         });
 
-        addIconButton(151, 100, AllIcons.I_REFRESH).withCallback(() -> sendPacket(1, true));
+        addIconButton(53, 69, AllIcons.I_REFRESH).withCallback(() -> sendPacket(1, true));
         updateIconButtons();
 
-        // Setup GUI // Todo: SlotGroup Framing and shift click support.
+        // Setup GUI
         addLabel(s -> bot.getDisplayName(), 112, 4).withColor(0xffffff).withShadow().centered();
-        addLabel(s -> NeoBotEntity.TASK_STATUS.get(bot), 43, 31).withColor(0xffffff).withShadow();
+        addLabel(s -> NeoBotEntity.TASK_STATUS.get(bot), 15, 27).withColor(0xffffff).withShadow().width(108).scale(0.85f);
         addLabel(Component.literal("Modules"), -112, 23).withColor(0x582424);
         addLabel(Component.literal("Upgrades"), 225, 23).withColor(0x582424);
-        addTextureDrawer(SIMPLE_FRAME.frameDrawer(-116, 19, 128, 128, 3, 16, true, true));
-        addTextureDrawer(SIMPLE_FRAME.frameDrawer(210, 19, 86, 128, 3, 16, true, true));
+        addTextureDrawer(SIMPLE_FRAME.frameDrawer(-116, 19, 128, moduleGroup.height(), 3, 16, true, true));
+        addTextureDrawer(SIMPLE_FRAME.frameDrawer(210, 19, 86, upgradeGroup.height(), 3, 16, true, true));
 
         // Offset the screen upward (GUI SCALE 4)
         addInitListener(s -> s.offset(-30, -24));
@@ -94,13 +89,15 @@ public class NeoBotMenu extends AbstractMenu {
             else bot.setState(NeoBotEntity.State.STOPPED);
         } else if (id == 1 && value) {
             bot.setActiveModule(0);
+            bot.setState(NeoBotEntity.State.RUNNING);
+            updateIconButtons();
         }
     }
 
     @Override protected void updateIconButtons() {
-        super.updateIconButtons();
         stop.active = botState.get() == 1;
         start.active = botState.get() != 1 && botState.get() != -1;
+        super.updateIconButtons();
     }
 
     @Override public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
@@ -145,7 +142,6 @@ public class NeoBotMenu extends AbstractMenu {
         botState.set(bot.getState().getValue());
         activeModule.set(bot.getActiveModuleIndex());
         moduleCapacity.set(bot.getModuleCapacity());
-        modulePreviewSlot.set(bot.getModuleInventory().getModuleStack());
     }
 
     @Override protected Texture getBackground() {

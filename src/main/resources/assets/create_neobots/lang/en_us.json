@@ -1,4 +1,7 @@
 {
+  "state.neobots.loading": "Loading...",
+  "state.neobots.stopped": "Turned off!",
+  "state.neobots.crashed": "Crashed: ",
   "module.neobots.move_to.tooltip.description": "Orders to the bot to move to the selected position.",
 
   "module.neobots.deposit.tooltip.description": "Orders to the bot to take matching items from _its inventory_ and store them in _the container_.",
@@ -15,5 +18,7 @@
   "module.neobots.withdraw.tooltip.no_target": "• From: Right Click on a Container",
   "module.neobots.withdraw.tooltip.skip": "• Skip if no item is possible to be delivered",
   "module.neobots.withdraw.tooltip.filter": "• Filter: ",
-  "module.neobots.withdraw.tooltip.no_filter": "• Filter: Any"
+  "module.neobots.withdraw.tooltip.no_filter": "• Filter: Any",
+
+  "crash.neobots.inventory_not_accessible": "Unable to reach the container."
 }
