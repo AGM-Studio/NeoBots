@@ -1,6 +1,11 @@
 package xyz.agmstudio.neobots;
 
 import com.mojang.serialization.Codec;
+import com.simibubi.create.foundation.data.CreateRegistrate;
+import com.simibubi.create.foundation.item.ItemDescription;
+import com.simibubi.create.foundation.item.KineticStats;
+import com.simibubi.create.foundation.item.TooltipModifier;
+import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.component.DataComponentType;
@@ -10,8 +15,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -24,6 +31,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlock;
+import xyz.agmstudio.neobots.index.CNBBlockEntities;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.DepositModule;
@@ -42,6 +51,11 @@ public class NeoBots {
     public static final String MOD_ID = "create_neobots";
     public static final String MOD_NAME = "NeoBots";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
+    public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MOD_ID)
+            .setTooltipModifierFactory(item ->
+                    new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
+                            .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
+            );;
 
     // Deferred Registry
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS =
@@ -50,6 +64,8 @@ public class NeoBots {
             DeferredRegister.create(Registries.ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(Registries.ITEM, MOD_ID);
+    public static final DeferredRegister<Block> BLOCKS =
+            DeferredRegister.create(Registries.BLOCK, MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -65,13 +81,18 @@ public class NeoBots {
     public static <T> DeferredHolder<DataComponentType<?>, DataComponentType<T>> registerDataComponent(String name, Codec<T> codec) {
         return COMPONENTS.register(name, () -> DataComponentType.<T>builder().persistent(codec).build());
     }
-
     public static <T extends Item> @NotNull DeferredHolder<Item, T> registerItem(String name, Function<Item.Properties, T> init, int stacksTo) {
         return ITEMS.register(name, () -> init.apply(new Item.Properties().stacksTo(stacksTo)));
     }
     public static <T extends Item> @NotNull DeferredHolder<Item, T> registerItem(String name, Function<Item.Properties, T> init, Supplier<Item.Properties> properties) {
         return ITEMS.register(name, () -> init.apply(properties.get()));
     }
+    public static <T extends Block> @NotNull DeferredHolder<Block, T> registerBlock(String name, Supplier<T> supplier) {
+        DeferredHolder<Block, T> block = BLOCKS.register(name, supplier);
+        registerItem(name, p -> new BlockItem(block.get(), p), Item.Properties::new);
+        return block;
+    }
+
     public static <T extends AbstractMenu> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory) {
         return registerMenu(name, factory, AbstractMenu.Screen<T>::new);
     }
@@ -109,17 +130,22 @@ public class NeoBots {
 
         ModuleData.DataComponent.register();
 
+        ChargingPadBlock.register();
+
         COMPONENTS.register(bus);
         ENTITIES.register(bus);
         ITEMS.register(bus);
+        BLOCKS.register(bus);
+        CNBBlockEntities.register(bus);
         MENUS.register(bus);
         CREATIVE_MODE_TABS.register(bus);
 
         NetworkHandler.registerPackets(bus);
         bus.addListener(this::registerAttributes);
         bus.register(ClientSetup.class);
-    }
 
+        REGISTRATE.registerEventListeners(bus);
+    }
 
     public void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(BOT_V0.get(), NeoBotEntity.createAttributes().build());
