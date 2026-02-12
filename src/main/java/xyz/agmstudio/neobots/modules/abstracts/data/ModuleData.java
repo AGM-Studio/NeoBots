@@ -1,33 +1,20 @@
 package xyz.agmstudio.neobots.modules.abstracts.data;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
+import static xyz.agmstudio.neobots.index.CNBDataComponents.MODULE_DATA;
+
 @ParametersAreNonnullByDefault
 public abstract class ModuleData {
-    public record DataComponent(CompoundTag data) {
-        public static void register() {}
-        public static final Codec<DataComponent> CODEC =
-                RecordCodecBuilder.create(instance -> instance.group(
-                        CompoundTag.CODEC.fieldOf("data").forGetter(DataComponent::data)
-                ).apply(instance, DataComponent::new));
-
-        public static final DeferredHolder<DataComponentType<?>, DataComponentType<DataComponent>> COMPONENT = NeoBots.registerDataComponent("module_data", CODEC);
-    }
-
     public interface Gen<D extends ModuleData> {
         D generate(Level level, ItemStack stack);
     }
@@ -36,9 +23,9 @@ public abstract class ModuleData {
     protected final ItemStack stack;
     protected final Level level;
     protected ModuleData(Level level, ItemStack stack) {
-        DataComponent data = stack.get(DataComponent.COMPONENT);
+        CompoundTag data = stack.get(MODULE_DATA);
         if (data == null) this.tag = new CompoundTag();
-        else this.tag = data.data().copy();
+        else this.tag = data.copy();
         this.stack = stack;
         this.level = level;
     }
@@ -57,8 +44,7 @@ public abstract class ModuleData {
     }
 
     public static void save(ModuleData data, ItemStack stack) {
-        DataComponent component = new DataComponent(data.tag.copy());
-        stack.set(DataComponent.COMPONENT, component);
+        stack.set(MODULE_DATA, data.tag.copy());
     }
 
     public abstract int getCooldown();

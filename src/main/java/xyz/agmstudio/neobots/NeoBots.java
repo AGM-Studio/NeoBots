@@ -1,6 +1,5 @@
 package xyz.agmstudio.neobots;
 
-import com.mojang.serialization.Codec;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
@@ -8,7 +7,6 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +18,10 @@ import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.energy.ComponentEnergyStorage;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -31,18 +32,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.agmstudio.neobots.index.CNBBlockEntities;
 import xyz.agmstudio.neobots.index.CNBBlocks;
+import xyz.agmstudio.neobots.index.CNBDataComponents;
+import xyz.agmstudio.neobots.item.BatteryItem;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
+import xyz.agmstudio.neobots.block.charger.ChargerMenu;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.DepositModule;
 import xyz.agmstudio.neobots.modules.MoveToModule;
 import xyz.agmstudio.neobots.modules.WithdrawModule;
-import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.network.NetworkHandler;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static xyz.agmstudio.neobots.index.CNBDataComponents.BATTERY_DATA;
 
 @Mod(NeoBots.MOD_ID)
 public class NeoBots {
@@ -55,9 +60,6 @@ public class NeoBots {
                             .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
             );;
 
-    // Deferred Registry
-    public static final DeferredRegister<DataComponentType<?>> COMPONENTS =
-            DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, MOD_ID);
     public static final DeferredRegister<EntityType<?>> ENTITIES =
             DeferredRegister.create(Registries.ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<Item> ITEMS =
@@ -74,9 +76,6 @@ public class NeoBots {
             .build()
     );
 
-    public static <T> DeferredHolder<DataComponentType<?>, DataComponentType<T>> registerDataComponent(String name, Codec<T> codec) {
-        return COMPONENTS.register(name, () -> DataComponentType.<T>builder().persistent(codec).build());
-    }
     public static <T extends Item> @NotNull DeferredHolder<Item, T> registerItem(String name, Function<Item.Properties, T> init, int stacksTo) {
         return ITEMS.register(name, () -> init.apply(new Item.Properties().stacksTo(stacksTo)));
     }
@@ -105,10 +104,14 @@ public class NeoBots {
     // Items
     public static final DeferredHolder<Item, MemoryUpgradeItem> MEMORY_UPGRADE =
             registerItem("memory_upgrade", MemoryUpgradeItem::new, 16);
+    public static final DeferredHolder<Item, BatteryItem> BATTERY =
+            registerItem("battery", BatteryItem::new, 16);
 
     // Menus
     public static final DeferredHolder<MenuType<?>, MenuType<NeoBotMenu>> NEOBOT_INVENTORY =
             registerMenu("neobot_menu", NeoBotMenu::new);
+    public static final DeferredHolder<MenuType<?>, MenuType<ChargerMenu>> CHARGER_MENU =
+            registerMenu("charger_menu", ChargerMenu::new);
 
     @Contract("_ -> new")
     public static @NotNull ResourceLocation rl(String value) {
@@ -119,9 +122,7 @@ public class NeoBots {
         WithdrawModule.register();
         DepositModule.register();
 
-        ModuleData.DataComponent.register();
-
-        COMPONENTS.register(bus);
+        CNBDataComponents.register(bus);
         ENTITIES.register(bus);
         ITEMS.register(bus);
         CNBBlocks.register();
@@ -131,12 +132,20 @@ public class NeoBots {
 
         NetworkHandler.registerPackets(bus);
         bus.addListener(this::registerAttributes);
+        bus.addListener(this::registerCapabilities);
+
         bus.register(ClientSetup.class);
 
         REGISTRATE.registerEventListeners(bus);
     }
 
-    public void registerAttributes(EntityAttributeCreationEvent event) {
+    public void registerAttributes(@NotNull EntityAttributeCreationEvent event) {
         event.put(BOT_V0.get(), NeoBotEntity.createAttributes().build());
+    }
+    public void registerCapabilities(@NotNull RegisterCapabilitiesEvent event) {
+        event.registerItem(Capabilities.EnergyStorage.ITEM,
+                (stack, ctx) -> new ComponentEnergyStorage(stack, BATTERY_DATA.get(), 131_072, 256, 256),
+                BATTERY.get()
+        );
     }
 }

@@ -1,15 +1,32 @@
 package xyz.agmstudio.neobots.block.charger;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import xyz.agmstudio.neobots.index.CNBBlockEntities;
 
-public class ChargerBlock extends HorizontalDirectionalBlock {
+import javax.annotation.ParametersAreNonnullByDefault;
+
+
+@ParametersAreNonnullByDefault
+public class ChargerBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final MapCodec<ChargerBlock> CODEC = simpleCodec(ChargerBlock::new);
 
     public ChargerBlock(Properties properties) {
@@ -31,5 +48,24 @@ public class ChargerBlock extends HorizontalDirectionalBlock {
             return defaultBlockState().setValue(FACING, nearest);
 
         return defaultBlockState().setValue(FACING, nearest.getOpposite());
+    }
+
+    @Override public MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof ChargerBlockEntity charger) return charger;
+        return null;
+    }
+
+    @Override public @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult result) {
+        if (!level.isClientSide && player instanceof ServerPlayer sp)
+            sp.openMenu(state.getMenuProvider(level, pos), buf -> buf.writeBlockPos(pos));
+        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return type == CNBBlockEntities.CHARGER.get() ? ChargerBlockEntity::tick : null;
+    }
+
+    @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new ChargerBlockEntity(CNBBlockEntities.CHARGER.get(), pos, state);
     }
 }
