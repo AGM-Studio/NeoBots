@@ -15,10 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -31,8 +29,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlock;
 import xyz.agmstudio.neobots.index.CNBBlockEntities;
+import xyz.agmstudio.neobots.index.CNBBlocks;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.DepositModule;
@@ -64,8 +62,6 @@ public class NeoBots {
             DeferredRegister.create(Registries.ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(Registries.ITEM, MOD_ID);
-    public static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(Registries.BLOCK, MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -86,11 +82,6 @@ public class NeoBots {
     }
     public static <T extends Item> @NotNull DeferredHolder<Item, T> registerItem(String name, Function<Item.Properties, T> init, Supplier<Item.Properties> properties) {
         return ITEMS.register(name, () -> init.apply(properties.get()));
-    }
-    public static <T extends Block> @NotNull DeferredHolder<Block, T> registerBlock(String name, Supplier<T> supplier) {
-        DeferredHolder<Block, T> block = BLOCKS.register(name, supplier);
-        registerItem(name, p -> new BlockItem(block.get(), p), Item.Properties::new);
-        return block;
     }
 
     public static <T extends AbstractMenu> @NotNull DeferredHolder<MenuType<?>, MenuType<T>> registerMenu(String name, IContainerFactory<T> factory) {
@@ -130,13 +121,11 @@ public class NeoBots {
 
         ModuleData.DataComponent.register();
 
-        ChargingPadBlock.register();
-
         COMPONENTS.register(bus);
         ENTITIES.register(bus);
         ITEMS.register(bus);
-        BLOCKS.register(bus);
-        CNBBlockEntities.register(bus);
+        CNBBlocks.register();
+        CNBBlockEntities.register();
         MENUS.register(bus);
         CREATIVE_MODE_TABS.register(bus);
 
