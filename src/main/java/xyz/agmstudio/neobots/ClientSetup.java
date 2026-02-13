@@ -2,12 +2,15 @@ package xyz.agmstudio.neobots;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import xyz.agmstudio.neobots.block.charger.ChargerRenderer;
+import xyz.agmstudio.neobots.index.CNBBlockEntities;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
 import xyz.agmstudio.neobots.robos.NeoBotRenderer;
 
@@ -27,7 +30,7 @@ public class ClientSetup {
 
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
-        // BlockEntityRenderers.register(NeoBotsBlockEntities.CHARGING_PAD.get(), ChargingPadRenderer::new);
+        event.enqueueWork(() -> BlockEntityRenderers.register(CNBBlockEntities.CHARGER.get(), ChargerRenderer::new));
     }
 
     @SubscribeEvent

@@ -38,14 +38,9 @@ public class ChargerBlockEntity extends SmartBlockEntity implements MenuProvider
             return energy != null && energy.getMaxEnergyStored() > 0;
         }
 
-        @Override public void setItem(int slot, ItemStack stack) {
-            super.setItem(slot, stack);
-            ChargerBlockEntity.this.setChanged();
-        }
-
         @Override public void setChanged() {
             super.setChanged();
-            ChargerBlockEntity.this.setChanged();
+            ChargerBlockEntity.this.notifyUpdate();
         }
     };
 

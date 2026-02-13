@@ -4,7 +4,6 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import net.minecraft.core.Direction;
 import xyz.agmstudio.neobots.block.HalfShaftVisual;
 import xyz.agmstudio.neobots.block.charger.ChargerBlockEntity;
-import xyz.agmstudio.neobots.block.charger.ChargerRenderer;
 import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlockEntity;
 import xyz.agmstudio.neobots.block.charging_pad.ChargingPadRenderer;
 
@@ -19,6 +18,5 @@ public interface CNBBlockEntities {
             .renderer(() -> ChargingPadRenderer::new).register();
 
     BlockEntityEntry<ChargerBlockEntity> CHARGER = REGISTRATE.blockEntity("charger_block", ChargerBlockEntity::new)
-            .validBlock(CNBBlocks.CHARGER::get)
-            .renderer(() -> ChargerRenderer::new).register();
+            .validBlock(CNBBlocks.CHARGER::get).register();
 }
