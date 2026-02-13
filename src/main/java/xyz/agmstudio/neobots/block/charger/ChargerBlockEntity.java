@@ -1,5 +1,7 @@
 package xyz.agmstudio.neobots.block.charger;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -10,8 +12,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -21,10 +21,11 @@ import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlockEntity;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.List;
 
 
 @ParametersAreNonnullByDefault
-public class ChargerBlockEntity extends BlockEntity implements MenuProvider {
+public class ChargerBlockEntity extends SmartBlockEntity implements MenuProvider {
     @SuppressWarnings("FieldCanBeLocal")
     private final float efficiency = 1.0f;
     protected final SimpleContainer inventory = new SimpleContainer(1) {
@@ -32,8 +33,19 @@ public class ChargerBlockEntity extends BlockEntity implements MenuProvider {
             return 1;
         }
 
-        @Override public boolean canPlaceItem(int i, ItemStack stack) {
-            return stack.getCapability(Capabilities.EnergyStorage.ITEM) != null;
+        @Override public boolean canPlaceItem(int slot, ItemStack stack) {
+            @Nullable IEnergyStorage energy = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+            return energy != null && energy.getMaxEnergyStored() > 0;
+        }
+
+        @Override public void setItem(int slot, ItemStack stack) {
+            super.setItem(slot, stack);
+            ChargerBlockEntity.this.setChanged();
+        }
+
+        @Override public void setChanged() {
+            super.setChanged();
+            ChargerBlockEntity.this.setChanged();
         }
     };
 
@@ -41,7 +53,11 @@ public class ChargerBlockEntity extends BlockEntity implements MenuProvider {
         super(type, pos, state);
     }
 
+    @Override public void addBehaviours(List<BlockEntityBehaviour> behaviours) {}
+
     public void tick() {
+        super.tick();
+
         if (level == null || level.isClientSide) return;
 
         ItemStack battery = inventory.getItem(0);
@@ -53,20 +69,16 @@ public class ChargerBlockEntity extends BlockEntity implements MenuProvider {
         if (received > 0) inventory.setChanged();
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity be) {
-        if (be instanceof ChargerBlockEntity cbe) cbe.tick();
-    }
-
-    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    @Override protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         ItemStack battery = inventory.getItem(0);
-        if (battery.isEmpty()) tag.remove("battery");
-        else tag.put("item", battery.save(registries));
+        if (!battery.isEmpty()) tag.put("item", battery.save(registries));
+        super.write(tag, registries, clientPacket);
     }
 
-    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        inventory.setItem(0, ItemStack.parseOptional(registries, tag.getCompound("item")));
+    @Override protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        if (tag.contains("item")) inventory.setItem(0, ItemStack.parseOptional(registries, tag.getCompound("item")));
+        else inventory.setItem(0, ItemStack.EMPTY);
+        super.read(tag, registries, clientPacket);
     }
 
     @Override public @NotNull Component getDisplayName() {

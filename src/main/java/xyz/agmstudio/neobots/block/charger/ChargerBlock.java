@@ -1,6 +1,7 @@
 package xyz.agmstudio.neobots.block.charger;
 
 import com.mojang.serialization.MapCodec;
+import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,10 +11,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -26,7 +25,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 
 @ParametersAreNonnullByDefault
-public class ChargerBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public class ChargerBlock extends HorizontalDirectionalBlock implements IBE<ChargerBlockEntity> {
     public static final MapCodec<ChargerBlock> CODEC = simpleCodec(ChargerBlock::new);
 
     public ChargerBlock(Properties properties) {
@@ -61,8 +60,14 @@ public class ChargerBlock extends HorizontalDirectionalBlock implements EntityBl
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return type == CNBBlockEntities.CHARGER.get() ? ChargerBlockEntity::tick : null;
+    @Override
+    public Class<ChargerBlockEntity> getBlockEntityClass() {
+        return ChargerBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends ChargerBlockEntity> getBlockEntityType() {
+        return CNBBlockEntities.CHARGER.get();
     }
 
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
