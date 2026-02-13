@@ -1,6 +1,7 @@
 package xyz.agmstudio.neobots.block.charger;
 
 import com.mojang.serialization.MapCodec;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,7 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 
 @ParametersAreNonnullByDefault
-public class ChargerBlock extends HorizontalDirectionalBlock implements IBE<ChargerBlockEntity> {
+public class ChargerBlock extends HorizontalDirectionalBlock implements IBE<ChargerBlockEntity>, IWrenchable {
     public static final MapCodec<ChargerBlock> CODEC = simpleCodec(ChargerBlock::new);
 
     public ChargerBlock(Properties properties) {

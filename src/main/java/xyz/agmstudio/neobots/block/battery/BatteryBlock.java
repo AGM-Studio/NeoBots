@@ -1,5 +1,6 @@
 package xyz.agmstudio.neobots.block.battery;
 
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,7 +23,7 @@ import java.util.List;
 
 
 @ParametersAreNonnullByDefault
-public class BatteryBlock extends Block implements IBE<BatteryBlockEntity> {
+public class BatteryBlock extends Block implements IBE<BatteryBlockEntity>, IWrenchable {
 
     public BatteryBlock(Properties props) {
         super(props);
