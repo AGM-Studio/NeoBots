@@ -27,5 +27,5 @@ public interface CNBDataComponents {
     }
 
     DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> MODULE_DATA = register("module_data",CompoundTag.CODEC, ByteBufCodecs.COMPOUND_TAG);
-    DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> BATTERY_DATA = register("battery_data", Codec.INT, ByteBufCodecs.INT);
+    DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> BATTERY_DATA = register("energy", Codec.INT, ByteBufCodecs.INT);
 }

@@ -1,0 +1,7 @@
+{
+    "replace": false,
+    "values": [
+        "create_neobots:charger",
+        "create_neobots:charging_pad"
+    ]
+}

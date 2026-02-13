@@ -1,10 +1,11 @@
-package xyz.agmstudio.neobots.item;
+package xyz.agmstudio.neobots.block.battery;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
@@ -13,9 +14,11 @@ import java.util.List;
 
 
 @ParametersAreNonnullByDefault
-public class BatteryItem extends Item {
-    public BatteryItem(Properties properties) {
-        super(properties);
+public class BatteryItem extends BlockItem {
+    public static final int CAPACITY = 131_072;
+
+    public BatteryItem(Block block, Properties properties) {
+        super(block, properties);
     }
 
     @Override public boolean isBarVisible(ItemStack stack) {

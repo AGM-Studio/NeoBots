@@ -30,12 +30,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.agmstudio.neobots.block.battery.BatteryItem;
+import xyz.agmstudio.neobots.block.charger.ChargerMenu;
 import xyz.agmstudio.neobots.index.CNBBlockEntities;
 import xyz.agmstudio.neobots.index.CNBBlocks;
 import xyz.agmstudio.neobots.index.CNBDataComponents;
-import xyz.agmstudio.neobots.item.BatteryItem;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
-import xyz.agmstudio.neobots.block.charger.ChargerMenu;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.DepositModule;
 import xyz.agmstudio.neobots.modules.MoveToModule;
@@ -104,8 +104,6 @@ public class NeoBots {
     // Items
     public static final DeferredHolder<Item, MemoryUpgradeItem> MEMORY_UPGRADE =
             registerItem("memory_upgrade", MemoryUpgradeItem::new, 16);
-    public static final DeferredHolder<Item, BatteryItem> BATTERY =
-            registerItem("battery", BatteryItem::new, 16);
 
     // Menus
     public static final DeferredHolder<MenuType<?>, MenuType<NeoBotMenu>> NEOBOT_INVENTORY =
@@ -144,8 +142,8 @@ public class NeoBots {
     }
     public void registerCapabilities(@NotNull RegisterCapabilitiesEvent event) {
         event.registerItem(Capabilities.EnergyStorage.ITEM,
-                (stack, ctx) -> new ComponentEnergyStorage(stack, BATTERY_DATA.get(), 131_072, 256, 256),
-                BATTERY.get()
+                (stack, ctx) -> new ComponentEnergyStorage(stack, BATTERY_DATA.get(), BatteryItem.CAPACITY),
+                CNBBlocks.BATTERY.asItem()
         );
     }
 }
