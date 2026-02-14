@@ -28,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.agmstudio.neobots.block.battery.BatteryItem;
-import xyz.agmstudio.neobots.block.charger.ChargerMenu;
 import xyz.agmstudio.neobots.index.*;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
@@ -77,8 +76,6 @@ public class NeoBots {
     // Menus
     public static final DeferredHolder<MenuType<?>, MenuType<NeoBotMenu>> NEOBOT_INVENTORY =
             registerMenu("neobot_menu", NeoBotMenu::new);
-    public static final DeferredHolder<MenuType<?>, MenuType<ChargerMenu>> CHARGER_MENU =
-            registerMenu("charger_menu", ChargerMenu::new);
 
     @Contract("_ -> new")
     public static @NotNull ResourceLocation rl(String value) {

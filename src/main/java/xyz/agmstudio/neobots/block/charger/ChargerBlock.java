@@ -5,10 +5,12 @@ import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.agmstudio.neobots.block.battery.BatteryItem;
 import xyz.agmstudio.neobots.index.CNBBlockEntities;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -50,15 +53,36 @@ public class ChargerBlock extends HorizontalDirectionalBlock implements IBE<Char
         return defaultBlockState().setValue(FACING, nearest.getOpposite());
     }
 
-    @Override public MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof ChargerBlockEntity charger) return charger;
-        return null;
-    }
+    @Override protected @NotNull ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (level.isClientSide) return ItemInteractionResult.SUCCESS;
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof ChargerBlockEntity charger))
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
-    @Override public @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult result) {
-        if (!level.isClientSide && player instanceof ServerPlayer sp)
-            sp.openMenu(state.getMenuProvider(level, pos), buf -> buf.writeBlockPos(pos));
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        ItemStack slotStack = charger.inventory.getItem(0);
+        ItemStack playerStack = stack.copy();
+
+        if (playerStack.getItem() instanceof BatteryItem) {
+            charger.inventory.setItem(0, playerStack.split(1));
+            if (slotStack.isEmpty()) player.setItemInHand(hand, playerStack);
+            else player.setItemInHand(hand, slotStack);
+            level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1f, 1f);
+
+            charger.notifyUpdate();
+            return ItemInteractionResult.CONSUME;
+        }
+
+        if (playerStack.isEmpty() && !slotStack.isEmpty()) {
+            player.setItemInHand(hand, slotStack);
+            charger.inventory.setItem(0, ItemStack.EMPTY);
+
+            level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1f, 1f);
+
+            charger.notifyUpdate();
+            return ItemInteractionResult.CONSUME;
+        }
+
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override

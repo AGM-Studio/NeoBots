@@ -5,18 +5,12 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlockEntity;
 
@@ -25,7 +19,7 @@ import java.util.List;
 
 
 @ParametersAreNonnullByDefault
-public class ChargerBlockEntity extends SmartBlockEntity implements MenuProvider {
+public class ChargerBlockEntity extends SmartBlockEntity {
     @SuppressWarnings("FieldCanBeLocal")
     private final float efficiency = 1.0f;
     protected final SimpleContainer inventory = new SimpleContainer(1) {
@@ -74,13 +68,5 @@ public class ChargerBlockEntity extends SmartBlockEntity implements MenuProvider
         if (tag.contains("item")) inventory.setItem(0, ItemStack.parseOptional(registries, tag.getCompound("item")));
         else inventory.setItem(0, ItemStack.EMPTY);
         super.read(tag, registries, clientPacket);
-    }
-
-    @Override public @NotNull Component getDisplayName() {
-        return Component.literal("Charger");
-    }
-
-    @Override public @Nullable AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-        return new ChargerMenu(id, inv, this);
     }
 }
