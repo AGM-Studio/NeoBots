@@ -20,7 +20,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.containers.InventoryContainer;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
@@ -256,8 +255,6 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
         recalculateInventoryCapacity();
         recalculateModuleCapacity();
-
-        NeoBots.LOGGER.info("NeoBot Load Complete: {}", state);
     }
 
     public void recalculateModuleCapacity() {

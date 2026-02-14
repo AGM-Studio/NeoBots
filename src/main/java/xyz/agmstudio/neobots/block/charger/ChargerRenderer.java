@@ -11,7 +11,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import xyz.agmstudio.neobots.NeoBots;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -20,9 +19,7 @@ import static net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
 
 @ParametersAreNonnullByDefault
 public class ChargerRenderer extends SafeBlockEntityRenderer<ChargerBlockEntity> {
-    public ChargerRenderer(BlockEntityRendererProvider.Context context) {
-        NeoBots.LOGGER.info("Creating ChargerRenderer", new Throwable());
-    }
+    public ChargerRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override protected void renderSafe(ChargerBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
         renderItem(be, partialTicks, ms, buffer, light, overlay);
