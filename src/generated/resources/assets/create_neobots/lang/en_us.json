@@ -1,0 +1,9 @@
+{
+  "block.create_neobots.battery": "Battery",
+  "block.create_neobots.charger": "Charger",
+  "block.create_neobots.charging_pad": "Charging Pad",
+  "item.create_neobots.deposit_module": "Deposit Module",
+  "item.create_neobots.memory_upgrade": "Memory Upgrade",
+  "item.create_neobots.move_to_module": "Move To Module",
+  "item.create_neobots.withdraw_module": "Withdraw Module"
+}
