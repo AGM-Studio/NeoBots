@@ -6,21 +6,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: "21"
+          distribution: "temurin"
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
       - name: Build JAR
         run: ./gradlew build
-      - name: Create/Update Release & Upload JAR
+
+      - name: Delete local tag if exists
+        run: git tag -d experimental-build || true
+
+      - name: Delete remote tag if exists
+        run: git push origin :refs/tags/experimental-build || true
+
+      - name: Create tag
+        run: git tag experimental-build
+
+      - name: Push tag
+        run: git push origin experimental-build
+
+      - name: Create or update release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: experimental-build
           name: Experimental Build
-          body: "⚠️ **Experimental Build**: This is an automated release of the latest changes.  ⚠️ Features and changes in this build may be **unstable** or **untested**. Please use with caution and report any issues you encounter."
+          body: "⚠️ Experimental Build — automated release of latest changes. May be unstable or untested."
           files: build/libs/*.jar
           draft: false
           prerelease: false
