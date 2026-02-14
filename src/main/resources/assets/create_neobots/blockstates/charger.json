@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "facing=north": { "model": "create_neobots:block/charger/block" },
-    "facing=south": { "model": "create_neobots:block/charger/block", "y": 180 },
-    "facing=west":  { "model": "create_neobots:block/charger/block", "y": 270 },
-    "facing=east":  { "model": "create_neobots:block/charger/block", "y": 90 }
-  }
-}

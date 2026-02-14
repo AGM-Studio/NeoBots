@@ -2,7 +2,7 @@
 	"parent": "minecraft:block/block",
 	"textures": {
 		"0": "create:block/copper/copper_roof_top",
-		"1": "create_neobots:item/battery",
+		"1": "create_neobots:block/battery",
 		"particle": "create:block/copper/copper_roof_top"
 	},
 	"elements": [
