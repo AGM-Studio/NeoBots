@@ -20,6 +20,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.agmstudio.neobots.block.battery.BatteryItem;
@@ -59,11 +61,11 @@ public class ChargerBlock extends HorizontalDirectionalBlock implements IBE<Char
         if (!(be instanceof ChargerBlockEntity charger))
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
-        ItemStack slotStack = charger.inventory.getItem(0);
+        ItemStack slotStack = charger.inventory.getStackInSlot(0);
         ItemStack playerStack = stack.copy();
 
         if (playerStack.getItem() instanceof BatteryItem) {
-            charger.inventory.setItem(0, playerStack.split(1));
+            charger.inventory.setStackInSlot(0, playerStack.split(1));
             if (slotStack.isEmpty()) player.setItemInHand(hand, playerStack);
             else player.setItemInHand(hand, slotStack);
             level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1f, 1f);
@@ -74,7 +76,7 @@ public class ChargerBlock extends HorizontalDirectionalBlock implements IBE<Char
 
         if (playerStack.isEmpty() && !slotStack.isEmpty()) {
             player.setItemInHand(hand, slotStack);
-            charger.inventory.setItem(0, ItemStack.EMPTY);
+            charger.inventory.setStackInSlot(0, ItemStack.EMPTY);
 
             level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1f, 1f);
 
@@ -97,5 +99,20 @@ public class ChargerBlock extends HorizontalDirectionalBlock implements IBE<Char
 
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new ChargerBlockEntity(CNBBlockEntities.CHARGER.get(), pos, state);
+    }
+
+    @Override public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof ChargerBlockEntity charger)) return 0;
+
+        ItemStack battery = charger.inventory.getStackInSlot(0);
+        IEnergyStorage energy = battery.getCapability(Capabilities.EnergyStorage.ITEM);
+        if (battery.isEmpty() || energy == null) return 0;
+        double fraction = (double) energy.getEnergyStored() / Math.max(1, energy.getMaxEnergyStored());
+        return Math.max(1, (int) Math.ceil(fraction * 15));
     }
 }

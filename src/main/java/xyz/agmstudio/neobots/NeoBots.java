@@ -114,5 +114,7 @@ public class NeoBots {
                 (stack, ctx) -> new ComponentEnergyStorage(stack, BATTERY_DATA.get(), BatteryItem.CAPACITY),
                 CNBBlocks.BATTERY.asItem()
         );
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, CNBBlockEntities.CHARGER.get(),
+                (be, ctx) -> be.getInventory());
     }
 }

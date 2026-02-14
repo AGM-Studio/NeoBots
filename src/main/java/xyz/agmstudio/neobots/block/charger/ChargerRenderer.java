@@ -26,7 +26,7 @@ public class ChargerRenderer extends SafeBlockEntityRenderer<ChargerBlockEntity>
     }
 
     protected void renderItem(ChargerBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
-        ItemStack stack = be.inventory.getItem(0);
+        ItemStack stack = be.inventory.getStackInSlot(0);
         if (stack.isEmpty()) return;
 
         ms.pushPose();
