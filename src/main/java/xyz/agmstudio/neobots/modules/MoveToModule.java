@@ -8,15 +8,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleBlockPosData;
@@ -25,7 +22,6 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import java.util.List;
 
 public class MoveToModule extends ModuleItem<MoveToModule.Data, MoveToModule.Task> {
-    public static DeferredHolder<Item, MoveToModule> ITEM = NeoBots.registerItem("move_to_module", MoveToModule::new, 1);
     public static void register() {}
 
 

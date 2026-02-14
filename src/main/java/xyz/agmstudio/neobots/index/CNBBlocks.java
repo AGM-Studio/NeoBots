@@ -29,18 +29,18 @@ import static xyz.agmstudio.neobots.NeoBots.REGISTRATE;
 
 
 @ParametersAreNonnullByDefault
-public interface CNBBlocks {
-    static void register() {}
-    static @NotNull <T extends Block> ResourceLocation loc(DataGenContext<Block, T> ctx, String sub) {
+public final class CNBBlocks {
+    public static void register() {}
+    private static @NotNull <T extends Block> ResourceLocation loc(DataGenContext<Block, T> ctx, String sub) {
         return NeoBots.rl("block/" + ctx.getName() + sub);
     }
 
-    static <T extends Block> @NotNull NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> blockStateProvider(String... subs) {
+    private static <T extends Block> @NotNull NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> blockStateProvider(String... subs) {
         final String sub = subs.length == 0 ? "" : String.join("/", subs);
         return (ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                 prov.models().getExistingFile(loc(ctx, sub)));
     }
-    static <T extends Block> @NotNull NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalFacingBlockState(String... subs) {
+    private static <T extends Block> @NotNull NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalFacingBlockState(String... subs) {
         final String sub = subs.length == 0 ? "" : String.join("/", subs);
         return (ctx, prov) -> {
             var model = prov.models().getExistingFile(loc(ctx, sub));
@@ -57,35 +57,38 @@ public interface CNBBlocks {
         };
     }
 
-    static <T extends BlockItem> @NotNull NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> itemModelProvider(String... subs) {
+    private static <T extends BlockItem> @NotNull NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> itemModelProvider(String... subs) {
         final String sub = subs.length == 0 ? "" : String.join("/", subs);
         return (ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/" + ctx.getName() + sub));
     }
 
-    BlockEntry<ChargingPadBlock> CHARGING_PAD = REGISTRATE.block("charging_pad", ChargingPadBlock::new)
+    public static final BlockEntry<ChargingPadBlock> CHARGING_PAD = REGISTRATE.block("charging_pad", ChargingPadBlock::new)
             .initialProperties(SharedProperties::stone)
             .properties(BlockBehaviour.Properties::noOcclusion)
             .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
             .transform(TagGen.axeOrPickaxe())
             .blockstate(blockStateProvider())
-            .item().model(itemModelProvider()).build()
+            .item().model(itemModelProvider())
+            .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
             .register();
 
-    BlockEntry<ChargerBlock> CHARGER = REGISTRATE.block("charger", ChargerBlock::new)
+    public static final BlockEntry<ChargerBlock> CHARGER = REGISTRATE.block("charger", ChargerBlock::new)
             .initialProperties(SharedProperties::stone)
             .properties(BlockBehaviour.Properties::noOcclusion)
             .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
             .transform(TagGen.axeOrPickaxe())
             .blockstate(horizontalFacingBlockState())
-            .item().model(itemModelProvider()).build()
+            .item().model(itemModelProvider())
+            .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
             .register();
 
-    BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
+    public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
             .initialProperties(SharedProperties::copperMetal)
             .properties(BlockBehaviour.Properties::noOcclusion)
             .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
             .transform(TagGen.pickaxeOnly())
             .blockstate(blockStateProvider())
-            .item(BatteryItem::new).model(itemModelProvider()).build()
+            .item(BatteryItem::new).model(itemModelProvider())
+            .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
             .register();
 }

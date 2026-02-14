@@ -11,7 +11,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -27,7 +26,6 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
 public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.Task> implements MenuProvider {
-    public static DeferredHolder<Item, DepositModule> ITEM = NeoBots.registerItem("deposit_module", DepositModule::new, 1);
     public static DeferredHolder<MenuType<?>, MenuType<Menu>> MENU = NeoBots.registerMenu("deposit_menu", Menu::new);
     public static void register() {}
 

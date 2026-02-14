@@ -10,17 +10,17 @@ import xyz.agmstudio.neobots.block.charging_pad.ChargingPadRenderer;
 
 import static xyz.agmstudio.neobots.NeoBots.REGISTRATE;
 
-public interface CNBBlockEntities {
-    static void register() {}
+public final class CNBBlockEntities {
+    public static void register() {}
 
-    BlockEntityEntry<ChargingPadBlockEntity> CHARGING_PAD = REGISTRATE.blockEntity("charging_pad", ChargingPadBlockEntity::new)
+    public static final BlockEntityEntry<ChargingPadBlockEntity> CHARGING_PAD = REGISTRATE.blockEntity("charging_pad", ChargingPadBlockEntity::new)
             .visual(() -> HalfShaftVisual.facing(Direction.DOWN), false)
             .validBlock(CNBBlocks.CHARGING_PAD::get)
             .renderer(() -> ChargingPadRenderer::new).register();
 
-    BlockEntityEntry<ChargerBlockEntity> CHARGER = REGISTRATE.blockEntity("charger_block", ChargerBlockEntity::new)
+    public static final BlockEntityEntry<ChargerBlockEntity> CHARGER = REGISTRATE.blockEntity("charger_block", ChargerBlockEntity::new)
             .validBlock(CNBBlocks.CHARGER::get).register();
 
-    BlockEntityEntry<BatteryBlockEntity> BATTERY = REGISTRATE.blockEntity("battery", BatteryBlockEntity::new)
+    public static final BlockEntityEntry<BatteryBlockEntity> BATTERY = REGISTRATE.blockEntity("battery", BatteryBlockEntity::new)
             .validBlock(CNBBlocks.BATTERY::get).register();
 }
