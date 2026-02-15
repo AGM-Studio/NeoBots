@@ -42,7 +42,7 @@ public class NeoBots {
 
         CNBDataComponents.register(bus);
         CNBItems.register();
-        CNBBlocks.register();
+        CNBBlocks.register(bus);
         CNBBlockEntities.register();
         CNBEntities.register(bus);
         CNBMenus.register();
@@ -50,8 +50,6 @@ public class NeoBots {
 
         NetworkHandler.registerPackets(bus);
         bus.addListener(this::registerCapabilities);
-
-        bus.register(ClientSetup.class);
 
         REGISTRATE.registerEventListeners(bus);
     }

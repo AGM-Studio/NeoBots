@@ -8,6 +8,7 @@ import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.providers.RegistrateItemModelProvider;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
@@ -15,35 +16,63 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
+import net.neoforged.neoforge.energy.ComponentEnergyStorage;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.block.battery.BatteryBlock;
 import xyz.agmstudio.neobots.block.battery.BatteryItem;
 import xyz.agmstudio.neobots.block.charger.ChargerBlock;
+import xyz.agmstudio.neobots.block.charger.ChargerRenderer;
 import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlock;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import static xyz.agmstudio.neobots.NeoBots.REGISTRATE;
+import static xyz.agmstudio.neobots.index.CNBDataComponents.BATTERY_DATA;
 
 
 @ParametersAreNonnullByDefault
 public final class CNBBlocks {
-    public static void register() {}
-    private static @NotNull <T extends Block> ResourceLocation loc(DataGenContext<Block, T> ctx, String sub) {
+    public static void register(IEventBus bus) {
+        bus.addListener(CNBBlocks::registerCapabilities);
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            bus.addListener(CNBBlocks::clientSetup);
+        }
+    }
+
+    public static void registerCapabilities(@NotNull RegisterCapabilitiesEvent event) {
+        event.registerItem(Capabilities.EnergyStorage.ITEM,
+                (stack, ctx) -> new ComponentEnergyStorage(stack, BATTERY_DATA.get(), BatteryItem.CAPACITY),
+                CNBBlocks.BATTERY.asItem()
+        );
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, CNBBlockEntities.CHARGER.get(),
+                (be, ctx) -> be.getInventory());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void clientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> BlockEntityRenderers.register(CNBBlockEntities.CHARGER.get(), ChargerRenderer::new));
+    }
+
+    private static @NotNull <T extends Block> ResourceLocation loc(DataGenContext<Block, T> ctx, String... subs) {
+        final String sub = subs.length == 0 ? "" : String.join("/", subs);
         return NeoBots.rl("block/" + ctx.getName() + sub);
     }
 
     private static <T extends Block> @NotNull NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> blockStateProvider(String... subs) {
-        final String sub = subs.length == 0 ? "" : String.join("/", subs);
-        return (ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                prov.models().getExistingFile(loc(ctx, sub)));
+        return (ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().getExistingFile(loc(ctx, subs)));
     }
     private static <T extends Block> @NotNull NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalFacingBlockState(String... subs) {
-        final String sub = subs.length == 0 ? "" : String.join("/", subs);
         return (ctx, prov) -> {
-            var model = prov.models().getExistingFile(loc(ctx, sub));
+            var model = prov.models().getExistingFile(loc(ctx, subs));
             prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                 Direction facing = state.getValue(HorizontalDirectionalBlock.FACING);
                 int yRot = switch (facing) {
