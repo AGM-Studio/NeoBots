@@ -3,49 +3,57 @@ package xyz.agmstudio.neobots.modules;
 import com.simibubi.create.AllSoundEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleBlockPosData;
+import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import java.util.List;
 
-public class MoveToModule extends ModuleItem<MoveToModule.Data, MoveToModule.Task> {
+public class MoveToModule extends TargetedModuleItem<MoveToModule.Data, MoveToModule.Task> {
     public MoveToModule(Properties props) {
         super("move_to", props, Task::new, Data::new);
     }
 
-    @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
-        if (ctx.getLevel().isClientSide)
-            return InteractionResult.SUCCESS;
+    @Override
+    public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {
+        Level level = ctx.getLevel();
+        BlockState state = level.getBlockState(pos);
 
-        BlockPos pos = ctx.getClickedPos().above();
-        Data data = getData(ctx.getLevel(), ctx.getItemInHand());
-        data.setTarget(pos, ctx.getLevel().dimension());
-        data.save();
+        BlockPos standPos = pos.above();
+        return level.getBlockState(standPos).isAir() && level.getBlockState(standPos.above()).isAir();
+    }
 
-        if (ctx.getPlayer() instanceof ServerPlayer player) player.displayClientMessage(Component.literal("§aMove target set to: §f" + pos.toShortString()), true);
-
-        return InteractionResult.CONSUME;
+    @Override protected Component getTargetSetMessage() {
+        return Component.translatable("module.create_neobots.move_to.target_set").withStyle(ChatFormatting.GREEN);
     }
 
     public static class Task extends ModuleTask<Data> {
         private final Vec3 target;
         public Task(NeoBotEntity bot, Data data) {
             super(bot, data);
-            if (data.getTarget() == null) target = null;
-            else target = Vec3.atCenterOf(data.getTarget()).add(0, -0.5, 0);
+            BlockPos pos = data.getTarget();
+            if (pos == null) target = null;
+            else {
+                Level level = bot.level();
+                BlockState state = level.getBlockState(pos);
+                VoxelShape shape = state.getCollisionShape(level, pos);
+
+                double height = shape.isEmpty() ? 0.0 : shape.max(Direction.Axis.Y);
+                target = new Vec3(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
+            }
         }
 
         @Override public String getType() {

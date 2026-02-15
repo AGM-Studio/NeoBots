@@ -14,7 +14,7 @@ import xyz.agmstudio.neobots.containers.slots.FilterSlot;
 import xyz.agmstudio.neobots.containers.slots.PreviewSlot;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.index.CNBMenus;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
+import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;

@@ -14,19 +14,26 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.menus.TransferModuleMenu;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
+import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
 import xyz.agmstudio.neobots.robos.NeoBotCrash;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
-public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModule.Task> implements MenuProvider {
+public class WithdrawModule extends TargetedModuleItem<WithdrawModule.Data, WithdrawModule.Task> implements MenuProvider {
     private static final int REACH_SQR = 4;
     private static final int COOLDOWN = 4;
 
     public WithdrawModule(Properties props) {
         super("withdraw", props, (bot, stack) -> new Task(bot, stack, REACH_SQR, COOLDOWN), Data::new);
+    }
+
+    @Override public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {
+        return ctx.getLevel().getBlockEntity(pos) instanceof Container;
+    }
+    @Override protected Component getTargetSetMessage() {
+        return Component.translatable("module.create_neobots.withdraw.target_set").withStyle(ChatFormatting.GREEN);
     }
 
     @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
@@ -48,7 +55,7 @@ public class WithdrawModule extends ModuleItem<WithdrawModule.Data, WithdrawModu
         return InteractionResult.CONSUME;
     }
 
-    @Override public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand) {
+    @Override public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!level.isClientSide && player instanceof ServerPlayer sp) sp.openMenu(this, buf -> buf.writeEnum(hand));
 

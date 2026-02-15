@@ -1,15 +1,21 @@
-package xyz.agmstudio.neobots.modules.abstracts;
+package xyz.agmstudio.neobots.modules.abstracts.item;
 
 import com.simibubi.create.foundation.item.TooltipHelper;
 import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
@@ -36,7 +42,7 @@ public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> 
     public T getTask(NeoBotEntity bot, ItemStack stack) {
         T task = taskGenerator.generate(bot, getData(bot.level(), stack));
         CompoundTag tag = bot.getTaskData();
-        if (tag != null && Objects.equals(task.id, tag.getString("id"))) task.load(tag);
+        if (tag != null && Objects.equals(task.getId(), tag.getString("id"))) task.load(tag);
         return task;
     }
 
@@ -58,5 +64,13 @@ public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> 
         if (flags.hasShiftDown())
             tooltip.addAll(FontHelper.cutTextComponent(getModuleDescription(), FontHelper.Palette.GRAY_AND_BLUE));
         else getData(ctx.level(), stack).addTooltip(tooltip, ctx, flags);
+    }
+
+    @Override public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!level.isClientSide && player instanceof ServerPlayer sp && this instanceof MenuProvider mp)
+            sp.openMenu(mp, buf -> buf.writeEnum(hand));
+
+        return InteractionResultHolder.consume(stack);
     }
 }

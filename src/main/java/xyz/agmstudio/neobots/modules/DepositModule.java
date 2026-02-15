@@ -4,8 +4,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -14,14 +14,14 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.menus.TransferModuleMenu;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
+import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
 import xyz.agmstudio.neobots.robos.NeoBotCrash;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
-public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.Task> implements MenuProvider {
+public class DepositModule extends TargetedModuleItem<DepositModule.Data, DepositModule.Task> implements MenuProvider {
     private static final int REACH_SQR = 4;
     private static final int COOLDOWN = 4;
 
@@ -29,32 +29,11 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
         super("deposit", props, (bot, stack) -> new Task(bot, stack, REACH_SQR, COOLDOWN), Data::new);
     }
 
-    @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {
-        Level level = ctx.getLevel();
-        if (level.isClientSide)
-            return InteractionResult.SUCCESS;
-
-        BlockPos pos = ctx.getClickedPos();
-        if (!(level.getBlockEntity(pos) instanceof Container))
-            return InteractionResult.PASS;
-
-        Data data = getData(level, ctx.getItemInHand());
-        data.setTarget(pos, level.dimension());
-        data.save();
-
-        if (ctx.getPlayer() instanceof ServerPlayer player)
-            player.displayClientMessage(Component.literal("Target container set").withStyle(ChatFormatting.GREEN), true);
-
-        return InteractionResult.CONSUME;
+    @Override public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {
+        return ctx.getLevel().getBlockEntity(pos) instanceof Container;
     }
-
-    @Override public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-
-        if (!level.isClientSide && player instanceof ServerPlayer sp)
-            sp.openMenu(this, buf -> buf.writeEnum(hand));
-
-        return InteractionResultHolder.consume(stack);
+    @Override protected Component getTargetSetMessage() {
+        return Component.translatable("module.create_neobots.deposit.target_set").withStyle(ChatFormatting.GREEN);
     }
 
     @Override public @NotNull Component getDisplayName() {

@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.index.CNBMenus;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
+import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
 
