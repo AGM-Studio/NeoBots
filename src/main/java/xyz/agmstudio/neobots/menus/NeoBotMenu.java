@@ -8,16 +8,18 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.DataSlot;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
+import xyz.agmstudio.neobots.index.CNBMenus;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
+
 
 public class NeoBotMenu extends AbstractMenu {
     private static final Texture BG = new Texture("textures/gui/neobot.png", 224, 215);
@@ -35,17 +37,19 @@ public class NeoBotMenu extends AbstractMenu {
     private final IconButton stop;
     private final IconButton start;
 
-    private static NeoBotEntity captureBot(Level level, FriendlyByteBuf buf) {
+    public static @NotNull NeoBotMenu create(int id, Inventory inv, NeoBotEntity bot) {
+        return new NeoBotMenu(CNBMenus.NEOBOT_INVENTORY.get(), id, inv, bot);
+    }
+    private static NeoBotEntity captureBot(@NotNull Level level, @NotNull FriendlyByteBuf buf) {
         Entity entity = level.getEntity(buf.readInt());
         if (entity instanceof NeoBotEntity bot) return bot;
         throw new IllegalStateException("The provided entity is not a NeoBotEntity!");
     }
-    public NeoBotMenu(int id, Inventory inv, FriendlyByteBuf buf) {
-        this(id, inv, captureBot(inv.player.level(), buf));
+    public NeoBotMenu(MenuType<NeoBotMenu> type, int id, Inventory inv, FriendlyByteBuf buf) {
+        this(type, id, inv, captureBot(inv.player.level(), buf));
     }
-
-    public NeoBotMenu(int id, Inventory inv, NeoBotEntity bot) {
-        super(NeoBots.NEOBOT_INVENTORY.get(), id, inv);
+    public NeoBotMenu(MenuType<NeoBotMenu> type, int id, Inventory inv, @NotNull NeoBotEntity bot) {
+        super(type, id, inv);
         this.bot = bot;
 
         addDataSlot(botState);

@@ -111,7 +111,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         return state;
     }
     public void setState(State state) {
-        if (state == State.STOPPED) {
+        if (state == State.STOPPED && task != null) {
             task.onStop();
             task = null;
         } else if (state == State.RUNNING) {
@@ -187,12 +187,8 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     }
 
     // Menu
-    @Override public @NotNull Component getDisplayName() {
-        return Component.literal("NeoBot Menu");
-    }
-
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
-        return new NeoBotMenu(id, inv, this);
+        return NeoBotMenu.create(id, inv, this);
     }
 
     @Override protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {

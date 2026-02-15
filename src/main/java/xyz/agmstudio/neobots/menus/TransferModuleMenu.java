@@ -13,13 +13,16 @@ import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.containers.slots.FilterSlot;
 import xyz.agmstudio.neobots.containers.slots.PreviewSlot;
 import xyz.agmstudio.neobots.gui.Texture;
+import xyz.agmstudio.neobots.index.CNBMenus;
+import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
+import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
-public abstract class TransferModuleMenu<D extends ModuleTransferData> extends AbstractMenu {
+public class TransferModuleMenu extends AbstractMenu {
     private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 204);
 
-    private final D data;
+    private final ModuleTransferData data;
     private final ItemStack module;
     private final FilterSlot filterSlot;
     private final SlotGroupHolder filterHolder;
@@ -29,10 +32,18 @@ public abstract class TransferModuleMenu<D extends ModuleTransferData> extends A
     private int count;
     public boolean skip;
 
-    public TransferModuleMenu(MenuType<?> menu, int id, Inventory inv, D data) {
+    public static @NotNull TransferModuleMenu create(int id, Inventory inv) {
+        return new TransferModuleMenu(CNBMenus.TRANSFER_MODULE.get(), id, inv);
+    }
+    public TransferModuleMenu(MenuType<?> menu, int id, Inventory inv) {
         super(menu, id, inv);
-        this.data = data;
         this.module = inv.player.getMainHandItem();
+        if (module.getItem() instanceof ModuleItem<?, ?> m) {
+            ModuleData data = m.getData(inv.player.level(), this.module);
+            if (data instanceof ModuleTransferData td) this.data = td;
+            else throw new IllegalArgumentException("Invalid module type for menu");
+        } else throw new IllegalArgumentException("Invalid module type for menu");
+
         this.count = this.data.getCount();
         this.skip = this.data.getSkip();
 

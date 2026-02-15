@@ -6,13 +6,11 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import xyz.agmstudio.neobots.block.charger.ChargerRenderer;
 import xyz.agmstudio.neobots.index.CNBBlockEntities;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
-import xyz.agmstudio.neobots.robos.NeoBotRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +19,6 @@ public class ClientSetup {
     private static final List<ScreenEntry<?, ?>> SCREENS = new ArrayList<>();
     public static <M extends AbstractMenu, S extends AbstractContainerScreen<M>> void registerScreen(DeferredHolder<MenuType<?>, MenuType<M>> menu, MenuScreens.ScreenConstructor<M, S> constructor) {
         SCREENS.add(new ScreenEntry<>(menu, constructor));
-    }
-
-    @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(NeoBots.BOT_V0.get(), NeoBotRenderer::new);
     }
 
     @SubscribeEvent

@@ -3,20 +3,16 @@ package xyz.agmstudio.neobots.modules;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.menus.TransferModuleMenu;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
@@ -26,9 +22,6 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
 public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.Task> implements MenuProvider {
-    public static DeferredHolder<MenuType<?>, MenuType<Menu>> MENU = NeoBots.registerMenu("deposit_menu", Menu::new);
-    public static void register() {}
-
     private static final int REACH_SQR = 4;
     private static final int COOLDOWN = 4;
 
@@ -65,11 +58,11 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
     }
 
     @Override public @NotNull Component getDisplayName() {
-        return Component.literal("Deposit Module");
+        return Component.translatable("item.create_neobots.deposit_module");
     }
 
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
-        return new Menu(id, inv);
+        return TransferModuleMenu.create(id, inv);
     }
 
     public static class Task extends ModuleTask<Data> {
@@ -140,14 +133,6 @@ public class DepositModule extends ModuleItem<DepositModule.Data, DepositModule.
         }
         @Override protected String getTranslateKey() {
             return "deposit";
-        }
-    }
-    public static class Menu extends TransferModuleMenu<Data> {
-        public Menu(int id, Inventory inv, FriendlyByteBuf buf) {
-            this(id, inv);
-        }
-        public Menu(int id, Inventory inv) {
-            super(MENU.get(), id, inv, new Data(inv.player.level(), inv.player.getMainHandItem().copy()));
         }
     }
 }

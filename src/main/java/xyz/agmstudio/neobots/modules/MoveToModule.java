@@ -22,9 +22,6 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import java.util.List;
 
 public class MoveToModule extends ModuleItem<MoveToModule.Data, MoveToModule.Task> {
-    public static void register() {}
-
-
     public MoveToModule(Properties props) {
         super("move_to", props, Task::new, Data::new);
     }

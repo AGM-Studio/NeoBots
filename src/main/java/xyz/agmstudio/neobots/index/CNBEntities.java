@@ -1,0 +1,38 @@
+package xyz.agmstudio.neobots.index;
+
+import com.tterrag.registrate.util.entry.EntityEntry;
+import net.minecraft.world.entity.MobCategory;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import xyz.agmstudio.neobots.robos.NeoBotEntity;
+import xyz.agmstudio.neobots.robos.NeoBotRenderer;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import static xyz.agmstudio.neobots.NeoBots.REGISTRATE;
+
+
+@ParametersAreNonnullByDefault
+public final class CNBEntities {
+    public static void register(IEventBus bus) {
+        bus.addListener(CNBEntities::registerAttributes);
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            bus.addListener(CNBEntities::registerRenderers);
+        }
+    }
+
+    public static final EntityEntry<NeoBotEntity> ANDESITE_ROLLER = REGISTRATE.entity("andesite_roller", NeoBotEntity::new, MobCategory.MISC).register();
+
+    public static void registerAttributes(EntityAttributeCreationEvent event) {
+        event.put(ANDESITE_ROLLER.get(), NeoBotEntity.createAttributes().build());
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(CNBEntities.ANDESITE_ROLLER.get(), NeoBotRenderer::new);
+    }
+}
