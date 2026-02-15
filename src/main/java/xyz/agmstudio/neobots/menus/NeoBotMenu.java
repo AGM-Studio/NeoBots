@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.block.battery.BatteryItem;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.index.CNBMenus;
@@ -29,6 +30,7 @@ public class NeoBotMenu extends AbstractMenu {
     protected final DataSlot activeModule = DataSlot.standalone();
     protected final DataSlot moduleCapacity = DataSlot.standalone();
 
+    private final SlotGroupHolder batteryGroup;
     private final SlotGroupHolder moduleGroup;
     private final SlotGroupHolder upgradeGroup;
     private final SlotGroupHolder botInventoryGroup;
@@ -56,6 +58,7 @@ public class NeoBotMenu extends AbstractMenu {
         addDataSlot(activeModule);
         addDataSlot(moduleCapacity);
 
+        batteryGroup      = addSlotGroup(bot.getBatteryInventory(), 1, 1, 24, 70).build(this);
         moduleGroup       = addSlotGroup(bot.getModuleInventory(), 5, 8, -108, 40).pad(2).withTextureOffset(2, 2).withTexture(i -> i == activeModule.get() ? ACTIVE_SLOT_TEXTURE : SLOT_TEXTURE).build(this);
         upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2).withTexture(UPGRADE_SLOT_TEXTURE).build(this);
         botInventoryGroup = addSlotGroup(bot.getInventory(), 3, 3, 144, 28).build(this);
@@ -89,18 +92,24 @@ public class NeoBotMenu extends AbstractMenu {
 
     @Override public void handlePacket(int id, boolean value) {
         if (id == 0) {
-            if (value) bot.setState(NeoBotEntity.State.RUNNING);
-            else bot.setState(NeoBotEntity.State.STOPPED);
-        } else if (id == 1 && value) {
+            if (value) { // Run Button
+                bot.setState(NeoBotEntity.State.RUNNING);
+                botState.set(1);
+            } else {     // Stop Button
+                bot.setState(NeoBotEntity.State.STOPPED);
+                botState.set(0);
+            }
+        } else if (id == 1 && value) {  // Reset Tasks Button
             bot.setActiveModule(0);
             bot.setState(NeoBotEntity.State.RUNNING);
+            botState.set(1);
             updateIconButtons();
         }
     }
 
     @Override protected void updateIconButtons() {
         stop.active = botState.get() == 1;
-        start.active = botState.get() != 1 && botState.get() != -1;
+        start.active = botState.get() != 1 && botState.get() != -2;
         super.updateIconButtons();
     }
 
@@ -124,6 +133,7 @@ public class NeoBotMenu extends AbstractMenu {
         } else if (from == playerInventoryGroup) {
             if (ModuleItem.isModule(stack)) moved = moveTo(moduleGroup, stack, false);
             else if (BotUpgradeItem.isUpgrade(stack)) moved = moveTo(upgradeGroup, stack, false);
+            else if (stack.getItem() instanceof BatteryItem) moved = moveTo(batteryGroup, stack, false);
             else moved = moveTo(botInventoryGroup, stack, false);
         } else return ItemStack.EMPTY;
 

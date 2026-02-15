@@ -19,7 +19,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.containers.BatteryContainer;
 import xyz.agmstudio.neobots.containers.InventoryContainer;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
@@ -28,12 +31,14 @@ import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 import xyz.agmstudio.neobots.utils.NeoEntityDataAccessor;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     public static final NeoEntityDataAccessor<Component> TASK_STATUS =
             new NeoEntityDataAccessor<>(NeoBotEntity.class, EntityDataSerializers.COMPONENT);
 
     public enum State {
-        LOADING(-1), STOPPED(0), RUNNING(1), CRASHED(2);
+        LOADING(-2), NO_CHARGE(-1), STOPPED(0), RUNNING(1), CRASHED(2);
         private final int value;
 
         State(int value) {
@@ -46,10 +51,12 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     // Attributes
     protected final static int UPGRADE_SLOTS        = 3;
+    protected final static int BATTERY_SLOTS        = 1;
     protected final static int BASE_MODULE_SLOTS    = 6;
     protected final static int MAX_MODULE_SLOTS     = 32;
     protected final static int BASE_INVENTORY_SLOTS = 1;
     protected final static int MAX_INVENTORY_SLOTS  = 9;
+    protected final static int BASE_CONSUMPTION     = 10;
 
     // Execution values
     private int moduleCapacity = BASE_MODULE_SLOTS;
@@ -63,12 +70,16 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private ModuleTask<?> task = null;
     private CompoundTag taskData = null;
 
+    private final BatteryContainer batteryInventory = new BatteryContainer(this, BATTERY_SLOTS);
     private final InventoryContainer inventory = new InventoryContainer(this, MAX_INVENTORY_SLOTS);
     private final ModuleContainer moduleInventory = new ModuleContainer(this, MAX_MODULE_SLOTS);
     private final UpgradeContainer upgradeInventory = new UpgradeContainer(this, UPGRADE_SLOTS);
 
     public void setChanged() {}
 
+    public BatteryContainer getBatteryInventory() {
+        return batteryInventory;
+    }
     public InventoryContainer getInventory() {
         return inventory;
     }
@@ -111,9 +122,11 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         return state;
     }
     public void setState(State state) {
-        if (state == State.STOPPED && task != null) {
-            task.onStop();
-            task = null;
+        if (state == State.STOPPED || state == State.CRASHED || state == State.NO_CHARGE) {
+            if (task != null) {
+                task.onStop();
+                task = null;
+            }
         } else if (state == State.RUNNING) {
             if (this.state == State.CRASHED) setActiveModule(0);
             lastCrash = null;
@@ -121,6 +134,23 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
         this.state = state;
         updateStatus();
+    }
+
+    public int getEnergy() {
+        AtomicInteger value = new AtomicInteger();
+        for (ItemStack battery: batteryInventory.getItems()) {
+            IEnergyStorage storage = battery.getCapability(Capabilities.EnergyStorage.ITEM);
+            if (storage != null) value.addAndGet(storage.getEnergyStored());
+        }
+        return value.get();
+    }
+    public void consumeEnergy(int amount) {
+        for (ItemStack battery: batteryInventory.getItems().reversed()) {
+            IEnergyStorage storage = battery.getCapability(Capabilities.EnergyStorage.ITEM);
+            if (storage != null) amount -= storage.extractEnergy(amount, false);
+            if (amount <= 0) break;
+        }
+        if (amount > 0) throw NeoBotCrash.OUT_OF_CHARGE;
     }
 
     public NeoBotEntity(EntityType<? extends PathfinderMob> type, Level level) {
@@ -141,10 +171,14 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         super.tick();
         if (level().isClientSide || state != State.RUNNING) return;
         try {
+            consumeEnergy(BASE_CONSUMPTION);
             tickModules();
         } catch (NeoBotCrash crash) {
-            this.lastCrash = crash;
-            setState(State.CRASHED);
+            if (crash == NeoBotCrash.OUT_OF_CHARGE) setState(State.NO_CHARGE);
+            else {
+                this.lastCrash = crash;
+                setState(State.CRASHED);
+            }
         }
         updateStatus();
     }
@@ -199,6 +233,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     private void updateStatus() {
         Component status;
         if (state == State.LOADING) status = Component.translatable("state.neobots.loading");
+        else if (state == State.NO_CHARGE) status = Component.translatable("state.neobots.no_charge");
         else if (state == State.STOPPED) status = Component.translatable("state.neobots.stopped");
         else if (state == State.CRASHED) {
             MutableComponent crash = Component.translatable("state.neobots.crashed").withColor(0xff0000);
@@ -214,9 +249,10 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
-        tag.put("Inventory", inventory.createTag(access));
+        inventory.saveTag(tag, "Inventory", access);
         moduleInventory.saveTag(tag, "Modules", access);
         upgradeInventory.saveTag(tag, "Upgrades", access);
+        batteryInventory.saveTag(tag, "Battery", access);
 
         tag.putInt("Cooldown", cooldownTicks);
         tag.putBoolean("OnCooldown", onCooldown);
@@ -231,14 +267,16 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         RegistryAccess access = level().registryAccess();
-        inventory.fromTag(tag.getList("Inventory", 10), access);
+        inventory.loadTag(tag, "Inventory", access);
         moduleInventory.loadTag(tag, "Modules", access);
         upgradeInventory.loadTag(tag, "Upgrades", access);
+        batteryInventory.loadTag(tag, "Battery", access);
 
         cooldownTicks = tag.getInt("Cooldown");
         onCooldown = tag.getBoolean("OnCooldown");
         int state = tag.getInt("State");
         switch (state) {
+            case -1: setState(State.NO_CHARGE); break;
             case 0: setState(State.STOPPED); break;
             case 1: setState(State.RUNNING); break;
             default: {
