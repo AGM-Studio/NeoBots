@@ -47,7 +47,7 @@ jobs:
         with:
           tag_name: experimental-build
           name: Experimental Build
-          body: "⚠️ Experimental Build — automated release of latest changes. May be unstable or untested."
+          body_path: .github/experimental-build.md
           files: build/libs/*.jar
           draft: false
           prerelease: false
