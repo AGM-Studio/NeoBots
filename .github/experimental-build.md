@@ -7,4 +7,7 @@ This is an **automated release** generated from the latest commit on `main`.
 - Breaking changes may occur without notice
 - Not recommended for production worlds
 
+### Requirements
+- Create Mod 6.0.9
+
 🧪 Please report bugs and crashes via GitHub Issues.

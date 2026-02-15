@@ -43,7 +43,7 @@ public class ChargerRenderer extends SafeBlockEntityRenderer<ChargerBlockEntity>
         ms.mulPose(Axis.XP.rotationDegrees(180));
 
         // Scale nicely
-        float scale = 0.6f;
+        float scale = 2.0f;
         ms.scale(scale, scale, scale);
 
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
