@@ -1,16 +1,25 @@
 package xyz.agmstudio.neobots.block.charger;
 
 import com.mojang.serialization.MapCodec;
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -32,6 +41,19 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class ChargerBlock extends HorizontalDirectionalBlock implements IBE<ChargerBlockEntity>, IWrenchable {
+    public static void getRecipe(DataGenContext<Item, BlockItem> ctx, RegistrateRecipeProvider prov) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
+                .pattern(" B ")
+                .pattern("CAC")
+                .pattern(" S ")
+                .define('B', AllItems.BRASS_SHEET)
+                .define('A', AllBlocks.ANDESITE_CASING)
+                .define('C', Items.COPPER_INGOT)
+                .define('S', AllBlocks.SHAFT)
+                .unlockedBy("has_case", RegistrateRecipeProvider.has(AllBlocks.ANDESITE_CASING))
+                .save(prov);
+    }
+
     public static final MapCodec<ChargerBlock> CODEC = simpleCodec(ChargerBlock::new);
 
     public ChargerBlock(Properties properties) {

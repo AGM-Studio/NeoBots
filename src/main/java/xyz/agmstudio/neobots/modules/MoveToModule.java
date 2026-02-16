@@ -1,12 +1,19 @@
 package xyz.agmstudio.neobots.modules;
 
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -15,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.index.CNBItems;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleBlockPosData;
 import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
@@ -24,6 +32,18 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import java.util.List;
 
 public class MoveToModule extends TargetedModuleItem<MoveToModule.Data, MoveToModule.Task> {
+    public static void getRecipe(DataGenContext<Item, MoveToModule> ctx, RegistrateRecipeProvider prov) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
+                .pattern("AAA")
+                .pattern("CBC")
+                .pattern("AAA")
+                .define('B', CNBItems.BASE_MODULE)
+                .define('A', AllItems.ANDESITE_ALLOY)
+                .define('C', AllBlocks.COGWHEEL)
+                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BASE_MODULE))
+                .save(prov);
+    }
+
     public MoveToModule(Properties props) {
         super("move_to", props, Task::new, Data::new);
     }

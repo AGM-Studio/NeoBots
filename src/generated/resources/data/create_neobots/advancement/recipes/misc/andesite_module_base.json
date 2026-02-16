@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_precision": {
+      "conditions": {
+        "items": [
+          {
+            "items": "create:precision_mechanism"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "create_neobots:andesite_module_base"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_precision"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "create_neobots:andesite_module_base"
+    ]
+  }
+}

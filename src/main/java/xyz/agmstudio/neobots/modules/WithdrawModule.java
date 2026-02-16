@@ -1,6 +1,10 @@
 package xyz.agmstudio.neobots.modules;
 
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
@@ -8,10 +12,13 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.index.CNBItems;
 import xyz.agmstudio.neobots.menus.TransferModuleMenu;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
@@ -21,6 +28,19 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
 public class WithdrawModule extends TargetedModuleItem<WithdrawModule.Data, WithdrawModule.Task> implements MenuProvider {
+    public static void getRecipe(DataGenContext<Item, WithdrawModule> ctx, RegistrateRecipeProvider prov) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
+                .pattern("RHR")
+                .pattern("IBI")
+                .pattern("RIR")
+                .define('B', CNBItems.BASE_MODULE)
+                .define('R', Items.REDSTONE)
+                .define('I', Items.IRON_INGOT)
+                .define('H', Items.HOPPER)
+                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BASE_MODULE))
+                .save(prov);
+    }
+
     private static final int REACH_SQR = 4;
     private static final int COOLDOWN = 4;
 

@@ -1,10 +1,13 @@
 package xyz.agmstudio.neobots.block.battery;
 
+import com.simibubi.create.AllItems;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
@@ -15,7 +18,22 @@ import java.util.List;
 
 @ParametersAreNonnullByDefault
 public class BatteryItem extends BlockItem {
-    public static final int CAPACITY = 131_072;
+    public static void getRecipe(DataGenContext<Item, BatteryItem> ctx, RegistrateRecipeProvider prov) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
+                .pattern(" N ")
+                .pattern("ZRC")
+                .pattern("ZRC")
+                .define('Z', AllItems.ZINC_INGOT)
+                .define('R', Items.REDSTONE)
+                .define('C', Items.COPPER_INGOT)
+                .define('N', AllItems.COPPER_NUGGET)
+                .unlockedBy("has_copper", RegistrateRecipeProvider.has(Items.COPPER_INGOT))
+                .unlockedBy("has_redstone", RegistrateRecipeProvider.has(Items.REDSTONE))
+                .unlockedBy("has_zinc", RegistrateRecipeProvider.has(AllItems.ZINC_INGOT))
+                .save(prov);
+    }
+
+    public static final int CAPACITY = 102_400;
 
     public BatteryItem(Block block, Properties properties) {
         super(block, properties);

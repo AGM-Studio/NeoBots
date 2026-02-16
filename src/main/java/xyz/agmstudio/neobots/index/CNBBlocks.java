@@ -98,6 +98,7 @@ public final class CNBBlocks {
             .transform(TagGen.axeOrPickaxe())
             .blockstate(blockStateProvider())
             .item().model(itemModelProvider())
+            .recipe(ChargingPadBlock::getRecipe)
             .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
             .register();
 
@@ -108,6 +109,7 @@ public final class CNBBlocks {
             .transform(TagGen.axeOrPickaxe())
             .blockstate(horizontalFacingBlockState())
             .item().model(itemModelProvider())
+            .recipe(ChargerBlock::getRecipe)
             .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
             .register();
 
@@ -118,6 +120,7 @@ public final class CNBBlocks {
             .transform(TagGen.pickaxeOnly())
             .blockstate(blockStateProvider())
             .item(BatteryItem::new).model(itemModelProvider())
+            .recipe(BatteryItem::getRecipe)
             .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
             .register();
 }

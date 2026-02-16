@@ -1,7 +1,13 @@
 package xyz.agmstudio.neobots.modules.abstracts.item;
 
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.item.TooltipHelper;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import net.createmod.catnip.lang.FontHelper;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -12,6 +18,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -24,13 +31,25 @@ import java.util.List;
 import java.util.Objects;
 
 public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> extends Item {
-    protected final String key;
-    private final ModuleTask.Gen<D, T> taskGenerator;
-    private final ModuleData.Gen<D> dataGenerator;
-
     public static boolean isModule(@NotNull ItemStack stack) {
         return stack.getItem() instanceof ModuleItem;
     }
+    public static void getBaseRecipe(DataGenContext<Item, Item> ctx, RegistrateRecipeProvider prov) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get(), 4)
+                .pattern("CAC")
+                .pattern("APA")
+                .pattern("RAR")
+                .define('P', AllItems.PRECISION_MECHANISM)
+                .define('A', AllBlocks.ANDESITE_CASING)
+                .define('C', AllBlocks.COGWHEEL)
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_precision", RegistrateRecipeProvider.has(AllItems.PRECISION_MECHANISM))
+                .save(prov);
+    }
+
+    protected final String key;
+    private final ModuleTask.Gen<D, T> taskGenerator;
+    private final ModuleData.Gen<D> dataGenerator;
 
     public ModuleItem(String key, Properties properties, ModuleTask.Gen<D, T> taskGenerator, ModuleData.Gen<D> dataGenerator) {
         super(properties);

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_base": {
+      "conditions": {
+        "items": [
+          {
+            "items": "create_neobots:andesite_module_base"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "create_neobots:charging_module"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_base"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "create_neobots:charging_module"
+    ]
+  }
+}

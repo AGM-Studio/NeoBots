@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "create_neobots:andesite_module_base"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "CRC",
+    "RBR",
+    "CRC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_neobots:charging_module"
+  }
+}
