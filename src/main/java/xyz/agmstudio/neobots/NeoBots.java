@@ -46,6 +46,7 @@ public class NeoBots {
         CNBBlockEntities.register();
         CNBEntities.register(bus);
         CNBMenus.register();
+        CNBLang.register();
         CNBCreativeModeTabs.register(bus);
 
         NetworkHandler.registerPackets(bus);

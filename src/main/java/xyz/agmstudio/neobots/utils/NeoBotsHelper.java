@@ -20,8 +20,8 @@ public interface NeoBotsHelper {
         return FilterItem.testDirect(filter, stack, false);
     }
 
-    Component STACKS_TERM = Component.literal("Stacks");
-    Component STACK_TERM = Component.literal("Stack");
+    Component STACKS_TERM = Component.translatable("gui_term.create_neobots.stacks");
+    Component STACK_TERM = Component.translatable("gui_term.create_neobots.stack");
     static Component countAsStacks(int count) {
         if (count < 64) return Component.literal(count + "");
         int s = count / 64;

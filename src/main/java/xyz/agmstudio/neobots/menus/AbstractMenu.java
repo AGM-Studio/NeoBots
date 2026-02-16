@@ -110,7 +110,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         return input;
     }
     protected Button addButton(String text, Button.OnPress onPress, int x, int y, int w, int h) {
-        return addButton(Component.literal(text), onPress, x, y, w, h);
+        return addButton(Component.translatable(text), onPress, x, y, w, h);
     }
     protected Button addButton(Component text, Button.OnPress onPress, int x, int y, int w, int h) {
         Button button = Button.builder(text, onPress).pos(x, y).size(w, h).build();

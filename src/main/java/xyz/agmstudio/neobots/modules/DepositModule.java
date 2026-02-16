@@ -1,6 +1,5 @@
 package xyz.agmstudio.neobots.modules;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -15,8 +14,8 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.menus.TransferModuleMenu;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
-import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
+import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotCrash;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
@@ -31,9 +30,6 @@ public class DepositModule extends TargetedModuleItem<DepositModule.Data, Deposi
 
     @Override public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {
         return ctx.getLevel().getBlockEntity(pos) instanceof Container;
-    }
-    @Override protected Component getTargetSetMessage() {
-        return Component.translatable("module.create_neobots.deposit.target_set").withStyle(ChatFormatting.GREEN);
     }
 
     @Override public @NotNull Component getDisplayName() {
@@ -92,7 +88,7 @@ public class DepositModule extends TargetedModuleItem<DepositModule.Data, Deposi
 
         @Override public void tick() {
             Container container = data.getContainer(bot, reach);
-            if (container == null) throw NeoBotCrash.INVENTORY_NOT_ACCESSIBLE;
+            if (container == null) throw NeoBotCrash.INVENTORY_INACCESSIBLE;
             if (deposited >= data.getCount() || tick++ < cooldown) return;
 
             int remaining = data.getCount() - deposited;
@@ -102,8 +98,8 @@ public class DepositModule extends TargetedModuleItem<DepositModule.Data, Deposi
             tick = 0;
         }
 
-        @Override public Component getStatus() {
-            return Component.literal("Depositing (" + deposited + "/" + data.getCount() + ")").withStyle(ChatFormatting.YELLOW);
+        @Override protected Object @NotNull [] getTranslateArgs() {
+            return new Object[]{deposited, data.getCount()};
         }
     }
     public static class Data extends ModuleTransferData {

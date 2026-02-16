@@ -21,6 +21,7 @@ public class NeoBotCrash extends RuntimeException {
     }
 
     public static NeoBotCrash OUT_OF_CHARGE = new NeoBotCrash(-3, Component.empty());
-    public static NeoBotCrash INVENTORY_NOT_ACCESSIBLE = new NeoBotCrash(0, Component.translatable("crash.neobots.inventory_not_accessible"));
-    public static NeoBotCrash CHARGER_NOT_FOUND = new NeoBotCrash(1, Component.translatable("crash.create_neobots.not_on_charger"));
+    public static NeoBotCrash TARGET_INACCESSIBLE = new NeoBotCrash(0, Component.translatable("crash.create_neobots.target_inaccessible"));
+    public static NeoBotCrash INVENTORY_INACCESSIBLE = new NeoBotCrash(1, Component.translatable("crash.create_neobots.inventory_inaccessible"));
+    public static NeoBotCrash CHARGER_NOT_FOUND = new NeoBotCrash(2, Component.translatable("crash.create_neobots.not_on_charger"));
 }

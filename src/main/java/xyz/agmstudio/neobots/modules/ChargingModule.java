@@ -52,10 +52,6 @@ public class ChargingModule extends ModuleItem<ChargingModule.Data, ChargingModu
             else if (pad.getOwner() != bot) return;
             bot.chargeEnergy((int) pad.getSpeed());
         }
-
-        @Override public Component getStatus() {
-            return Component.translatable("module.create_neobots.charging.status");
-        }
     }
     public static class Data extends ModuleData {
         protected Data(Level level, ItemStack stack) {

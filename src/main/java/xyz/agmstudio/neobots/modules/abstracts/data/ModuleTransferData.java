@@ -66,7 +66,7 @@ public abstract class ModuleTransferData extends ModuleBlockPosData {
         return 50;
     }
     @Override public void addTooltip(List<Component> tooltip, Item.@NotNull TooltipContext ctx, @NotNull TooltipFlag flags) {
-        String trans = "module.neobots." + getTranslateKey() + ".tooltip.";
+        String trans = "module.create_neobots." + getTranslateKey() + ".tooltip.";
         tooltip.add(Component.translatable(trans + "count", count).withStyle(ChatFormatting.AQUA));
         if (target != null) tooltip.add(Component.translatable(trans + "target", target.toShortString()).withStyle(ChatFormatting.AQUA));
         else tooltip.add(Component.translatable(trans + "no_target").withStyle(ChatFormatting.RED));

@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleBlockPosData;
 import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
+import xyz.agmstudio.neobots.robos.NeoBotCrash;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import java.util.List;
@@ -34,10 +35,6 @@ public class MoveToModule extends TargetedModuleItem<MoveToModule.Data, MoveToMo
 
         BlockPos standPos = pos.above();
         return level.getBlockState(standPos).isAir() && level.getBlockState(standPos.above()).isAir();
-    }
-
-    @Override protected Component getTargetSetMessage() {
-        return Component.translatable("module.create_neobots.move_to.target_set").withStyle(ChatFormatting.GREEN);
     }
 
     public static class Task extends ModuleTask<Data> {
@@ -61,7 +58,7 @@ public class MoveToModule extends TargetedModuleItem<MoveToModule.Data, MoveToMo
         }
 
         @Override public void onStart() {
-            if (!data.isSameDimension(bot.level().dimension())) return;
+            if (!data.isSameDimension(bot.level().dimension())) throw NeoBotCrash.TARGET_INACCESSIBLE;
             bot.getNavigation().moveTo(target.x, target.y, target.z, 0, 1.0);
         }
 
@@ -95,15 +92,9 @@ public class MoveToModule extends TargetedModuleItem<MoveToModule.Data, MoveToMo
             bot.setDeltaMovement(motion.x, bot.getDeltaMovement().y, motion.z);
         }
 
-        @Override public Component getStatus() {
-            if (data.getTarget() == null)
-                return Component.literal("No target set").withStyle(ChatFormatting.DARK_GRAY);
-            if (!data.isSameDimension(bot.level().dimension()))
-                return Component.literal("Unable to find the target").withStyle(ChatFormatting.RED);
-            if (!bot.getNavigation().isDone() || !isDone())
-                return Component.literal("Moving to target").withStyle(ChatFormatting.YELLOW);
-
-            return Component.literal("Arrived").withStyle(ChatFormatting.GREEN);
+        @Override
+        protected Object @NotNull [] getTranslateArgs() {
+            return new Object[]{data.getTarget().toShortString()};
         }
     }
     public static class Data extends ModuleBlockPosData {
@@ -116,11 +107,10 @@ public class MoveToModule extends TargetedModuleItem<MoveToModule.Data, MoveToMo
         }
 
         @Override public void addTooltip(@NotNull List<Component> tooltip, @NotNull TooltipContext ctx, @NotNull TooltipFlag flags) {
-            if (target != null) {
-                tooltip.add(Component.literal("Target:").withStyle(ChatFormatting.GRAY));
-                tooltip.add(Component.literal(target.toShortString()).withStyle(ChatFormatting.AQUA));
-            } else
-                tooltip.add(Component.literal("No target set").withStyle(ChatFormatting.DARK_GRAY));
+            if (target != null)
+                tooltip.add(Component.translatable("module.create_neobots.move_to.tooltip.target", target.toShortString()).withStyle(ChatFormatting.AQUA));
+            else
+                tooltip.add(Component.translatable("module.create_neobots.move_to.tooltip.no_target").withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 }

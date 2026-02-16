@@ -19,11 +19,12 @@ import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> extends Item {
-    private final String key;
+    protected final String key;
     private final ModuleTask.Gen<D, T> taskGenerator;
     private final ModuleData.Gen<D> dataGenerator;
 
@@ -52,18 +53,26 @@ public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> 
     }
 
     public @NotNull Component getModuleDescription() {
-        return Component.translatable("module.neobots." + key + ".tooltip.description");
+        return Component.translatable("module.create_neobots." + key + ".tooltip.description");
     }
     public @NotNull FontHelper.Palette getPalette() {
         return FontHelper.Palette.GRAY_AND_GOLD;
+    }
+    public @NotNull FontHelper.Palette getShiftPalette() {
+        return FontHelper.Palette.GRAY_AND_BLUE;
     }
 
     @Override public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext ctx, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
         tooltip.add(TooltipHelper.holdShift(FontHelper.Palette.GRAY_AND_BLUE, false));
         tooltip.add(CommonComponents.SPACE);
         if (flags.hasShiftDown())
-            tooltip.addAll(FontHelper.cutTextComponent(getModuleDescription(), FontHelper.Palette.GRAY_AND_BLUE));
-        else getData(ctx.level(), stack).addTooltip(tooltip, ctx, flags);
+            tooltip.addAll(FontHelper.cutTextComponent(getModuleDescription(), getShiftPalette()));
+        else {
+            List<Component> dataTooltip = new ArrayList<>();
+            getData(ctx.level(), stack).addTooltip(dataTooltip, ctx, flags);
+            for (Component component: dataTooltip)
+                tooltip.addAll(FontHelper.cutTextComponent(component, getPalette()));
+        }
     }
 
     @Override public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {

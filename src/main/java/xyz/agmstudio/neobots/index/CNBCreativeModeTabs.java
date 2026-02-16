@@ -19,7 +19,7 @@ public final class CNBCreativeModeTabs {
     private static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, NeoBots.MOD_ID);
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.neobots.main"))
+            .title(Component.translatable("itemGroup.create_neobots.main"))
             .withTabsBefore(AllCreativeModeTabs.PALETTES_CREATIVE_TAB.getKey())
             .icon(CNBItems.MEMORY_UPGRADE::asStack)
             .displayItems(new DisplayItemsGenerator(List.of()))

@@ -242,20 +242,19 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     @Override protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
-        TASK_STATUS.build(builder, Component.translatable("state.neobots.loading"));
+        TASK_STATUS.build(builder, Component.translatable("state.create_neobots.loading"));
     }
 
     private void updateStatus() {
         Component status;
-        if (state == State.LOADING) status = Component.translatable("state.neobots.loading");
-        else if (state == State.NO_CHARGE) status = Component.translatable("state.neobots.no_charge");
-        else if (state == State.STOPPED) status = Component.translatable("state.neobots.stopped");
+        if (state == State.LOADING) status = Component.translatable("state.create_neobots.loading");
+        else if (state == State.NO_CHARGE) status = Component.translatable("state.create_neobots.no_charge");
+        else if (state == State.STOPPED) status = Component.translatable("state.create_neobots.stopped");
         else if (state == State.CRASHED) {
-            MutableComponent crash = Component.translatable("state.neobots.crashed").withColor(0xff0000);
+            MutableComponent crash = Component.translatable("state.create_neobots.crashed").withColor(0xff0000);
             if (lastCrash != null) status = crash.append(lastCrash.message);
             else status = crash;
-        } else if (cooldownTicks > 0) status =  Component.translatable("state.neobots.cooldown");
-        else if (task == null) status = Component.translatable("state.neobots.idle");
+        } else if (task == null) status = Component.translatable("state.create_neobots.idle");
         else status = task.getStatus();
         TASK_STATUS.set(this, status);
     }

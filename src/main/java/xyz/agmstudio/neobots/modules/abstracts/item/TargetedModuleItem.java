@@ -23,9 +23,11 @@ public abstract class TargetedModuleItem<D extends ModuleBlockPosData, T extends
     public BlockPos adjustBlockPos(@NotNull UseOnContext ctx,@NotNull  BlockPos pos) {
         return pos;
     }
-    protected abstract Component getTargetSetMessage();
+    protected Component getTargetSetMessage() {
+        return Component.translatable("module.create_neobots.abstract.target_set").withStyle(ChatFormatting.GREEN);
+    }
     protected Component getInvalidTargetMessage() {
-        return Component.translatable("module.create_neobots.invalid_target").withStyle(ChatFormatting.RED);
+        return Component.translatable("module.create_neobots.abstract.invalid_target").withStyle(ChatFormatting.RED);
     }
 
     @Override public @NotNull InteractionResult useOn(UseOnContext ctx) {

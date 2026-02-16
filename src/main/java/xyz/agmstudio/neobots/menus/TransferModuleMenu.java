@@ -58,7 +58,7 @@ public class TransferModuleMenu extends AbstractMenu {
         // Setup GUI
         addScrollInput(51, 51, 96, 10).withRange(1, 577)
                 .setState(this.data.getCount())
-                .titled(Component.literal("Count"))
+                .titled(Component.translatable("gui_term.create_neobots.count"))
                 .calling(value -> {
                     count = value;
                     sendPacket(0, count);
@@ -78,7 +78,7 @@ public class TransferModuleMenu extends AbstractMenu {
         addLabel(s -> NeoBotsHelper.countAsStacks(count), 54, 52).withColor(0xffffff).withShadow();
 
         int targetColor = 0xcc0000;
-        Component target = Component.literal("Right click to set target");
+        Component target = Component.translatable("gui.create_neobots.not_target.container");
         if (this.data.getTarget() != null) {
             targetColor = 0xffffff;
             target = inventory.player.level().getBlockState(this.data.getTarget()).getBlock().getName()
