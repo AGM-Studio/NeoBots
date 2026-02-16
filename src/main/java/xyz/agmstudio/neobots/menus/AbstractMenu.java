@@ -3,13 +3,11 @@ package xyz.agmstudio.neobots.menus;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import net.createmod.catnip.gui.element.ScreenElement;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.Container;
@@ -20,8 +18,6 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -279,15 +275,6 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         }
 
         super.clicked(id, dragType, clickType, player);
-    }
-
-
-    @OnlyIn(Dist.CLIENT)
-    protected boolean sendInventoryClickPacket(int value) {
-        MultiPlayerGameMode mode = Minecraft.getInstance().gameMode;
-        if (mode == null) return false;
-        mode.handleInventoryButtonClick(containerId, value);
-        return true;
     }
 
     // Packet Handlers

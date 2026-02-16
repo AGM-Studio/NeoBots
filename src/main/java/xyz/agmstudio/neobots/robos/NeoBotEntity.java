@@ -36,6 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     public static final NeoEntityDataAccessor<Component> TASK_STATUS =
             new NeoEntityDataAccessor<>(NeoBotEntity.class, EntityDataSerializers.COMPONENT);
+    public static final NeoEntityDataAccessor<Integer> STATE =
+            new NeoEntityDataAccessor<>(NeoBotEntity.class, EntityDataSerializers.INT);
 
     public enum State {
         LOADING(-2), NO_CHARGE(-1), STOPPED(0), RUNNING(1), CRASHED(2);
@@ -133,6 +135,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         }
 
         this.state = state;
+        STATE.set(this, state.value);
         updateStatus();
     }
 
@@ -243,6 +246,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     @Override protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         TASK_STATUS.build(builder, Component.translatable("state.create_neobots.loading"));
+        STATE.build(builder, State.LOADING.getValue());
     }
 
     private void updateStatus() {

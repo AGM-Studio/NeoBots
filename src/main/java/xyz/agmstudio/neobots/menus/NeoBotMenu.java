@@ -26,7 +26,6 @@ public class NeoBotMenu extends AbstractMenu {
     private static final Texture BG = new Texture("textures/gui/neobot.png", 224, 215);
 
     private final NeoBotEntity bot;
-    protected final DataSlot botState = DataSlot.standalone();
     protected final DataSlot activeModule = DataSlot.standalone();
     protected final DataSlot moduleCapacity = DataSlot.standalone();
 
@@ -35,7 +34,7 @@ public class NeoBotMenu extends AbstractMenu {
     private final SlotGroupHolder upgradeGroup;
     private final SlotGroupHolder botInventoryGroup;
 
-    private boolean active;
+    private int state;
     private final IconButton stop;
     private final IconButton start;
 
@@ -54,7 +53,6 @@ public class NeoBotMenu extends AbstractMenu {
         super(type, id, inv);
         this.bot = bot;
 
-        addDataSlot(botState);
         addDataSlot(activeModule);
         addDataSlot(moduleCapacity);
 
@@ -66,16 +64,20 @@ public class NeoBotMenu extends AbstractMenu {
         addPlayerInventoryTitle(112, 100).centered().withColor(0x000000);
         addPlayerInventory(24, 116, 2, 5, 18);
 
-        stop = addIconButton(81, 69, AllIcons.I_STOP).withCallback(() -> {
+        state = NeoBotEntity.STATE.get(bot);
+        stop  = addIconButton(81,  69, AllIcons.I_STOP).withCallback(() -> {
+            state = 0; updateIconButtons();
             sendPacket(0, false);
-            updateIconButtons();
         });
         start = addIconButton(103, 69, AllIcons.I_PLAY).withCallback(() -> {
+            state = 1; updateIconButtons();
             sendPacket(0, true);
-            updateIconButtons();
         });
 
-        addIconButton(53, 69, AllIcons.I_REFRESH).withCallback(() -> sendPacket(1, true));
+        addIconButton(53, 69, AllIcons.I_REFRESH).withCallback(() -> {
+            state = 1; updateIconButtons();
+            sendPacket(1, true);
+        });
         updateIconButtons();
 
         // Setup GUI
@@ -92,24 +94,17 @@ public class NeoBotMenu extends AbstractMenu {
 
     @Override public void handlePacket(int id, boolean value) {
         if (id == 0) {
-            if (value) { // Run Button
-                bot.setState(NeoBotEntity.State.RUNNING);
-                botState.set(1);
-            } else {     // Stop Button
-                bot.setState(NeoBotEntity.State.STOPPED);
-                botState.set(0);
-            }
-        } else if (id == 1 && value) {  // Reset Tasks Button
+            if (value) bot.setState(NeoBotEntity.State.RUNNING);    // Run Button
+            else bot.setState(NeoBotEntity.State.STOPPED);          // Stop Button
+        } else if (id == 1 && value) {                              // Reset Tasks Button
             bot.setActiveModule(0);
             bot.setState(NeoBotEntity.State.RUNNING);
-            botState.set(1);
-            updateIconButtons();
         }
     }
 
     @Override protected void updateIconButtons() {
-        stop.active = botState.get() == 1;
-        start.active = botState.get() != 1 && botState.get() != -2;
+        stop.active = state == 1;
+        start.active = state != 1 && state != -2;
         super.updateIconButtons();
     }
 
@@ -151,9 +146,7 @@ public class NeoBotMenu extends AbstractMenu {
     }
     @Override public void broadcastChanges() {
         super.broadcastChanges();
-        if (bot == null || bot.level().isClientSide) return;
 
-        botState.set(bot.getState().getValue());
         activeModule.set(bot.getActiveModuleIndex());
         moduleCapacity.set(bot.getModuleCapacity());
     }

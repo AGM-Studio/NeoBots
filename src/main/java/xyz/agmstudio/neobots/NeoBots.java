@@ -9,18 +9,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.energy.ComponentEnergyStorage;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.agmstudio.neobots.block.battery.BatteryItem;
 import xyz.agmstudio.neobots.index.*;
 import xyz.agmstudio.neobots.network.NetworkHandler;
-
-import static xyz.agmstudio.neobots.index.CNBDataComponents.BATTERY_DATA;
 
 @Mod(NeoBots.MOD_ID)
 public class NeoBots {
@@ -50,17 +44,7 @@ public class NeoBots {
         CNBCreativeModeTabs.register(bus);
 
         NetworkHandler.registerPackets(bus);
-        bus.addListener(this::registerCapabilities);
 
         REGISTRATE.registerEventListeners(bus);
-    }
-
-    public void registerCapabilities(@NotNull RegisterCapabilitiesEvent event) {
-        event.registerItem(Capabilities.EnergyStorage.ITEM,
-                (stack, ctx) -> new ComponentEnergyStorage(stack, BATTERY_DATA.get(), BatteryItem.CAPACITY),
-                CNBBlocks.BATTERY.asItem()
-        );
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, CNBBlockEntities.CHARGER.get(),
-                (be, ctx) -> be.getInventory());
     }
 }
