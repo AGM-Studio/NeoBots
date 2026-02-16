@@ -144,6 +144,14 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         }
         return value.get();
     }
+    public int getTotalEnergy() {
+        AtomicInteger value = new AtomicInteger();
+        for (ItemStack battery: batteryInventory.getItems()) {
+            IEnergyStorage storage = battery.getCapability(Capabilities.EnergyStorage.ITEM);
+            if (storage != null) value.addAndGet(storage.getMaxEnergyStored());
+        }
+        return value.get();
+    }
     public void consumeEnergy(int amount) {
         for (ItemStack battery: batteryInventory.getItems().reversed()) {
             IEnergyStorage storage = battery.getCapability(Capabilities.EnergyStorage.ITEM);
@@ -151,6 +159,13 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
             if (amount <= 0) break;
         }
         if (amount > 0) throw NeoBotCrash.OUT_OF_CHARGE;
+    }
+    public void chargeEnergy(int amount) {
+        for (ItemStack battery: batteryInventory.getItems()) {
+            IEnergyStorage storage = battery.getCapability(Capabilities.EnergyStorage.ITEM);
+            if (storage != null) amount -= storage.receiveEnergy(amount, false);
+            if (amount <= 0) break;
+        }
     }
 
     public NeoBotEntity(EntityType<? extends PathfinderMob> type, Level level) {
