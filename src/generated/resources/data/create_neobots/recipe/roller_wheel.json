@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "create:belt_connector"
+    },
+    "K": {
+      "item": "minecraft:dried_kelp"
+    },
+    "S": {
+      "item": "create:shaft"
+    }
+  },
+  "pattern": [
+    "KBK",
+    "BSB",
+    "KBK"
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_neobots:roller_wheel"
+  }
+}

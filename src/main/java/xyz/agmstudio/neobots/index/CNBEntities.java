@@ -25,14 +25,14 @@ public final class CNBEntities {
         }
     }
 
-    public static final EntityEntry<NeoBotEntity> ANDESITE_ROLLER = REGISTRATE.entity("andesite_roller", NeoBotEntity::new, MobCategory.MISC).register();
+    public static final EntityEntry<NeoBotEntity> BRASS_ROLLER = REGISTRATE.entity("brass_roller", NeoBotEntity::new, MobCategory.MISC).register();
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
-        event.put(ANDESITE_ROLLER.get(), NeoBotEntity.createAttributes().build());
+        event.put(BRASS_ROLLER.get(), NeoBotEntity.createAttributes().build());
     }
 
     @OnlyIn(Dist.CLIENT)
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(CNBEntities.ANDESITE_ROLLER.get(), NeoBotRenderer::new);
+        event.registerEntityRenderer(CNBEntities.BRASS_ROLLER.get(), NeoBotRenderer::new);
     }
 }

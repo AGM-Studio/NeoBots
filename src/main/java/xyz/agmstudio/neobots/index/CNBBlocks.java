@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.api.distmarker.Dist;
@@ -32,6 +33,10 @@ import xyz.agmstudio.neobots.block.battery.BatteryItem;
 import xyz.agmstudio.neobots.block.charger.ChargerBlock;
 import xyz.agmstudio.neobots.block.charger.ChargerRenderer;
 import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlock;
+import xyz.agmstudio.neobots.block.parts.BrassRollerHead;
+import xyz.agmstudio.neobots.block.parts.BrassWheel;
+import xyz.agmstudio.neobots.block.parts.BrassWheelBase;
+import xyz.agmstudio.neobots.block.parts.RollerWheel;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -121,6 +126,37 @@ public final class CNBBlocks {
             .blockstate(blockStateProvider())
             .item(BatteryItem::new).model(itemModelProvider())
             .recipe(BatteryItem::getRecipe)
+            .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
+            .register();
+
+    // Bot Parts
+    public static final BlockEntry<RollerWheel> ROLLER_WHEEL = REGISTRATE.block("roller_wheel", RollerWheel::new)
+            .initialProperties(SharedProperties::wooden)
+            .blockstate(blockStateProvider())
+            .item().model(itemModelProvider())
+            .recipe(RollerWheel::getRecipe)
+            .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
+            .register();
+
+    public static final BlockEntry<BrassRollerHead> BRASS_ROLLER_HEAD = REGISTRATE.block("brass_roller_head", BrassRollerHead::new)
+            .initialProperties(() -> Blocks.PLAYER_HEAD)
+            .blockstate(horizontalFacingBlockState())
+            .item().model(itemModelProvider())
+            .recipe(BrassRollerHead::getRecipe)
+            .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
+            .register();
+    public static final BlockEntry<BrassWheelBase> BRASS_WHEEL_BASE = REGISTRATE.block("brass_wheel_base", BrassWheelBase::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(horizontalFacingBlockState())
+            .item().model(itemModelProvider())
+            .recipe(BrassWheelBase::getRecipe)
+            .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
+            .register();
+    public static final BlockEntry<BrassWheel> BRASS_WHEEL = REGISTRATE.block("brass_wheel", BrassWheel::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(horizontalFacingBlockState())
+            .item().model(itemModelProvider())
+            .recipe(BrassWheel::getRecipe)
             .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
             .register();
 }
