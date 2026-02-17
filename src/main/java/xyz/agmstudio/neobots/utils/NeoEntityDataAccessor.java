@@ -28,4 +28,7 @@ public class NeoEntityDataAccessor<T> {
     public T get(Entity entity) {
         return entity.getEntityData().get(accessor);
     }
+    public EntityDataAccessor<T> getAccessor() {
+        return accessor;
+    }
 }

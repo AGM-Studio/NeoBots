@@ -9,7 +9,9 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
-import xyz.agmstudio.neobots.robos.NeoBotRenderer;
+import xyz.agmstudio.neobots.robos.brass.roller.BrassRoller;
+import xyz.agmstudio.neobots.robos.brass.roller.BrassRollerModel;
+import xyz.agmstudio.neobots.robos.brass.roller.BrassRollerRenderer;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -22,10 +24,11 @@ public final class CNBEntities {
         bus.addListener(CNBEntities::registerAttributes);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             bus.addListener(CNBEntities::registerRenderers);
+            bus.addListener(CNBEntities::registerLayers);
         }
     }
 
-    public static final EntityEntry<NeoBotEntity> BRASS_ROLLER = REGISTRATE.entity("brass_roller", NeoBotEntity::new, MobCategory.MISC).register();
+    public static final EntityEntry<BrassRoller> BRASS_ROLLER = REGISTRATE.entity("brass_roller", BrassRoller::new, MobCategory.MISC).register();
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(BRASS_ROLLER.get(), NeoBotEntity.createAttributes().build());
@@ -33,6 +36,11 @@ public final class CNBEntities {
 
     @OnlyIn(Dist.CLIENT)
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(CNBEntities.BRASS_ROLLER.get(), NeoBotRenderer::new);
+        event.registerEntityRenderer(CNBEntities.BRASS_ROLLER.get(), BrassRollerRenderer::new);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(BrassRollerModel.LAYER_LOCATION, BrassRollerModel::createBodyLayer);
     }
 }

@@ -4,11 +4,15 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.*;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
@@ -28,6 +32,7 @@ import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
+import xyz.agmstudio.neobots.robos.brass.roller.BrassRoller;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 import xyz.agmstudio.neobots.utils.NeoEntityDataAccessor;
 
@@ -48,6 +53,17 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         }
         public int getValue() {
             return value;
+        }
+
+        public static State of(int value) {
+            for (State state: State.values())
+                if (state.getValue() == value)
+                    return state;
+
+            return LOADING;
+        }
+        public static State of(@NotNull NeoBotEntity bot) {
+            return of(NeoBotEntity.STATE.get(bot));
         }
     }
 
@@ -243,7 +259,8 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     // Attributes
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 5.0D)
+                .add(Attributes.MAX_HEALTH, 10.0D)
+                .add(Attributes.ARMOR, 10.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.FOLLOW_RANGE, 128.0D);
     }
@@ -257,6 +274,12 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         super.defineSynchedData(builder);
         TASK_STATUS.build(builder, Component.translatable("state.create_neobots.loading"));
         STATE.build(builder, State.LOADING.getValue());
+    }
+
+    @Override public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (STATE.getAccessor().equals(key) && this instanceof BrassRoller roller)
+            roller.handleStateAnimation(State.of(this));
     }
 
     private void updateStatus() {

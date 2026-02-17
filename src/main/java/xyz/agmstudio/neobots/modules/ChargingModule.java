@@ -54,11 +54,11 @@ public class ChargingModule extends ModuleItem<ChargingModule.Data, ChargingModu
         }
 
         @Override public void onStop() {
-            pad.setOwner(null);
+            if (pad != null) pad.setOwner(null);
         }
 
         @Override public void onFinish() {
-            pad.setOwner(null);
+            if (pad != null) pad.setOwner(null);
         }
 
         @Override public boolean isDone() {
@@ -66,6 +66,7 @@ public class ChargingModule extends ModuleItem<ChargingModule.Data, ChargingModu
         }
 
         @Override public void tick() {
+            if (pad == null) throw NeoBotCrash.CHARGER_NOT_FOUND;
             if (pad.getOwner() == null) pad.setOwner(bot);
             else if (pad.getOwner() != bot) return;
             bot.chargeEnergy((int) pad.getSpeed());

@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -79,6 +80,7 @@ public class BrassRollerHead extends HorizontalDirectionalBlock {
         if (b1.getBlock() == AllBlocks.BRASS_CASING.get() && b2.getBlock() == CNBBlocks.BRASS_WHEEL.get()) {
             NeoBotEntity bot = new NeoBotEntity(CNBEntities.BRASS_ROLLER.get(), level);
             bot.moveTo(pos.getX() + 0.5, pos.getY() - 1, pos.getZ() + 0.5, 0, 0);
+            bot.readAdditionalSaveData(new CompoundTag());
             level.addFreshEntity(bot);
 
             level.removeBlock(pos, false);
