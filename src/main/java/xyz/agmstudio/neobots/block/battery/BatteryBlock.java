@@ -5,6 +5,7 @@ import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -12,6 +13,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +27,10 @@ import java.util.List;
 
 @ParametersAreNonnullByDefault
 public class BatteryBlock extends Block implements IBE<BatteryBlockEntity>, IWrenchable {
+    protected static final VoxelShape SHAPE = Block.box(6.0, 0.0, 6.0, 10.0, 10.0, 10.0);
+    @Override protected @NotNull VoxelShape getShape(BlockState state, BlockGetter getter, BlockPos pos, CollisionContext ctx) {
+        return SHAPE;
+    }
 
     public BatteryBlock(Properties props) {
         super(props);
