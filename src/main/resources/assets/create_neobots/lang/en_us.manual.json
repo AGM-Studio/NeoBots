@@ -49,5 +49,14 @@
 
   "crash.create_neobots.target_inaccessible": "Unable to find the target.",
   "crash.create_neobots.inventory_inaccessible": "Unable to reach the container.",
-  "crash.create_neobots.not_on_charger": "Bot was not standing on the charging pad."
+  "crash.create_neobots.not_on_charger": "Bot was not standing on the charging pad.",
+
+  "create_neobots.ponder.tag.bots": "NeoBots Assemble bots",
+  "create_neobots.ponder.tag.bots.description": "All available bot assemblies. More will be added in future versions.",
+
+  "create_neobots.ponder.bot_assembly.header": "Assembling Bots",
+  "create_neobots.ponder.bot_assembly.text_1": "Assembling a bot is the same as an Iron Golem. Place the parts as shown!",
+  "create_neobots.ponder.bot_assembly.text_2": "The head is the core block. By placing the head, you will have your bot.",
+  "create_neobots.ponder.bot_assembly.text_3": "Note that the bots will turn off as spawned due lack of energy.",
+  "create_neobots.ponder.bot_assembly.text_4": "Give them a charged battery and they will start their tasks."
 }
