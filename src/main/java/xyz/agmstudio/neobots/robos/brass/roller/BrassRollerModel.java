@@ -74,7 +74,7 @@ public class BrassRollerModel<T extends BrassRoller> extends HierarchicalModel<T
         this.animate(entity.shutdownAnimationState, BrassRollerAnimations.TURN_OFF, ageInTicks, 1f);
 
         if (limbSwingAmount > 0.0f) {
-            this.wheel.xRot += (float) (entity.getDeltaMovement().horizontalDistance() * 1.6);
+            this.wheel.xRot += (float) (entity.getDeltaMovement().horizontalDistance());
             if (this.wheel.xRot > Math.PI * 2)
                 this.wheel.xRot -= (float) (Math.PI * 2);
         }
