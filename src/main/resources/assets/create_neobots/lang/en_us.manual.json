@@ -58,5 +58,13 @@
   "create_neobots.ponder.bot_assembly.text_1": "Assembling a bot is the same as an Iron Golem. Place the parts as shown!",
   "create_neobots.ponder.bot_assembly.text_2": "The head is the core block. By placing the head, you will have your bot.",
   "create_neobots.ponder.bot_assembly.text_3": "Note that the bots will turn off as spawned due lack of energy.",
-  "create_neobots.ponder.bot_assembly.text_4": "Give them a charged battery and they will start their tasks."
+  "create_neobots.ponder.bot_assembly.text_4": "Give them a charged battery and they will start their tasks.",
+
+  "create_neobots.ponder.charging.header": "Charging Pad, Charger & Batteries",
+  "create_neobots.ponder.charging.text_1": "Charging pad is a kinetic block powered from below.",
+  "create_neobots.ponder.charging.text_2": "The charger on to of the pad will be able to charge batteries",
+  "create_neobots.ponder.charging.text_3": "Batteries can be inserted using funnels or just right clicking on it.",
+  "create_neobots.ponder.charging.text_4": "The charging pad can also charge bots directly above it.",
+  "create_neobots.ponder.charging.text_5": "Though the bot needs to connect to the pad using a charging module.",
+  "create_neobots.ponder.charging.text_6": "And the pad can only charge one bot at a time... more might result in a bot crash."
 }
