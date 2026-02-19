@@ -1,6 +1,7 @@
 package xyz.agmstudio.neobots.modules.abstracts.data;
 
 import com.simibubi.create.content.logistics.filter.FilterItem;
+import com.simibubi.create.content.logistics.vault.ItemVaultBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -59,7 +60,8 @@ public abstract class ModuleTransferData extends ModuleBlockPosData {
     public @Nullable IItemHandler getHandler(NeoBotEntity bot, double reach) {
         if (target == null || !isSameDimension(bot.level().dimension())) return null;
         if (target.distSqr(bot.blockPosition()) > reach) return null;
-        return bot.level().getCapability(Capabilities.ItemHandler.BLOCK, target, null);
+        if (bot.level().getBlockEntity(target) instanceof ItemVaultBlockEntity) return null;
+        return bot.level().getCapability(Capabilities.ItemHandler.BLOCK, target, side);
     }
 
     @Override public int getCooldown() {

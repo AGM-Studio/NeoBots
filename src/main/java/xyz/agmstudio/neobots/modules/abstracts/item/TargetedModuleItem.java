@@ -42,7 +42,7 @@ public abstract class TargetedModuleItem<D extends ModuleBlockPosData, T extends
         }
 
         D data = getData(level, ctx.getItemInHand());
-        data.setTarget(pos, level.dimension());
+        data.setTarget(pos, level.dimension(), ctx.getClickedFace());
         data.save();
 
         player.displayClientMessage(getTargetSetMessage(), true);

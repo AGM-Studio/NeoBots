@@ -1,5 +1,6 @@
 package xyz.agmstudio.neobots.modules;
 
+import com.simibubi.create.content.logistics.vault.ItemVaultBlockEntity;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import net.minecraft.core.BlockPos;
@@ -7,7 +8,6 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.index.CNBItems;
@@ -50,7 +51,8 @@ public class WithdrawModule extends TargetedModuleItem<WithdrawModule.Data, With
     }
 
     @Override public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {
-        return ctx.getLevel().getBlockEntity(pos) instanceof Container;
+        return !(ctx.getLevel().getBlockEntity(pos) instanceof ItemVaultBlockEntity) &&
+                ctx.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, pos, ctx.getClickedFace()) != null;
     }
 
     @Override public @NotNull Component getDisplayName() {
