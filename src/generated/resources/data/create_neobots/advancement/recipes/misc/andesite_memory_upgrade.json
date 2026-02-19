@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create_neobots:memory_upgrade"
+        "recipe": "create_neobots:andesite_memory_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "create_neobots:memory_upgrade"
+      "create_neobots:andesite_memory_upgrade"
     ]
   }
 }

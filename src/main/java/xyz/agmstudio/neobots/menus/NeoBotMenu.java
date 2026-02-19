@@ -19,7 +19,7 @@ import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.index.CNBMenus;
 import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
-import xyz.agmstudio.neobots.upgrades.BotUpgradeItem;
+import xyz.agmstudio.neobots.upgrades.UpgradeItem;
 
 
 public class NeoBotMenu extends AbstractMenu {
@@ -127,7 +127,7 @@ public class NeoBotMenu extends AbstractMenu {
 
         } else if (from == playerInventoryGroup) {
             if (ModuleItem.isModule(stack)) moved = moveTo(moduleGroup, stack, false);
-            else if (BotUpgradeItem.isUpgrade(stack)) moved = moveTo(upgradeGroup, stack, false);
+            else if (stack.getItem() instanceof UpgradeItem) moved = moveTo(upgradeGroup, stack, false);
             else if (stack.getItem() instanceof BatteryItem) moved = moveTo(batteryGroup, stack, false);
             else moved = moveTo(botInventoryGroup, stack, false);
         } else return ItemStack.EMPTY;

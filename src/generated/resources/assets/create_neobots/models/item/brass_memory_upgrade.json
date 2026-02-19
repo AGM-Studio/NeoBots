@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "create_neobots:item/memory_upgrade"
+    "layer0": "create_neobots:item/brass_memory_upgrade"
   }
 }

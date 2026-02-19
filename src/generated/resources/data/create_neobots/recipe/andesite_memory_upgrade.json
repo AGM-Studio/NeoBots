@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:book"
+    },
+    "U": {
+      "item": "create_neobots:andesite_upgrade_base"
+    }
+  },
+  "pattern": [
+    " B ",
+    "BUB",
+    " B "
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_neobots:andesite_memory_upgrade"
+  }
+}

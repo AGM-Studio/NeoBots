@@ -6,11 +6,13 @@ import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
 import net.createmod.ponder.foundation.PonderIndex;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +21,9 @@ import org.slf4j.LoggerFactory;
 import xyz.agmstudio.neobots.index.*;
 import xyz.agmstudio.neobots.network.NetworkHandler;
 import xyz.agmstudio.neobots.ponder.CNBPonderPlugin;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Mod(NeoBots.MOD_ID)
 public class NeoBots {
@@ -51,11 +56,23 @@ public class NeoBots {
         if (FMLEnvironment.dist.isClient()) {
             bus.addListener(this::clientSetup);
         }
+        bus.addListener(this::commonSetup);
 
         REGISTRATE.registerEventListeners(bus);
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
         PonderIndex.addPlugin(new CNBPonderPlugin());
+    }
+
+    private static final HashMap<String, String> itemFixes = new HashMap<>();
+    public static void addItemAlias(String old, String current) {
+        itemFixes.put(old, current);
+    }
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            for (Map.Entry<String, String > entry: itemFixes.entrySet())
+                BuiltInRegistries.ITEM.addAlias(rl(entry.getKey()), rl(entry.getValue()));
+        });
     }
 }

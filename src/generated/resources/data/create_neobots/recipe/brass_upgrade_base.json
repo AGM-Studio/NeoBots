@@ -3,19 +3,22 @@
   "category": "misc",
   "key": {
     "C": {
-      "item": "create:andesite_casing"
+      "item": "create:brass_casing"
     },
     "P": {
       "item": "create:precision_mechanism"
+    },
+    "U": {
+      "item": "create_neobots:andesite_upgrade_base"
     }
   },
   "pattern": [
-    "PPP",
-    "PCP",
-    "PPP"
+    "PUP",
+    "UCU",
+    "PUP"
   ],
   "result": {
     "count": 4,
-    "id": "create_neobots:andesite_upgrade_base"
+    "id": "create_neobots:brass_upgrade_base"
   }
 }

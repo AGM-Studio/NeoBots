@@ -10,26 +10,58 @@ import net.minecraft.world.item.Items;
 import xyz.agmstudio.neobots.index.CNBItems;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
-public class MemoryUpgradeItem extends BotUpgradeItem {
-    public static void getRecipe(DataGenContext<Item, MemoryUpgradeItem> ctx, RegistrateRecipeProvider prov) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
-                .pattern(" B ")
-                .pattern("BUB")
-                .pattern(" B ")
-                .define('B', Items.BOOK)
-                .define('U', CNBItems.BASE_UPGRADE)
-                .unlockedBy("has_upgrade_base", RegistrateRecipeProvider.has(CNBItems.BASE_UPGRADE))
-                .save(prov);
-    }
-
+public abstract class MemoryUpgradeItem extends UpgradeItem {
     public MemoryUpgradeItem(Properties properties) {
         super(properties);
     }
+
+    public abstract int getUpgradeSize();
 
     @Override public void onInstalled(NeoBotEntity bot, ItemStack stack) {
         bot.recalculateModuleCapacity();
     }
     @Override public void onRemoved(NeoBotEntity bot, ItemStack stack) {
         bot.recalculateModuleCapacity();
+    }
+
+    public static class Andesite extends MemoryUpgradeItem {
+        public static void getRecipe(DataGenContext<Item, Andesite> ctx, RegistrateRecipeProvider prov) {
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
+                    .pattern(" B ")
+                    .pattern("BUB")
+                    .pattern(" B ")
+                    .define('B', Items.BOOK)
+                    .define('U', CNBItems.ANDESITE_UPGRADE_BASE)
+                    .unlockedBy("has_upgrade_base", RegistrateRecipeProvider.has(CNBItems.ANDESITE_UPGRADE_BASE))
+                    .save(prov);
+        }
+
+        public Andesite(Properties properties) {
+            super(properties);
+        }
+
+        @Override public int getUpgradeSize() {
+            return 1;
+        }
+    }
+    public static class Brass extends MemoryUpgradeItem {
+        public static void getRecipe(DataGenContext<Item, Brass> ctx, RegistrateRecipeProvider prov) {
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
+                    .pattern(" B ")
+                    .pattern("BUB")
+                    .pattern(" B ")
+                    .define('B', CNBItems.MEMORY_UPGRADE)
+                    .define('U', CNBItems.BRASS_UPGRADE_BASE)
+                    .unlockedBy("has_upgrade_base", RegistrateRecipeProvider.has(CNBItems.BRASS_UPGRADE_BASE))
+                    .save(prov);
+        }
+
+        public Brass(Properties properties) {
+            super(properties);
+        }
+
+        @Override public int getUpgradeSize() {
+            return 2;
+        }
     }
 }

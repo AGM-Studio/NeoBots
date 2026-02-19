@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "create_neobots:brass_memory_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_upgrade_base": {
+      "conditions": {
+        "items": [
+          {
+            "items": "create_neobots:brass_upgrade_base"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_upgrade_base"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "create_neobots:brass_memory_upgrade"
+    ]
+  }
+}

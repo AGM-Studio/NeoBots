@@ -351,11 +351,8 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
 
     public void recalculateModuleCapacity() {
         int upgrades = 0;
-        for (ItemStack stack: upgradeInventory.getItems()) {
-            if (stack.getItem() instanceof MemoryUpgradeItem upgrade) {
-                upgrades += 1;
-            }
-        }
+        for (ItemStack stack: upgradeInventory.getItems())
+            if (stack.getItem() instanceof MemoryUpgradeItem upgrade) upgrades += upgrade.getUpgradeSize();
 
         moduleCapacity = Math.min(BASE_MODULE_SLOTS + upgrades, MAX_MODULE_SLOTS);
     }
