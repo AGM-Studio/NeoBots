@@ -11,10 +11,13 @@ public class BrassRoller extends NeoBotEntity {
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState crashAnimationState = new AnimationState();
     public final AnimationState shutdownAnimationState = new AnimationState();
+    public final AnimationState turnonAnimationState = new AnimationState();
 
-    protected int animTick = 0;
-    private NeoBotEntity.State state = null;
     protected double wheelRot = 0;
+    protected int animTick = 0;
+    protected State state = null;
+    protected State oldState = null;
+    protected boolean turningOn = false;
 
     public BrassRoller(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -26,6 +29,7 @@ public class BrassRoller extends NeoBotEntity {
             wheelRot += getDeltaMovement().horizontalDistance() * 4;
             if (wheelRot > 2 * Math.PI) wheelRot -= 2 * Math.PI;
             if (animTick > 0) animTick--;
+            if (turningOn && animTick <= 0) turningOn = false;
             if (state == State.RUNNING && animTick <= 0) {
                 idleAnimationState.start(this.tickCount);
                 animTick = 40;
@@ -35,15 +39,16 @@ public class BrassRoller extends NeoBotEntity {
 
     public void handleStateAnimation(State state) {
         if (state == this.state) return;
-
+        this.oldState = this.state;
         this.state = state;
         idleAnimationState.stop();
         crashAnimationState.stop();
         shutdownAnimationState.stop();
+        turnonAnimationState.stop();
 
         NeoBots.LOGGER.info("BrassRoller state changed to {}", this.state);
         switch (state) {
-            case NO_CHARGE, STOPPED -> {
+            case NO_CHARGE, STOPPED, LOADING -> {
                 animTick = 20;
                 shutdownAnimationState.start(this.tickCount);
             }
@@ -51,9 +56,11 @@ public class BrassRoller extends NeoBotEntity {
                 animTick = 50;
                 crashAnimationState.start(this.tickCount);
             }
-            default -> {
-                animTick = 40;
-                idleAnimationState.start(this.tickCount);
+            case RUNNING -> {
+                animTick = 20;
+                turningOn = true;
+                turnonAnimationState.start(this.tickCount);
+                if (!level().isClientSide) addCooldownTicks(20);
             }
         }
     }

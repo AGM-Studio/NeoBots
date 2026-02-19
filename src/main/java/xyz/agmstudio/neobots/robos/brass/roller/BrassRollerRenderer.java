@@ -18,7 +18,12 @@ public class BrassRollerRenderer extends MobRenderer<BrassRoller, BrassRollerMod
 
     @Override public @NotNull ResourceLocation getTextureLocation(@NotNull BrassRoller roller) {
         return switch (NeoBotEntity.State.of(roller)) {
-            case NO_CHARGE, STOPPED -> roller.animTick > 20 ? TEXTURE : TEXTURE_OFF;
+            case NO_CHARGE, STOPPED -> roller.animTick > 10 ? TEXTURE : TEXTURE_OFF;
+            case RUNNING -> {
+                if (roller.turningOn && roller.animTick > 10)
+                    yield roller.oldState == NeoBotEntity.State.CRASHED ? TEXTURE_CRASH : TEXTURE_OFF;
+                yield TEXTURE;
+            }
             case CRASHED -> {
                 if (roller.animTick > 30) {
                     if (roller.animTick > 45) yield TEXTURE_CRASH;

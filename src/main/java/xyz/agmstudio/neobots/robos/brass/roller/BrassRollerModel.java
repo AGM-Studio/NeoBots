@@ -70,6 +70,7 @@ public class BrassRollerModel<T extends BrassRoller> extends HierarchicalModel<T
         this.animate(entity.idleAnimationState, BrassRollerAnimations.IDLE, ageInTicks, 1f);
         this.animate(entity.crashAnimationState, BrassRollerAnimations.CRASH, ageInTicks, 1f);
         this.animate(entity.shutdownAnimationState, BrassRollerAnimations.TURN_OFF, ageInTicks, 1f);
+        this.animate(entity.turnonAnimationState, BrassRollerAnimations.TURN_ON, ageInTicks, 1f);
 
         this.wheel.xRot = (float) entity.wheelRot;
     }

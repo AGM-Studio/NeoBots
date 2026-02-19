@@ -126,6 +126,13 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
         task = moduleInventory.getTask();
     }
 
+    public int getCooldownTicks() {
+        return cooldownTicks;
+    }
+    public int addCooldownTicks(int ticks) {
+        return cooldownTicks += ticks;
+    }
+
     public ModuleTask<?> getTask() {
         return task;
     }
