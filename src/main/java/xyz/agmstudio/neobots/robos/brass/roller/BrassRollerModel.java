@@ -2,6 +2,7 @@ package xyz.agmstudio.neobots.robos.brass.roller;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -72,7 +73,8 @@ public class BrassRollerModel<T extends BrassRoller> extends HierarchicalModel<T
         this.animate(entity.shutdownAnimationState, BrassRollerAnimations.TURN_OFF, ageInTicks, 1f);
         this.animate(entity.turnonAnimationState, BrassRollerAnimations.TURN_ON, ageInTicks, 1f);
 
-        this.wheel.xRot = (float) entity.wheelRot;
+        this.wheel.xRot = (float) (entity.oldWheelRot +
+                (entity.wheelRot - entity.oldWheelRot) * Minecraft.getInstance().getFrameTimeNs() / 1E9f);
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {

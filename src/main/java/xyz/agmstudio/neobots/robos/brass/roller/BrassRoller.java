@@ -13,7 +13,6 @@ public class BrassRoller extends NeoBotEntity {
     public final AnimationState shutdownAnimationState = new AnimationState();
     public final AnimationState turnonAnimationState = new AnimationState();
 
-    protected double wheelRot = 0;
     protected int animTick = 0;
     protected State state = null;
     protected State oldState = null;
@@ -23,11 +22,26 @@ public class BrassRoller extends NeoBotEntity {
         super(type, level);
     }
 
+    protected double oldWheelRot = 0;
+    protected double wheelRot = 0;
+    private double prevWheelX = 0;
+    private double prevWheelZ = 0;
+    private void calculateWheelRotation() {
+        oldWheelRot = wheelRot;
+        double dx = getX() - prevWheelX;
+        double dz = getZ() - prevWheelZ;
+
+        wheelRot += Math.sqrt(dx * dx + dz * dz) * 2;
+        if (wheelRot > Math.PI * 2) wheelRot -= Math.PI * 2;
+
+        prevWheelX = getX();
+        prevWheelZ = getZ();
+    }
+
     @Override public void tick() {
         super.tick();
         if (level().isClientSide) {
-            wheelRot += getDeltaMovement().horizontalDistance() * 4;
-            if (wheelRot > 2 * Math.PI) wheelRot -= 2 * Math.PI;
+            calculateWheelRotation();
             if (animTick > 0) animTick--;
             if (turningOn && animTick <= 0) turningOn = false;
             if (state == State.RUNNING && animTick <= 0) {
