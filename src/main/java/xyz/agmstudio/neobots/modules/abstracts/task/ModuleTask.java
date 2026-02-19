@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.modules.abstracts;
+package xyz.agmstudio.neobots.modules.abstracts.task;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;

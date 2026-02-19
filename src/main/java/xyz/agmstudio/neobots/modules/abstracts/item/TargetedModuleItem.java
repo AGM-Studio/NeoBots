@@ -8,7 +8,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.modules.abstracts.ModuleTask;
+import xyz.agmstudio.neobots.modules.abstracts.task.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleBlockPosData;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 
