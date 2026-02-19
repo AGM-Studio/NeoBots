@@ -4,7 +4,6 @@ import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
-import xyz.agmstudio.neobots.NeoBots;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 public class BrassRoller extends NeoBotEntity {
@@ -60,7 +59,6 @@ public class BrassRoller extends NeoBotEntity {
         shutdownAnimationState.stop();
         turnonAnimationState.stop();
 
-        NeoBots.LOGGER.info("BrassRoller state changed to {}", this.state);
         switch (state) {
             case NO_CHARGE, STOPPED, LOADING -> {
                 animTick = 20;
