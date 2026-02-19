@@ -6,6 +6,9 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public interface NeoBotsHelper {
@@ -31,55 +34,37 @@ public interface NeoBotsHelper {
         return Component.literal(s + " ").append(term);
     }
 
+    static int moveItems(Level level, Container from, IItemHandler to, ItemStack filter, int count) {
+        return moveItems(level, new InvWrapper(from), to, filter, count);
+    }
+    static int moveItems(Level level, IItemHandler from, Container to, ItemStack filter, int count) {
+        return moveItems(level, from, new InvWrapper(to), filter, count);
+    }
     static int moveItems(Level level, Container from, Container to, ItemStack filter, int count) {
+        return moveItems(level, new InvWrapper(from), new InvWrapper(to), filter, count);
+    }
+    static int moveItems(Level level, IItemHandler from, IItemHandler to, ItemStack filter, int count) {
         if (count <= 0) return 0;
         int moved = 0;
 
-        for (int i = 0; i < from.getContainerSize(); i++) {
-            ItemStack sourceStack = from.getItem(i);
-            if (sourceStack.isEmpty()) continue;
-            if (!NeoBotsHelper.matchesFilter(level, sourceStack, filter)) continue;
+        for (int i = 0; i < from.getSlots() && moved < count; i++) {
+            ItemStack stackInSlot = from.getStackInSlot(i);
+            if (stackInSlot.isEmpty()) continue;
+            if (!NeoBotsHelper.matchesFilter(level, stackInSlot, filter)) continue;
 
-            moved += moveFromStack(sourceStack, to, count);
-            if (sourceStack.isEmpty()) from.setItem(i, ItemStack.EMPTY);
-            if (moved >= count) break;
+            int extractAmount = Math.min(stackInSlot.getCount(), count - moved);
+
+            ItemStack extracted = from.extractItem(i, extractAmount, false);
+            if (extracted.isEmpty()) continue;
+
+            ItemStack remainder = ItemHandlerHelper.insertItem(to, extracted, false);
+
+            int inserted = extracted.getCount() - remainder.getCount();
+            moved += inserted;
+
+            if (!remainder.isEmpty()) from.insertItem(i, remainder, false);
         }
 
-        if (moved > 0) from.setChanged();
-        return moved;
-    }
-
-    static int moveFromStack(ItemStack source, Container to, int limit) {
-        int moved = 0;
-
-        for (int s = 0; s < to.getContainerSize() && moved < limit; s++) {
-            ItemStack target = to.getItem(s);
-            if (target.isEmpty()) continue;
-            if (!ItemStack.isSameItemSameComponents(source, target)) continue;
-            if (!to.canPlaceItem(s, source)) continue;
-
-            int space = target.getMaxStackSize() - target.getCount();
-            if (space <= 0) continue;
-            int move = Math.min(space, Math.min(source.getCount(), limit - moved));
-
-            target.grow(move);
-            source.shrink(move);
-            moved += move;
-        }
-
-        for (int s = 0; s < to.getContainerSize() && moved < limit; s++) {
-            ItemStack target = to.getItem(s);
-            if (!target.isEmpty()) continue;
-            if (!to.canPlaceItem(s, source)) continue;
-
-            int move = Math.min(source.getCount(), limit - moved);
-            ItemStack placed = source.split(move);
-
-            to.setItem(s, placed);
-            moved += move;
-        }
-
-        if (moved > 0) to.setChanged();
         return moved;
     }
 }

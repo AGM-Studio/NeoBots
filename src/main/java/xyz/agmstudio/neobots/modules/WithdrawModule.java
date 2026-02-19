@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.index.CNBItems;
 import xyz.agmstudio.neobots.menus.TransferModuleMenu;
@@ -105,11 +106,11 @@ public class WithdrawModule extends TargetedModuleItem<WithdrawModule.Data, With
         }
 
         @Override public void tick() {
-            Container container = data.getContainer(bot, reach);
-            if (container == null) throw NeoBotCrash.INVENTORY_INACCESSIBLE;
+            IItemHandler handler = data.getHandler(bot, reach);
+            if (handler == null) throw NeoBotCrash.INVENTORY_INACCESSIBLE;
             if (withdrawn >= data.getCount() || tick++ < cooldown) return;
 
-            int moved = NeoBotsHelper.moveItems(bot.level(), container, bot.getInventory(), data.getFilter(), 1);
+            int moved = NeoBotsHelper.moveItems(bot.level(), handler, bot.getInventory(), data.getFilter(), 1);
             if (moved > 0) setWithdrawn(withdrawn + moved);
             else skipped = data.getSkip();
             tick = 0;

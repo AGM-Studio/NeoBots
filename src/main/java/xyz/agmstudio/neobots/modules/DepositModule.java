@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.index.CNBItems;
 import xyz.agmstudio.neobots.menus.TransferModuleMenu;
@@ -107,12 +108,12 @@ public class DepositModule extends TargetedModuleItem<DepositModule.Data, Deposi
         }
 
         @Override public void tick() {
-            Container container = data.getContainer(bot, reach);
-            if (container == null) throw NeoBotCrash.INVENTORY_INACCESSIBLE;
+            IItemHandler handler = data.getHandler(bot, reach);
+            if (handler == null) throw NeoBotCrash.INVENTORY_INACCESSIBLE;
             if (deposited >= data.getCount() || tick++ < cooldown) return;
 
             int remaining = data.getCount() - deposited;
-            int moved = NeoBotsHelper.moveItems(bot.level(), bot.getInventory(), container, data.getFilter(), remaining);
+            int moved = NeoBotsHelper.moveItems(bot.level(), bot.getInventory(), handler, data.getFilter(), remaining);
             if (moved > 0) setDeposited(deposited + moved);
             else skipped = data.getSkip();
             tick = 0;

@@ -3,11 +3,12 @@ package xyz.agmstudio.neobots.modules.abstracts.data;
 import com.simibubi.create.content.logistics.filter.FilterItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
@@ -55,11 +56,10 @@ public abstract class ModuleTransferData extends ModuleBlockPosData {
         tag.putBoolean("skip", this.skip);
     }
 
-    public Container getContainer(NeoBotEntity bot, double reach) {
+    public @Nullable IItemHandler getHandler(NeoBotEntity bot, double reach) {
         if (target == null || !isSameDimension(bot.level().dimension())) return null;
         if (target.distSqr(bot.blockPosition()) > reach) return null;
-        if (bot.level().getBlockEntity(target) instanceof Container container) return container;
-        return null;
+        return bot.level().getCapability(Capabilities.ItemHandler.BLOCK, target, null);
     }
 
     @Override public int getCooldown() {
