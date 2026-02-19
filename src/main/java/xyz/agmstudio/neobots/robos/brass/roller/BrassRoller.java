@@ -14,6 +14,7 @@ public class BrassRoller extends NeoBotEntity {
 
     protected int animTick = 0;
     private NeoBotEntity.State state = null;
+    protected double wheelRot = 0;
 
     public BrassRoller(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -22,6 +23,8 @@ public class BrassRoller extends NeoBotEntity {
     @Override public void tick() {
         super.tick();
         if (level().isClientSide) {
+            wheelRot += getDeltaMovement().horizontalDistance() * 4;
+            if (wheelRot > 2 * Math.PI) wheelRot -= 2 * Math.PI;
             if (animTick > 0) animTick--;
             if (state == State.RUNNING && animTick <= 0) {
                 idleAnimationState.start(this.tickCount);

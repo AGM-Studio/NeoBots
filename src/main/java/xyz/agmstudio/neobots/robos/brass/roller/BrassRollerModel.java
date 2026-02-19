@@ -63,9 +63,7 @@ public class BrassRollerModel<T extends BrassRoller> extends HierarchicalModel<T
     }
 
     @Override public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        this.root().getAllParts().forEach(part -> {
-            if (part != this.wheel) part.resetPose();
-        });
+        this.root().getAllParts().forEach(ModelPart::resetPose);
         this.applyHeadRotation(netHeadYaw, headPitch);
 
         this.animateWalk(BrassRollerAnimations.WALK, limbSwing, limbSwingAmount, 2f, 2.5f);
@@ -73,11 +71,7 @@ public class BrassRollerModel<T extends BrassRoller> extends HierarchicalModel<T
         this.animate(entity.crashAnimationState, BrassRollerAnimations.CRASH, ageInTicks, 1f);
         this.animate(entity.shutdownAnimationState, BrassRollerAnimations.TURN_OFF, ageInTicks, 1f);
 
-        if (limbSwingAmount > 0.0f) {
-            this.wheel.xRot += (float) (entity.getDeltaMovement().horizontalDistance());
-            if (this.wheel.xRot > Math.PI * 2)
-                this.wheel.xRot -= (float) (Math.PI * 2);
-        }
+        this.wheel.xRot = (float) entity.wheelRot;
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {
