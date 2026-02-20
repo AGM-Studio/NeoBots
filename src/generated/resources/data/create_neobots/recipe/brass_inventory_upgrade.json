@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "create_neobots:andesite_inventory_upgrade"
+    },
+    "U": {
+      "item": "create_neobots:brass_upgrade_base"
+    }
+  },
+  "pattern": [
+    " B ",
+    "BUB",
+    " B "
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_neobots:brass_inventory_upgrade"
+  }
+}

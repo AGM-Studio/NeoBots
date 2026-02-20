@@ -14,6 +14,7 @@ import xyz.agmstudio.neobots.modules.DepositModule;
 import xyz.agmstudio.neobots.modules.MoveToModule;
 import xyz.agmstudio.neobots.modules.WithdrawModule;
 import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
+import xyz.agmstudio.neobots.upgrades.InventoryUpgradeItem;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 import xyz.agmstudio.neobots.upgrades.UpgradeItem;
 
@@ -39,8 +40,10 @@ public final class CNBItems {
     public static final ItemEntry<ChargingModule>   CHARGING_MODULE     = register("charging_module", ChargingModule::new, 1, ChargingModule::getRecipe);
 
     // Upgrades
-    public static final ItemEntry<MemoryUpgradeItem.Andesite>   MEMORY_UPGRADE      = register("andesite_memory_upgrade", MemoryUpgradeItem.Andesite::new, 4, MemoryUpgradeItem.Andesite::getRecipe, "memory_upgrade");
-    public static final ItemEntry<MemoryUpgradeItem.Brass>      MEMORY_UPGRADE_2    = register("brass_memory_upgrade", MemoryUpgradeItem.Brass::new, 4, MemoryUpgradeItem.Brass::getRecipe);
+    public static final ItemEntry<MemoryUpgradeItem.Andesite>    ANDESITE_MEMORY_UPGRADE     = register("andesite_memory_upgrade", MemoryUpgradeItem.Andesite::new, 4, MemoryUpgradeItem.Andesite::getRecipe, "memory_upgrade");
+    public static final ItemEntry<MemoryUpgradeItem.Brass>       BRASS_MEMORY_UPGRADE        = register("brass_memory_upgrade", MemoryUpgradeItem.Brass::new, 4, MemoryUpgradeItem.Brass::getRecipe);
+    public static final ItemEntry<InventoryUpgradeItem.Andesite> ANDESITE_INVENTORY_UPGRADE  = register("andesite_inventory_upgrade", InventoryUpgradeItem.Andesite::new, 4, InventoryUpgradeItem.Andesite::getRecipe);
+    public static final ItemEntry<InventoryUpgradeItem.Brass>    BRASS_INVENTORY_UPGRADE     = register("brass_inventory_upgrade", InventoryUpgradeItem.Brass::new, 4, InventoryUpgradeItem.Brass::getRecipe);
 
     // Bases
     public static final ItemEntry<Item> INCOMPLETE_BATTERY = NeoBots.REGISTRATE.item("incomplete_battery", Item::new).model(

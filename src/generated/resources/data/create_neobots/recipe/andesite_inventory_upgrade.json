@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "create:cardboard_block"
+    },
+    "U": {
+      "item": "create_neobots:andesite_upgrade_base"
+    }
+  },
+  "pattern": [
+    " C ",
+    "CUC",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_neobots:andesite_inventory_upgrade"
+  }
+}

@@ -33,6 +33,7 @@ import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
 import xyz.agmstudio.neobots.modules.abstracts.task.ModuleTask;
 import xyz.agmstudio.neobots.robos.brass.roller.BrassRoller;
+import xyz.agmstudio.neobots.upgrades.InventoryUpgradeItem;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 import xyz.agmstudio.neobots.utils.NeoEntityDataAccessor;
 
@@ -358,9 +359,9 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     }
     public void recalculateInventoryCapacity() {
         int upgrades = 0;
-        for (ItemStack stack: upgradeInventory.getItems()) {
-            // TODO: Inventory Upgrades
-        }
+        for (ItemStack stack: upgradeInventory.getItems())
+            if (stack.getItem() instanceof InventoryUpgradeItem upgrade) upgrades += upgrade.getUpgradeSize();
+
         inventoryCapacity = Math.min(BASE_INVENTORY_SLOTS + upgrades, MAX_INVENTORY_SLOTS);
     }
 }

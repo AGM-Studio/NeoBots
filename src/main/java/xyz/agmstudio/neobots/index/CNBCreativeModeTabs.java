@@ -21,7 +21,7 @@ public final class CNBCreativeModeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.create_neobots.main"))
             .withTabsBefore(AllCreativeModeTabs.PALETTES_CREATIVE_TAB.getKey())
-            .icon(CNBItems.MEMORY_UPGRADE::asStack)
+            .icon(CNBBlocks.BRASS_ROLLER_HEAD::asStack)
             .displayItems(new DisplayItemsGenerator(List.of()))
             .build());
 
