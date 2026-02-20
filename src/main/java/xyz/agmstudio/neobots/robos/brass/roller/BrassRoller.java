@@ -27,11 +27,12 @@ public class BrassRoller extends NeoBotEntity {
     private double prevWheelZ = 0;
     private void calculateWheelRotation() {
         oldWheelRot = wheelRot;
-        double dx = getX() - prevWheelX;
-        double dz = getZ() - prevWheelZ;
+        float yawRad = (float) Math.toRadians(getYRot());
+        double dx = (getX() - prevWheelX) * (-Math.sin(yawRad));
+        double dz = (getZ() - prevWheelZ) * ( Math.cos(yawRad));
 
-        wheelRot += Math.sqrt(dx * dx + dz * dz) * 2;
-        if (wheelRot > Math.PI * 2) wheelRot -= Math.PI * 2;
+        wheelRot += (dx + dz) * 2;
+        wheelRot %= Math.PI * 2;
 
         prevWheelX = getX();
         prevWheelZ = getZ();
