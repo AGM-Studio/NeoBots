@@ -4,8 +4,8 @@
 	"parent": "minecraft:block/block",
 	"texture_size": [32, 32],
 	"textures": {
-		"2": "create_neobots:item/brass_roller_head",
-		"particle": "create_neobots:item/brass_roller_head"
+		"2": "create_neobots:block/brass_roller_head",
+		"particle": "create_neobots:block/brass_roller_head"
 	},
 	"elements": [
 		{
