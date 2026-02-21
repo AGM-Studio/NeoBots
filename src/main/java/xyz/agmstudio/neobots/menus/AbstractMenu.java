@@ -25,24 +25,26 @@ import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroup;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.containers.slots.FilterSlot;
+import xyz.agmstudio.neobots.gui.Drawable;
 import xyz.agmstudio.neobots.gui.FrameTexture;
-import xyz.agmstudio.neobots.gui.ScreenDrawer;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.network.MenuPacket;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public abstract class AbstractMenu extends AbstractContainerMenu {
     protected static final Texture SLOT_TEXTURE = new Texture("textures/gui/single_slot.png", 20, 20);
     protected static final Texture ACTIVE_SLOT_TEXTURE = new Texture("textures/gui/single_slot_active.png", 20 , 20);
     protected static final Texture UPGRADE_SLOT_TEXTURE = new Texture("textures/gui/upgrade_slot.png", 20, 20);
-    protected static final FrameTexture BRASS_FRAME = new FrameTexture("textures/gui/brass_frame.png", 64, 64, 19, 6);
+    protected static final FrameTexture BRASS_FRAME = new FrameTexture("textures/gui/brass_frame.png", 64, 64).margin(19, 6).tiled(true);
 
     protected final List<Consumer<Screen<?>>> onInitActions = new ArrayList<>();
-    protected final List<ScreenDrawer> drawers = new ArrayList<>();
+    protected final List<Supplier<Drawable.Drawer>> drawers = new ArrayList<>();
     protected final List<WidgetHolder<?>> widgets = new ArrayList<>();
     protected final List<SlotGroup> slotGroups = new ArrayList<>();
     protected final List<SlotGroupHolder> slotHolders = new ArrayList<>();
@@ -129,8 +131,11 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         return false;
     }
 
-    public void addTextureDrawer(ScreenDrawer drawer) {
+    public void addTextureDrawer(Supplier<Drawable.Drawer> drawer) {
         this.drawers.add(drawer);
+    }
+    public void addTextureDrawer(Drawable.Drawer drawer) {
+        this.drawers.add(() -> drawer);
     }
     public void addInitListener(Consumer<Screen<?>> consumer) {
         this.onInitActions.add(consumer);
@@ -242,9 +247,9 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         }
 
         @Override protected void renderBg(@NotNull GuiGraphics g, float partialTick, int x, int y) {
-            menu.drawers.stream().filter(ScreenDrawer::drawBeforeBg).forEach(d -> d.draw(this, g));
+            menu.drawers.stream().map(Supplier::get).filter(Objects::nonNull).forEach(d -> d.draw(this, g, true));
             getMenu().getBackground().draw(g, leftPos, topPos);
-            menu.drawers.stream().filter(d -> !d.drawBeforeBg()).forEach(d -> d.draw(this, g));
+            menu.drawers.stream().map(Supplier::get).filter(Objects::nonNull).forEach(d -> d.draw(this, g, false));
 
             menu.slotGroups.forEach(group -> group.render(this, g));
         }

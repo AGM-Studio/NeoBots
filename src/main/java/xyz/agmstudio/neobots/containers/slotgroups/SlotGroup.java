@@ -6,8 +6,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.BotFilteredContainer;
+import xyz.agmstudio.neobots.gui.Drawable;
 import xyz.agmstudio.neobots.gui.FrameTexture;
-import xyz.agmstudio.neobots.gui.ScreenDrawer;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
 
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class SlotGroup {
     protected static final BiConsumer<AbstractMenu, Slot> ADD_SLOT_METHOD = captureAddSlotMethod();
@@ -187,8 +188,7 @@ public class SlotGroup {
         for (Slot slot: slots) {
             if (!slot.isActive()) continue;
             Texture t = this.texture.apply(slot.index - offset);
-            if (t == null) continue;
-            t.drawScaled(g, slot.x + offX, slot.y + offY, textureSizeX, textureSizeY);
+            if (t != null) t.resize(textureSizeX, textureSizeY).draw(g, slot.x + offX, slot.y + offY);
         }
     }
 
@@ -202,7 +202,6 @@ public class SlotGroup {
         private int width = 0;
         private int height = 0;
         private boolean drawBeforeBg = false;
-        private boolean tiled = false;
 
         private FrameBuilder(SlotGroup group, FrameTexture texture) {
             this.group = group;
@@ -231,10 +230,6 @@ public class SlotGroup {
             this.height = height;
             return this;
         }
-        public FrameBuilder tiled() {
-            this.tiled = true;
-            return this;
-        }
         public FrameBuilder drawBeforeBg() {
             this.drawBeforeBg = true;
             return this;
@@ -246,13 +241,13 @@ public class SlotGroup {
             return this.group.build(menu);
         }
 
-        public ScreenDrawer getDrawer(int x, int y, SlotGroupHolder holder) {
-            return texture.drawerAround(
+        public Supplier<Drawable.Drawer> getDrawer(int x, int y, SlotGroupHolder holder) {
+            return () -> texture.around(
                     x - offsetX - group.textureOffsetX,
                     y - offsetY - group.textureOffsetY,
                     Math.max(holder.activeWidth() + group.textureSizeX - 16 + offsetX + offsetW, width),
                     Math.max(holder.activeHeight() + group.textureSizeY - 16 + offsetY + offsetH, height),
-                    tiled, drawBeforeBg
+                    drawBeforeBg
             );
         }
     }

@@ -58,10 +58,10 @@ public class NeoBotMenu extends AbstractMenu {
 
         moduleGroup       = addSlotGroup(bot.getModuleInventory(), 5, 8, -108, 40).pad(2).withTextureOffset(2, 2)
                 .withTexture(i -> i == activeModule.get() ? ACTIVE_SLOT_TEXTURE : SLOT_TEXTURE)
-                .withFrame(BRASS_FRAME).offsetSize(4, 0).tiled().drawBeforeBg().build(this);
+                .withFrame(BRASS_FRAME).offsetSize(4, 0).drawBeforeBg().build(this);
         upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2)
                 .withTexture(UPGRADE_SLOT_TEXTURE)
-                .withFrame(BRASS_FRAME).offset(4, 0).tiled().drawBeforeBg().build(this);
+                .withFrame(BRASS_FRAME).offset(4, 0).drawBeforeBg().build(this);
         batteryGroup      = addSlotGroup(bot.getBatteryInventory(), 1, 1, 24, 70).build(this);
         botInventoryGroup = addSlotGroup(bot.getInventory(), 3, 3, 144, 28).build(this);
 
