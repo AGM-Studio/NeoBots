@@ -56,8 +56,12 @@ public class NeoBotMenu extends AbstractMenu {
         addDataSlot(activeModule);
         addDataSlot(moduleCapacity);
 
-        moduleGroup       = addSlotGroup(bot.getModuleInventory(), 5, 8, -108, 40).pad(2).withTextureOffset(2, 2).withTexture(i -> i == activeModule.get() ? ACTIVE_SLOT_TEXTURE : SLOT_TEXTURE).build(this);
-        upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2).withTexture(UPGRADE_SLOT_TEXTURE).build(this);
+        moduleGroup       = addSlotGroup(bot.getModuleInventory(), 5, 8, -108, 40).pad(2).withTextureOffset(2, 2)
+                .withTexture(i -> i == activeModule.get() ? ACTIVE_SLOT_TEXTURE : SLOT_TEXTURE)
+                .withFrame(BRASS_FRAME).offsetSize(4, 0).tiled().drawBeforeBg().build(this);
+        upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2)
+                .withTexture(UPGRADE_SLOT_TEXTURE)
+                .withFrame(BRASS_FRAME).offset(4, 0).tiled().drawBeforeBg().build(this);
         batteryGroup      = addSlotGroup(bot.getBatteryInventory(), 1, 1, 24, 70).build(this);
         botInventoryGroup = addSlotGroup(bot.getInventory(), 3, 3, 144, 28).build(this);
 
@@ -85,8 +89,8 @@ public class NeoBotMenu extends AbstractMenu {
         addLabel(s -> NeoBotEntity.TASK_STATUS.get(bot), 15, 27).withColor(0xffffff).withShadow().width(108).scale(0.85f);
         addLabel(Component.translatable("gui.create_neobots.modules_tab"), -112, 23).withColor(0x582424);
         addLabel(Component.translatable("gui.create_neobots.upgrades_tab"), 225, 23).withColor(0x582424);
-        addTextureDrawer(SIMPLE_FRAME.frameDrawer(-116, 19, 128, moduleGroup.activeHeight() + 42, 3, 16, true, true));
-        addTextureDrawer(SIMPLE_FRAME.frameDrawer(210, 19, 86, upgradeGroup.activeHeight() + 42, 3, 16, true, true));
+        // addTextureDrawer(BRASS_FRAME.frameDrawer(-116, 19, 128, moduleGroup.activeHeight() + 42, 3, 16, true, true));
+        // addTextureDrawer(BRASS_FRAME.frameDrawer(210, 19, 86, upgradeGroup.activeHeight() + 42, 3, 16, true, true));
 
         // Offset the screen upward (GUI SCALE 4)
         addInitListener(s -> s.offset(-30, -24));

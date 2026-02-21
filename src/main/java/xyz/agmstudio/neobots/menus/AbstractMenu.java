@@ -25,6 +25,8 @@ import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroup;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.containers.slots.FilterSlot;
+import xyz.agmstudio.neobots.gui.FrameTexture;
+import xyz.agmstudio.neobots.gui.ScreenDrawer;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.network.MenuPacket;
 
@@ -37,10 +39,10 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     protected static final Texture SLOT_TEXTURE = new Texture("textures/gui/single_slot.png", 20, 20);
     protected static final Texture ACTIVE_SLOT_TEXTURE = new Texture("textures/gui/single_slot_active.png", 20 , 20);
     protected static final Texture UPGRADE_SLOT_TEXTURE = new Texture("textures/gui/upgrade_slot.png", 20, 20);
-    protected static final Texture SIMPLE_FRAME = new Texture("textures/gui/simple_frame.png", 64, 64);
+    protected static final FrameTexture BRASS_FRAME = new FrameTexture("textures/gui/brass_frame.png", 64, 64, 19, 6);
 
     protected final List<Consumer<Screen<?>>> onInitActions = new ArrayList<>();
-    protected final List<Texture.Drawer> drawers = new ArrayList<>();
+    protected final List<ScreenDrawer> drawers = new ArrayList<>();
     protected final List<WidgetHolder<?>> widgets = new ArrayList<>();
     protected final List<SlotGroup> slotGroups = new ArrayList<>();
     protected final List<SlotGroupHolder> slotHolders = new ArrayList<>();
@@ -127,7 +129,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         return false;
     }
 
-    protected void addTextureDrawer(Texture.Drawer drawer) {
+    public void addTextureDrawer(ScreenDrawer drawer) {
         this.drawers.add(drawer);
     }
     public void addInitListener(Consumer<Screen<?>> consumer) {
@@ -135,10 +137,10 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     }
 
     protected abstract Texture getBackground();
-    protected int getWidth() {
+    public int getWidth() {
         return getBackground().sizeX;
     }
-    protected int getHeight() {
+    public int getHeight() {
         return getBackground().sizeY;
     }
     public void registerSlotGroup(SlotGroupHolder holder) {
@@ -240,7 +242,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         }
 
         @Override protected void renderBg(@NotNull GuiGraphics g, float partialTick, int x, int y) {
-            menu.drawers.stream().filter(Texture.Drawer::drawBeforeBg).forEach(d -> d.draw(this, g));
+            menu.drawers.stream().filter(ScreenDrawer::drawBeforeBg).forEach(d -> d.draw(this, g));
             getMenu().getBackground().draw(g, leftPos, topPos);
             menu.drawers.stream().filter(d -> !d.drawBeforeBg()).forEach(d -> d.draw(this, g));
 

@@ -6,6 +6,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.BotFilteredContainer;
+import xyz.agmstudio.neobots.gui.FrameTexture;
+import xyz.agmstudio.neobots.gui.ScreenDrawer;
 import xyz.agmstudio.neobots.gui.Texture;
 import xyz.agmstudio.neobots.menus.AbstractMenu;
 
@@ -18,7 +20,6 @@ import java.util.function.Function;
 
 public class SlotGroup {
     protected static final BiConsumer<AbstractMenu, Slot> ADD_SLOT_METHOD = captureAddSlotMethod();
-
     private static @NotNull BiConsumer<AbstractMenu, Slot> captureAddSlotMethod() {
         try {
             Method method = AbstractContainerMenu.class.getDeclaredMethod("addSlot", Slot.class);
@@ -52,6 +53,8 @@ public class SlotGroup {
     protected int offset = 0;
     protected int paddingX = 0;
     protected int paddingY = 0;
+
+    protected FrameBuilder frame;
 
     protected final List<Slot> slots = new ArrayList<>();
     protected final List<SlotGroup> children = new ArrayList<>();
@@ -129,6 +132,11 @@ public class SlotGroup {
         return this;
     }
 
+    public FrameBuilder withFrame(FrameTexture frame) {
+        this.frame = new FrameBuilder(this, frame);
+        return this.frame;
+    }
+
     public SlotGroup then(int w, int h, int x, int y) {
         SlotGroup child = new SlotGroup(this, w, h, x, y);
         this.children.add(child);
@@ -147,6 +155,7 @@ public class SlotGroup {
         SlotGroupHolder holder = new SlotGroupHolder(startIndex);
         buildInto(menu, holder);
         menu.registerSlotGroup(holder);
+        if (frame != null) menu.addTextureDrawer(frame.getDrawer(x, y, holder));
         return holder;
     }
     private void buildInto(@NotNull AbstractMenu menu, SlotGroupHolder holder) {
@@ -179,7 +188,72 @@ public class SlotGroup {
             if (!slot.isActive()) continue;
             Texture t = this.texture.apply(slot.index - offset);
             if (t == null) continue;
-            t.draw(g, slot.x + offX, slot.y + offY, textureSizeX, textureSizeY);
+            t.drawScaled(g, slot.x + offX, slot.y + offY, textureSizeX, textureSizeY);
+        }
+    }
+
+    public static class FrameBuilder {
+        private final SlotGroup group;
+        private final FrameTexture texture;
+        private int offsetX = 0;
+        private int offsetY = 0;
+        private int offsetW = 0;
+        private int offsetH = 0;
+        private int width = 0;
+        private int height = 0;
+        private boolean drawBeforeBg = false;
+        private boolean tiled = false;
+
+        private FrameBuilder(SlotGroup group, FrameTexture texture) {
+            this.group = group;
+            this.texture = texture;
+        }
+        public FrameBuilder offset(int offsetX, int offsetY) {
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            return this;
+        }
+        public FrameBuilder offsetSize(int offsetW, int offsetH) {
+            this.offsetW = offsetW;
+            this.offsetH = offsetH;
+            return this;
+        }
+        public FrameBuilder minWidth(int width) {
+            this.width = width;
+            return this;
+        }
+        public FrameBuilder minHeight(int height) {
+            this.height = height;
+            return this;
+        }
+        public FrameBuilder minSize(int width, int height) {
+            this.width = width;
+            this.height = height;
+            return this;
+        }
+        public FrameBuilder tiled() {
+            this.tiled = true;
+            return this;
+        }
+        public FrameBuilder drawBeforeBg() {
+            this.drawBeforeBg = true;
+            return this;
+        }
+        public SlotGroup build() {
+            return group;
+        }
+        public SlotGroupHolder build(AbstractMenu menu) {
+            return this.group.build(menu);
+        }
+
+        public ScreenDrawer getDrawer(int x, int y, SlotGroupHolder holder) {
+            return texture.drawerAround(
+                    x - offsetX - group.textureOffsetX,
+                    y - offsetY - group.textureOffsetY,
+                    Math.max(holder.activeWidth() + group.textureSizeX - 16 + offsetX + offsetW, width),
+                    Math.max(holder.activeHeight() + group.textureSizeY - 16 + offsetY + offsetH, height),
+                    tiled, drawBeforeBg
+            );
         }
     }
 }
