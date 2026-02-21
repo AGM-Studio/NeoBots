@@ -229,6 +229,8 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     public static class Screen<T extends AbstractMenu> extends AbstractContainerScreen<T> {
         public Screen(T menu, Inventory inv, Component title) {
             super(menu, inv, title);
+            imageWidth = getMenu().getWidth();
+            imageHeight = getMenu().getHeight();
         }
         public Component getPlayerInventoryTitle() {
             return playerInventoryTitle;
