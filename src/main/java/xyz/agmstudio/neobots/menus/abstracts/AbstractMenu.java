@@ -1,15 +1,10 @@
-package xyz.agmstudio.neobots.menus;
+package xyz.agmstudio.neobots.menus.abstracts;
 
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import net.createmod.catnip.gui.element.ScreenElement;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -25,14 +20,14 @@ import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroup;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.containers.slots.FilterSlot;
-import xyz.agmstudio.neobots.gui.Drawable;
-import xyz.agmstudio.neobots.gui.FrameTexture;
-import xyz.agmstudio.neobots.gui.Texture;
+import xyz.agmstudio.neobots.menus.gui.Drawable;
+import xyz.agmstudio.neobots.menus.gui.FrameTexture;
+import xyz.agmstudio.neobots.menus.gui.Label;
+import xyz.agmstudio.neobots.menus.gui.Texture;
 import xyz.agmstudio.neobots.network.MenuPacket;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -43,7 +38,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     protected static final Texture UPGRADE_SLOT_TEXTURE = new Texture("textures/gui/upgrade_slot.png", 20, 20);
     protected static final FrameTexture BRASS_FRAME = new FrameTexture("textures/gui/brass_frame.png", 64, 64).margin(19, 6).tiled(true);
 
-    protected final List<Consumer<Screen<?>>> onInitActions = new ArrayList<>();
+    protected final List<Consumer<AbstractScreen<?>>> onInitActions = new ArrayList<>();
     protected final List<Supplier<Drawable.Drawer>> drawers = new ArrayList<>();
     protected final List<WidgetHolder<?>> widgets = new ArrayList<>();
     protected final List<SlotGroup> slotGroups = new ArrayList<>();
@@ -86,7 +81,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         return moveItemStackTo(stack, group.firstIndex(), group.lastIndexExclusive(), reverse);
     }
 
-    protected Label addLabel(Function<Screen<?>, Component> text, int x, int y) {
+    protected Label addLabel(Function<AbstractScreen<?>, Component> text, int x, int y) {
         Label label = new Label(text, x, y);
         this.labels.add(label);
         return label;
@@ -95,13 +90,13 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
         return addLabel(s -> text, x, y);
     }
     protected Label addTitle(int x, int y) {
-        return addLabel(Screen::getTitle, x, y);
+        return addLabel(AbstractScreen::getTitle, x, y);
     }
     protected Label addTitleCentered(int y) {
-        return addLabel(Screen::getTitle, getWidth() / 2, y).centered();
+        return addLabel(AbstractScreen::getTitle, getWidth() / 2, y).centered();
     }
     protected Label addPlayerInventoryTitle(int x, int y) {
-        return addLabel(Screen::getPlayerInventoryTitle, x, y);
+        return addLabel(AbstractScreen::getPlayerInventoryTitle, x, y);
     }
 
     protected ScrollInput addScrollInput(int x, int y, int w, int h) {
@@ -125,7 +120,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     }
     protected void updateIconButtons() {
         for (WidgetHolder<?> widget: widgets)
-            if (widget.widget instanceof IconButton button) button.green = isIconButtonActive(button);
+            if (widget.get() instanceof IconButton button) button.green = isIconButtonActive(button);
     }
     protected boolean isIconButtonActive(IconButton button) {
         return false;
@@ -137,7 +132,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     public void addTextureDrawer(Drawable.Drawer drawer) {
         this.drawers.add(() -> drawer);
     }
-    public void addInitListener(Consumer<Screen<?>> consumer) {
+    public void addInitListener(Consumer<AbstractScreen<?>> consumer) {
         this.onInitActions.add(consumer);
     }
 
@@ -150,126 +145,6 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     }
     public void registerSlotGroup(SlotGroupHolder holder) {
         slotHolders.add(holder);
-    }
-
-    protected static class Label {
-        private final Function<Screen<?>, Component> text;
-        private final int x;
-        private final int y;
-        private int color = 0x404040;
-        private boolean shadow = false;
-        private boolean center = false;
-        private int maxWidth = -1;
-        private float scale = 1.0f;
-
-        protected Label(Function<Screen<?>, Component> text, int x, int y) {
-            this.text = text;
-            this.x = x;
-            this.y = y;
-        }
-        public Label centered() {
-            this.center = true;
-            return this;
-        }
-        public Label withColor(int color) {
-            this.color = color;
-            return this;
-        }
-        public Label withShadow() {
-            this.shadow = true;
-            return this;
-        }
-        public Label width(int maxWidth) {
-            this.maxWidth = maxWidth;
-            return this;
-        }
-        public Label scale(float scale) {
-            this.scale = scale;
-            return this;
-        }
-
-        public void render(Screen<?> screen, GuiGraphics g) {
-            Font font = screen.getMinecraft().font;
-            Component text = this.text.apply(screen);
-            if (maxWidth > 0) {
-                List<FormattedCharSequence> lines = font.split(text, (int) (maxWidth / scale));
-                for (int i = 0; i < lines.size(); i++) {
-                    int yOffset = y + i * (font.lineHeight + 1);
-                    draw(screen, g, lines.get(i), font, x, yOffset);
-                }
-            } else draw(screen, g, text.getVisualOrderText(), font, x, y);
-        }
-        private void draw(Screen<?> screen, GuiGraphics g, FormattedCharSequence text, Font font, int x, int y) {
-            int dx = center ? (screen.getMenu().getWidth() - font.width(text)) / 2 : x;
-            g.pose().pushPose();
-            g.pose().scale(scale, scale, 1.0f);
-            g.drawString(font, text, Math.round(dx / scale), Math.round(y / scale), color, shadow);
-            g.pose().popPose();
-        }
-    }
-    public static class WidgetHolder<T extends AbstractWidget> {
-        private final T widget;
-        public final int x;
-        public final int y;
-
-        public WidgetHolder(T widget, int x, int y) {
-            this.widget = widget;
-            this.x = x;
-            this.y = y;
-        }
-        public T get() {
-            return widget;
-        }
-        public T init(Screen<?> screen) {
-            widget.setX(x + screen.getGuiLeft());
-            widget.setY(y + screen.getGuiTop());
-            return widget;
-        }
-    }
-    public static class Screen<T extends AbstractMenu> extends AbstractContainerScreen<T> {
-        public Screen(T menu, Inventory inv, Component title) {
-            super(menu, inv, title);
-            imageWidth = getMenu().getWidth();
-            imageHeight = getMenu().getHeight();
-        }
-        public Component getPlayerInventoryTitle() {
-            return playerInventoryTitle;
-        }
-
-        @Override protected void init() {
-            super.init();
-
-            menu.onInitActions.forEach(c -> c.accept(this));
-            for (WidgetHolder<?> widget: menu.widgets) addRenderableWidget(widget.init(this));
-        }
-
-        @Override public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-            super.render(g, mouseX, mouseY, partialTick);
-            this.renderTooltip(g, mouseX, mouseY);
-        }
-
-        @Override protected void renderBg(@NotNull GuiGraphics g, float partialTick, int x, int y) {
-            menu.drawers.stream().map(Supplier::get).filter(Objects::nonNull).forEach(d -> d.draw(this, g, true));
-            getMenu().getBackground().draw(g, leftPos, topPos);
-            menu.drawers.stream().map(Supplier::get).filter(Objects::nonNull).forEach(d -> d.draw(this, g, false));
-
-            menu.slotGroups.forEach(group -> group.render(this, g));
-        }
-
-        @Override protected void renderLabels(@NotNull GuiGraphics g, int mouseX, int mouseY) {
-            menu.labels.forEach(l -> l.render(this, g));
-        }
-
-        public void offsetTop(int i) {
-            this.topPos += i;
-        }
-        public void offsetLeft(int i) {
-            this.leftPos += i;
-        }
-        public void offset(int t, int l) {
-            this.topPos += t;
-            this.leftPos += l;
-        }
     }
 
     @Override

@@ -2,7 +2,7 @@ package xyz.agmstudio.neobots.containers.slotgroups;
 
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.menus.AbstractMenu;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
 
 import java.util.ArrayList;
 import java.util.List;

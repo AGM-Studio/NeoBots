@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.gui;
+package xyz.agmstudio.neobots.menus.gui;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;

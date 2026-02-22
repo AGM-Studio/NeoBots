@@ -15,7 +15,8 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.block.battery.BatteryItem;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
-import xyz.agmstudio.neobots.gui.Texture;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
+import xyz.agmstudio.neobots.menus.gui.Texture;
 import xyz.agmstudio.neobots.index.CNBMenus;
 import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
@@ -62,23 +63,23 @@ public class NeoBotMenu extends AbstractMenu {
         upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 3, 4, 228, 40).pad(2).withTextureOffset(2, 2)
                 .withTexture(UPGRADE_SLOT_TEXTURE)
                 .withFrame(BRASS_FRAME).offset(4, 0).drawBeforeBg().build(this);
-        batteryGroup      = addSlotGroup(bot.getBatteryInventory(), 1, 1, 24, 70).build(this);
+        batteryGroup      = addSlotGroup(bot.getBatteryInventory(), 1, 1, 118, 70).build(this);
         botInventoryGroup = addSlotGroup(bot.getInventory(), 3, 3, 144, 28).build(this);
 
         addPlayerInventoryTitle(112, 100).centered().withColor(0x000000);
         addPlayerInventory(24, 116, 2, 5, 18);
 
         state = NeoBotEntity.STATE.get(bot);
-        stop  = addIconButton(81,  69, AllIcons.I_STOP).withCallback(() -> {
+        stop  = addIconButton(167,  69, AllIcons.I_STOP).withCallback(() -> {
             state = 0; updateIconButtons();
             sendPacket(0, false);
         });
-        start = addIconButton(103, 69, AllIcons.I_PLAY).withCallback(() -> {
+        start = addIconButton(189, 69, AllIcons.I_PLAY).withCallback(() -> {
             state = 1; updateIconButtons();
             sendPacket(0, true);
         });
 
-        addIconButton(53, 69, AllIcons.I_REFRESH).withCallback(() -> {
+        addIconButton(139, 69, AllIcons.I_REFRESH).withCallback(() -> {
             state = 1; updateIconButtons();
             sendPacket(1, true);
         });

@@ -6,10 +6,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.BotFilteredContainer;
-import xyz.agmstudio.neobots.gui.Drawable;
-import xyz.agmstudio.neobots.gui.FrameTexture;
-import xyz.agmstudio.neobots.gui.Texture;
-import xyz.agmstudio.neobots.menus.AbstractMenu;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractScreen;
+import xyz.agmstudio.neobots.menus.gui.Drawable;
+import xyz.agmstudio.neobots.menus.gui.FrameTexture;
+import xyz.agmstudio.neobots.menus.gui.Texture;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -181,7 +182,7 @@ public class SlotGroup {
         for (SlotGroup child : children) child.buildInto(menu, holder);
     }
 
-    public void render(AbstractMenu.Screen<?> screen, GuiGraphics g) {
+    public void render(AbstractScreen<?> screen, GuiGraphics g) {
         if (texture == null) return;
         int offX = screen.getGuiLeft() - textureOffsetX;
         int offY = screen.getGuiTop() - textureOffsetY;

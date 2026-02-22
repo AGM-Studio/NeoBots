@@ -10,7 +10,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.handling.IPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.menus.AbstractMenu;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
 
 import java.util.ArrayList;
 import java.util.List;

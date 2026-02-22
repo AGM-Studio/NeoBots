@@ -1,7 +1,7 @@
-package xyz.agmstudio.neobots.gui;
+package xyz.agmstudio.neobots.menus.gui;
 
 import net.minecraft.client.gui.GuiGraphics;
-import xyz.agmstudio.neobots.menus.AbstractMenu;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractScreen;
 
 public interface Drawable {
     void draw(GuiGraphics g, int x, int y);
@@ -23,7 +23,7 @@ public interface Drawable {
             this.x = x;
             this.y = y;
         }
-        public void draw(AbstractMenu.Screen<?> s, GuiGraphics g, boolean isBeforeBg) {
+        public void draw(AbstractScreen<?> s, GuiGraphics g, boolean isBeforeBg) {
             if (beforeBg == isBeforeBg) drawable.draw(g, x + s.getGuiLeft(), y + s.getGuiTop());
         }
     }

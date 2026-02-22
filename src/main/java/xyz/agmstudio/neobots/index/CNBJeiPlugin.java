@@ -8,7 +8,8 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.NeoBots;
-import xyz.agmstudio.neobots.menus.AbstractMenu;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractScreen;
 
 import java.util.List;
 
@@ -21,9 +22,9 @@ public class CNBJeiPlugin implements IModPlugin {
     @Override public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         //noinspection unchecked,RedundantCast
         registration.addGuiContainerHandler(
-                (Class<? extends AbstractMenu.Screen<? extends AbstractMenu>>) (Class<?>) AbstractMenu.Screen.class,
-            new IGuiContainerHandler<AbstractMenu.Screen<? extends AbstractMenu>>() {
-                @Override public @NotNull List<Rect2i> getGuiExtraAreas(AbstractMenu.@NotNull Screen<?> screen) {
+                (Class<? extends AbstractScreen<? extends AbstractMenu>>) (Class<?>) AbstractScreen.class,
+            new IGuiContainerHandler<AbstractScreen<? extends AbstractMenu>>() {
+                @Override public @NotNull List<Rect2i> getGuiExtraAreas(@NotNull AbstractScreen<?> screen) {
                     return List.of(
                         new Rect2i(screen.getGuiLeft(), screen.getGuiTop(), screen.getXSize(), screen.getYSize())
                     );
