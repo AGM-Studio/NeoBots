@@ -6,8 +6,8 @@
   "gui_term.create_neobots.count": "Count",
   "gui.create_neobots.modules_tab": "Modules",
   "gui.create_neobots.upgrades_tab": "Upgrades",
-  "gui.create_neobots.bot_inventory": "Inventory",
-  "gui.create_neobots.not_target.container": "Right click a container to set target",
+  "gui.create_neobots.bot_inventory": "Bot Inventory",
+  "gui.create_neobots.not_target.container": "No container set.",
 
   "state.create_neobots.loading": "Loading...",
   "state.create_neobots.no_charge": "No Energy!",

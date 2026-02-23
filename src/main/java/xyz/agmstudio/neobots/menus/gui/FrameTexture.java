@@ -8,6 +8,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class FrameTexture implements Drawable {
+    public static final FrameTexture BRASS_FRAME = new FrameTexture("textures/gui/brass_frame.png", 64, 64).margin(19, 6).tiled(true);
+    public static final FrameTexture PACKAGE_FRAME = new FrameTexture("textures/gui/package_frame.png", 80, 72).margin(11, 12);
     public final Texture texture;
     public final int top, bottom, left, right;
     public final int width, height;

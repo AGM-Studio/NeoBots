@@ -63,7 +63,7 @@ public class Label {
     }
 
     private void draw(AbstractScreen<?> screen, GuiGraphics g, FormattedCharSequence text, Font font, int x, int y) {
-        int dx = center ? (screen.getMenu().getWidth() - font.width(text)) / 2 : x;
+        int dx = center ? (screen.getWidth() - font.width(text)) / 2 : x;
         g.pose().pushPose();
         g.pose().scale(scale, scale, 1.0f);
         g.drawString(font, text, Math.round(dx / scale), Math.round(y / scale), color, shadow);

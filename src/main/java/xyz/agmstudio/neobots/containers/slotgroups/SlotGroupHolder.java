@@ -4,15 +4,17 @@ import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.slots.NeoSlot;
 import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractScreen;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SlotGroupHolder {
-    private final List<NeoSlot> slots = new ArrayList<>();
+public class SlotGroupHolder {
+    protected final List<NeoSlot> slots = new ArrayList<>();
 
     private final int firstIndex;
     private int lastIndexExclusive = -1;
+    private int offsetIndex = 0;
 
     private int minX = Integer.MAX_VALUE;
     private int minY = Integer.MAX_VALUE;
@@ -27,6 +29,12 @@ public final class SlotGroupHolder {
     public void setVisible(boolean visible) {
         for (NeoSlot slot: slots) slot.setActive(visible);
         this.visible = visible;
+    }
+
+    public ClientSlotGroup client(AbstractScreen<?> screen) {
+        ClientSlotGroup group = new ClientSlotGroup(this);
+        screen.registerSlotGroup(group);
+        return group;
     }
 
     public static @NotNull SlotGroupHolder of(AbstractMenu menu, NeoSlot... slots) {
@@ -83,6 +91,12 @@ public final class SlotGroupHolder {
     }
     public int lastIndexExclusive() {
         return lastIndexExclusive;
+    }
+    public void setOffsetIndex(int index) {
+        offsetIndex = index;
+    }
+    public int offsetIndex() {
+        return offsetIndex;
     }
     public List<Slot> slots() {
         return List.copyOf(slots);

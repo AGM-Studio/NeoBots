@@ -8,6 +8,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class Texture implements Drawable {
+    public static final Texture SLOT_TEXTURE = new Texture("textures/gui/single_slot.png", 20, 20);
+    public static final Texture ACTIVE_SLOT_TEXTURE = new Texture("textures/gui/single_slot_active.png", 20 , 20);
+    public static final Texture UPGRADE_SLOT_TEXTURE = new Texture("textures/gui/upgrade_slot.png", 20, 20);
+    public static final Texture PACKAGE_SLOT_TEXTURE = new Texture("textures/gui/package_slot.png", 18, 18);
     public final ResourceLocation texture;
     public final int sizeX, sizeY;
     public final int u, v, w, h;            // UV Values

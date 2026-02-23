@@ -1,8 +1,5 @@
 package xyz.agmstudio.neobots.menus;
 
-import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.gui.widget.IconButton;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -12,26 +9,17 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.containers.slots.FilterSlot;
 import xyz.agmstudio.neobots.containers.slots.PreviewSlot;
-import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
-import xyz.agmstudio.neobots.menus.gui.Texture;
 import xyz.agmstudio.neobots.index.CNBMenus;
-import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
-import xyz.agmstudio.neobots.utils.NeoBotsHelper;
+import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
 
 public class TransferModuleMenu extends AbstractMenu {
-    private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 204);
-
-    private final ModuleTransferData data;
-    private final ItemStack module;
-    private final FilterSlot filterSlot;
-    private final SlotGroupHolder filterHolder;
-    private final IconButton skipButton;
-
-    // GUI Variables - Not synced!
-    private int count;
-    public boolean skip;
+    protected final ModuleTransferData data;
+    protected final ItemStack module;
+    protected final FilterSlot filterSlot;
+    protected final SlotGroupHolder filterHolder;
 
     public static @NotNull TransferModuleMenu create(int id, Inventory inv) {
         return new TransferModuleMenu(CNBMenus.TRANSFER_MODULE.get(), id, inv);
@@ -45,52 +33,13 @@ public class TransferModuleMenu extends AbstractMenu {
             else throw new IllegalArgumentException("Invalid module type for menu");
         } else throw new IllegalArgumentException("Invalid module type for menu");
 
-        this.count = this.data.getCount();
-        this.skip = this.data.getSkip();
-
         this.filterSlot = new FilterSlot(data.getFilter(), 26, 48, this::updateFilter);
         this.filterHolder = SlotGroupHolder.of(this, filterSlot);
 
-        addPlayerInventoryTitle(8, 110);
         addPlayerInventory(8, 122, this.data.getStack());
-
         addSlot(new PreviewSlot(data.getStack(), 18, 80));
-
-        // Setup GUI
-        addScrollInput(51, 51, 96, 10).withRange(1, 577)
-                .setState(this.data.getCount())
-                .titled(Component.translatable("gui_term.create_neobots.count"))
-                .calling(value -> {
-                    count = value;
-                    sendPacket(0, count);
-                });
-        skipButton = addIconButton(40, 79, AllIcons.I_SKIP_MISSING).withCallback(() -> {
-            skip = !skip;
-            sendPacket(0, skip);
-            updateIconButtons();
-        });
-        addIconButton(148, 79, AllIcons.I_CONFIRM).withCallback(() -> {
-            sendPacket(1, true);
-            inventory.player.closeContainer();
-        });
-
-
-        addTitleCentered(4).withColor(0x582424);
-        addLabel(s -> NeoBotsHelper.countAsStacks(count), 54, 52).withColor(0xffffff).withShadow();
-
-        int targetColor = 0xcc0000;
-        Component target = Component.translatable("gui.create_neobots.not_target.container");
-        if (this.data.getTarget() != null) {
-            targetColor = 0xffffff;
-            target = inventory.player.level().getBlockState(this.data.getTarget()).getBlock().getName()
-                    .append(Component.literal(" (" + this.data.getTarget().toShortString() + ")"));
-        }
-        addLabel(target, 30, 28).withColor(targetColor).withShadow();
     }
 
-    @Override protected boolean isIconButtonActive(IconButton button) {
-        return button == skipButton && skip;
-    }
     @Override public void handlePacket(int id, boolean value) {
         if (id == 0) {
             data.setSkip(value);
@@ -133,9 +82,5 @@ public class TransferModuleMenu extends AbstractMenu {
 
         slot.onTake(player, stack);
         return copy;
-    }
-
-    @Override protected Texture getBackground() {
-        return BG;
     }
 }
