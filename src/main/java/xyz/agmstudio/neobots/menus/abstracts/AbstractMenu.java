@@ -11,7 +11,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +19,7 @@ import xyz.agmstudio.neobots.containers.slotgroups.SlotCreator;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroup;
 import xyz.agmstudio.neobots.containers.slotgroups.SlotGroupHolder;
 import xyz.agmstudio.neobots.containers.slots.FilterSlot;
+import xyz.agmstudio.neobots.containers.slots.NeoSlot;
 import xyz.agmstudio.neobots.menus.gui.Drawable;
 import xyz.agmstudio.neobots.menus.gui.FrameTexture;
 import xyz.agmstudio.neobots.menus.gui.Label;
@@ -36,14 +36,16 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     protected static final Texture SLOT_TEXTURE = new Texture("textures/gui/single_slot.png", 20, 20);
     protected static final Texture ACTIVE_SLOT_TEXTURE = new Texture("textures/gui/single_slot_active.png", 20 , 20);
     protected static final Texture UPGRADE_SLOT_TEXTURE = new Texture("textures/gui/upgrade_slot.png", 20, 20);
+    protected static final Texture PACKAGE_SLOT_TEXTURE = new Texture("textures/gui/package_slot.png", 18, 18);
     protected static final FrameTexture BRASS_FRAME = new FrameTexture("textures/gui/brass_frame.png", 64, 64).margin(19, 6).tiled(true);
+    protected static final FrameTexture PACKAGE_FRAME = new FrameTexture("textures/gui/package_frame.png", 80, 72).margin(11, 12);
 
     protected final List<Consumer<AbstractScreen<?>>> onInitActions = new ArrayList<>();
     protected final List<Supplier<Drawable.Drawer>> drawers = new ArrayList<>();
     protected final List<WidgetHolder<?>> widgets = new ArrayList<>();
     protected final List<SlotGroup> slotGroups = new ArrayList<>();
     protected final List<SlotGroupHolder> slotHolders = new ArrayList<>();
-    protected final List<Label> labels = new ArrayList<>();
+    protected final List<Supplier<Label>> labels = new ArrayList<>();
     protected final Inventory inventory;
 
     protected SlotGroupHolder playerInventoryGroup = null;
@@ -67,7 +69,7 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
     protected void addPlayerInventory(int x, int y, int slotPadding, int hotbarPadding, int textureSize) {
         addPlayerInventory(x, y, slotPadding, hotbarPadding, textureSize, null);
     }
-    protected void addPlayerInventory(int x, int y, int slotPadding, int hotbarPadding, int textureSize, SlotCreator<Slot> creator) {
+    protected void addPlayerInventory(int x, int y, int slotPadding, int hotbarPadding, int textureSize, SlotCreator<? extends NeoSlot> creator) {
         if (creator == null) creator = SlotCreator.defaultCreator(inventory);
         playerInventoryGroup = addSlotGroup(inventory, 9, 3, x, y).offset(9).pad(slotPadding).withTextureSize(textureSize, textureSize).withSlotCreator(creator)
                 .then(9, 1, x, y + hotbarPadding + 2 * slotPadding + 54).limit(9).build(this);
@@ -83,11 +85,14 @@ public abstract class AbstractMenu extends AbstractContainerMenu {
 
     protected Label addLabel(Function<AbstractScreen<?>, Component> text, int x, int y) {
         Label label = new Label(text, x, y);
-        this.labels.add(label);
+        this.labels.add(() -> label);
         return label;
     }
     protected Label addLabel(Component text, int x, int y) {
         return addLabel(s -> text, x, y);
+    }
+    public void addLabel(Supplier<Label> label) {
+        this.labels.add(label);
     }
     protected Label addTitle(int x, int y) {
         return addLabel(AbstractScreen::getTitle, x, y);

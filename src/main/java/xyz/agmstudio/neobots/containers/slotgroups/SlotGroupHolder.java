@@ -2,13 +2,14 @@ package xyz.agmstudio.neobots.containers.slotgroups;
 
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
+import xyz.agmstudio.neobots.containers.slots.NeoSlot;
 import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class SlotGroupHolder {
-    private final List<Slot> slots = new ArrayList<>();
+    private final List<NeoSlot> slots = new ArrayList<>();
 
     private final int firstIndex;
     private int lastIndexExclusive = -1;
@@ -18,18 +19,27 @@ public final class SlotGroupHolder {
     private int maxX = Integer.MIN_VALUE;
     private int maxY = Integer.MIN_VALUE;
 
+    private boolean visible = true;
 
-    public static @NotNull SlotGroupHolder of(AbstractMenu menu, Slot... slots) {
+    public boolean isVisible() {
+        return visible;
+    }
+    public void setVisible(boolean visible) {
+        for (NeoSlot slot: slots) slot.setActive(visible);
+        this.visible = visible;
+    }
+
+    public static @NotNull SlotGroupHolder of(AbstractMenu menu, NeoSlot... slots) {
         return of(menu, 16, 16, slots);
     }
-    public static @NotNull SlotGroupHolder of(AbstractMenu menu, int sizeX, int sizeY, Slot... slots) {
+    public static @NotNull SlotGroupHolder of(AbstractMenu menu, int sizeX, int sizeY, NeoSlot... slots) {
         SlotGroupHolder holder = new SlotGroupHolder(menu.slots.size());
 
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;
         int maxY = Integer.MIN_VALUE;
-        for (Slot slot : slots) {
+        for (NeoSlot slot: slots) {
             SlotGroup.ADD_SLOT_METHOD.accept(menu, slot);
             holder.slots.add(slot);
 
@@ -51,12 +61,11 @@ public final class SlotGroupHolder {
         return holder;
     }
 
-
     public SlotGroupHolder(int firstIndex) {
         this.firstIndex = firstIndex;
     }
 
-    void append(AbstractMenu menu, List<Slot> newSlots, int x, int y, int width, int height) {
+    void append(AbstractMenu menu, List<NeoSlot> newSlots, int x, int y, int width, int height) {
         lastIndexExclusive = menu.slots.size();
         slots.addAll(newSlots);
         minX = Math.min(minX, x);
@@ -110,5 +119,4 @@ public final class SlotGroupHolder {
         if (minY == Integer.MAX_VALUE) return 0;
         return maxY - minY;
     }
-
 }

@@ -24,6 +24,7 @@
   "create_neobots.ponder.tag.bots": "NeoBots Assemble bots",
   "create_neobots.ponder.tag.bots.description": "All available bot assemblies. More will be added in future versions.",
   "entity.create_neobots.brass_roller": "Brass Roller",
+  "gui.create_neobots.bot_inventory": "Inventory",
   "gui.create_neobots.modules_tab": "Modules",
   "gui.create_neobots.not_target.container": "Right click a container to set target",
   "gui.create_neobots.upgrades_tab": "Upgrades",

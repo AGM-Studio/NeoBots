@@ -2,13 +2,12 @@ package xyz.agmstudio.neobots.containers.slots;
 
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 
-public class FilterSlot extends Slot {
+public class FilterSlot extends NeoSlot {
     private final Consumer<ItemStack> onSet;
 
     public FilterSlot(@NotNull ItemStack filter, int x, int y, Consumer<ItemStack> onSet) {

@@ -1,16 +1,18 @@
 package xyz.agmstudio.neobots.containers.slotgroups;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
-import xyz.agmstudio.neobots.containers.BotFilteredContainer;
+import xyz.agmstudio.neobots.containers.slots.NeoSlot;
+import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
 import xyz.agmstudio.neobots.menus.abstracts.AbstractScreen;
 import xyz.agmstudio.neobots.menus.gui.Drawable;
 import xyz.agmstudio.neobots.menus.gui.FrameTexture;
+import xyz.agmstudio.neobots.menus.gui.Label;
 import xyz.agmstudio.neobots.menus.gui.Texture;
-import xyz.agmstudio.neobots.menus.abstracts.AbstractMenu;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,15 +58,14 @@ public class SlotGroup {
     protected int paddingX = 0;
     protected int paddingY = 0;
 
-    protected FrameBuilder frame;
+    protected List<FrameBuilder> frames = new ArrayList<>();
+    protected List<LabelBuilder> labels = new ArrayList<>();
 
-    protected final List<Slot> slots = new ArrayList<>();
+    protected final List<NeoSlot> slots = new ArrayList<>();
     protected final List<SlotGroup> children = new ArrayList<>();
 
     public SlotGroup(Container container, int w, int h, int x, int y) {
-        if (container instanceof BotFilteredContainer bfc) this.creator = bfc.slotBuilder();
-        else this.creator = (i, px, py) -> new Slot(container, i, px, py);
-
+        this.creator = SlotCreator.defaultCreator(container);
         this.root = this;
         this.container = container;
         this.w = w;
@@ -135,8 +136,17 @@ public class SlotGroup {
     }
 
     public FrameBuilder withFrame(FrameTexture frame) {
-        this.frame = new FrameBuilder(this, frame);
-        return this.frame;
+        FrameBuilder builder = new FrameBuilder(this, frame);
+        frames.add(builder);
+        return builder;
+    }
+    public LabelBuilder addLabel(Function<AbstractScreen<?>, Component> text, int x, int y) {
+        LabelBuilder builder = new LabelBuilder(this, text, x, y);
+        labels.add(builder);
+        return builder;
+    }
+    public LabelBuilder addLabel(Component text, int x, int y) {
+        return addLabel(s -> text, x, y);
     }
 
     public SlotGroup then(int w, int h, int x, int y) {
@@ -157,7 +167,8 @@ public class SlotGroup {
         SlotGroupHolder holder = new SlotGroupHolder(startIndex);
         buildInto(menu, holder);
         menu.registerSlotGroup(holder);
-        if (frame != null) menu.addTextureDrawer(frame.getDrawer(x, y, holder));
+        for (FrameBuilder frame: frames) menu.addTextureDrawer(frame.getDrawer(x, y, holder));
+        for (LabelBuilder label: labels) menu.addLabel(label.getLabel(holder));
         return holder;
     }
     private void buildInto(@NotNull AbstractMenu menu, SlotGroupHolder holder) {
@@ -170,7 +181,7 @@ public class SlotGroup {
             int px = x + (index % w) * (paddingX + textureSizeX);
             int py = y + (index / w) * (paddingY + textureSizeY);
 
-            Slot slot = creator.create(indexOf(i), px, py);
+            NeoSlot slot = creator.create(indexOf(i), px, py);
             ADD_SLOT_METHOD.accept(menu, slot);
             slots.add(slot);
         }
@@ -192,7 +203,58 @@ public class SlotGroup {
             if (t != null) t.resize(textureSizeX, textureSizeY).draw(g, slot.x + offX, slot.y + offY);
         }
     }
+    public void renderBg(AbstractScreen<?> screen, GuiGraphics g) {
 
+    }
+
+    public static class LabelBuilder {
+        private final SlotGroup group;
+        private final Label label;
+
+        private LabelBuilder(SlotGroup group, Function<AbstractScreen<?>, Component> text, int x, int y) {
+            this.group = group;
+            this.label = new Label(text, x, y);
+        }
+
+        public LabelBuilder centered() {
+            label.centered();
+            return this;
+        }
+
+        public LabelBuilder withColor(int color) {
+            label.withColor(color);
+            return this;
+        }
+
+        public LabelBuilder withShadow() {
+            label.withShadow();
+            return this;
+        }
+
+        public LabelBuilder width(int maxWidth) {
+            label.width(maxWidth);
+            return this;
+        }
+
+        public LabelBuilder scale(float scale) {
+            label.scale(scale);
+            return this;
+        }
+
+        public SlotGroup build() {
+            return group;
+        }
+        public SlotGroupHolder build(AbstractMenu menu) {
+            return this.group.build(menu);
+        }
+
+        public Supplier<Label> getLabel(SlotGroupHolder holder) {
+            return () -> {
+                if (!holder.isVisible()) return null;
+                return label;
+            };
+        }
+    }
     public static class FrameBuilder {
         private final SlotGroup group;
         private final FrameTexture texture;
@@ -243,13 +305,16 @@ public class SlotGroup {
         }
 
         public Supplier<Drawable.Drawer> getDrawer(int x, int y, SlotGroupHolder holder) {
-            return () -> texture.around(
-                    x - offsetX - group.textureOffsetX,
-                    y - offsetY - group.textureOffsetY,
-                    Math.max(holder.activeWidth() + group.textureSizeX - 16 + offsetX + offsetW, width),
-                    Math.max(holder.activeHeight() + group.textureSizeY - 16 + offsetY + offsetH, height),
-                    drawBeforeBg
-            );
+            return () -> {
+                if (!holder.isVisible()) return null;
+                return texture.around(
+                        x - offsetX - group.textureOffsetX,
+                        y - offsetY - group.textureOffsetY,
+                        Math.max(holder.activeWidth() + group.textureSizeX - 16 + offsetX + offsetW, width),
+                        Math.max(holder.activeHeight() + group.textureSizeY - 16 + offsetY + offsetH, height),
+                        drawBeforeBg
+                );
+            };
         }
     }
 }

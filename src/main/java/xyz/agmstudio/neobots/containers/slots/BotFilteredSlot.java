@@ -1,12 +1,11 @@
 package xyz.agmstudio.neobots.containers.slots;
 
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.containers.BotFilteredContainer;
 
-public class BotFilteredSlot extends Slot {
+public class BotFilteredSlot extends NeoSlot {
     private final BotFilteredContainer container;
     private final int index;
 
@@ -26,8 +25,7 @@ public class BotFilteredSlot extends Slot {
         return index < container.getActiveSlots();
     }
 
-    @Override
-    public boolean isActive() {
-        return index < container.getActiveSlots();
+    @Override public boolean isActive() {
+        return super.isActive() && index < container.getActiveSlots();
     }
 }

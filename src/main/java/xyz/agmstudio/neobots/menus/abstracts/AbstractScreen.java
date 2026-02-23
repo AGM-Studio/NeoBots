@@ -45,7 +45,7 @@ public class AbstractScreen<T extends AbstractMenu> extends AbstractContainerScr
 
     @Override
     protected void renderLabels(@NotNull GuiGraphics g, int mouseX, int mouseY) {
-        menu.labels.forEach(l -> l.render(this, g));
+        menu.labels.stream().map(Supplier::get).filter(Objects::nonNull).forEach(l -> l.render(this, g));
     }
 
     public void offsetTop(int i) {
