@@ -87,10 +87,12 @@ public class NeoBotMenu extends AbstractMenu {
             moved = moveTo(playerInventoryGroup, stack, true);
 
         } else if (from == playerInventoryGroup) {
-            if (ModuleItem.isModule(stack)) moved = moveTo(moduleGroup, stack, false);
-            else if (stack.getItem() instanceof UpgradeItem) moved = moveTo(upgradeGroup, stack, false);
-            else if (stack.getItem() instanceof BatteryItem) moved = moveTo(batteryGroup, stack, false);
-            else moved = moveTo(botInventoryGroup, stack, false);
+            moved = switch (stack.getItem()) {
+                case ModuleItem<?, ?> moduleItem when moduleGroup.isVisible() -> moveTo(moduleGroup, stack, false);
+                case UpgradeItem upgradeItem when upgradeGroup.isVisible() -> moveTo(upgradeGroup, stack, false);
+                case BatteryItem batteryItem when batteryGroup.isVisible() -> moveTo(batteryGroup, stack, false);
+                default -> botInventoryGroup.isVisible() && moveTo(botInventoryGroup, stack, false);
+            };
         } else return ItemStack.EMPTY;
 
         if (!moved) return ItemStack.EMPTY;

@@ -96,7 +96,7 @@ public class ModuleContainer extends BotFilteredContainer {
     }
 
     @Override public boolean isItemValid(ItemStack stack) {
-        return ModuleItem.isModule(stack);
+        return stack.getItem() instanceof ModuleItem;
     }
 
     @Override public int getActiveSlots() {

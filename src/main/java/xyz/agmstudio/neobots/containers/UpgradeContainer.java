@@ -40,4 +40,10 @@ public class UpgradeContainer extends BotFilteredContainer {
     @Override public int getMaxStackSize() {
         return 1;
     }
+
+    @Override public void setChanged() {
+        super.setChanged();
+        bot.recalculateInventoryCapacity();
+        bot.recalculateModuleCapacity();
+    }
 }

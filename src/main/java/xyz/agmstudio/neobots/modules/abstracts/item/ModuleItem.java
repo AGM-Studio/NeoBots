@@ -31,9 +31,6 @@ import java.util.List;
 import java.util.Objects;
 
 public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> extends Item {
-    public static boolean isModule(@NotNull ItemStack stack) {
-        return stack.getItem() instanceof ModuleItem;
-    }
     public static void getBaseRecipe(DataGenContext<Item, Item> ctx, RegistrateRecipeProvider prov) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get(), 4)
                 .pattern("CAC")

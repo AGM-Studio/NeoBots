@@ -28,7 +28,7 @@ public class TransferModuleMenu extends AbstractMenu {
         super(menu, id, inv);
         this.module = inv.player.getMainHandItem();
         if (module.getItem() instanceof ModuleItem<?, ?> m) {
-            ModuleData data = m.getData(inv.player.level(), this.module);
+            ModuleData data = m.getData(inv.player.level(), this.module.copy());
             if (data instanceof ModuleTransferData td) this.data = td;
             else throw new IllegalArgumentException("Invalid module type for menu");
         } else throw new IllegalArgumentException("Invalid module type for menu");
