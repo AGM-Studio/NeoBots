@@ -1,6 +1,6 @@
 package xyz.agmstudio.neobots.modules.abstracts.task;
 
-import com.simibubi.create.content.logistics.depot.DepotBlockEntity;
+import com.simibubi.create.AllBlocks;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -33,7 +33,7 @@ public abstract class ItemTransferTask<D extends ModuleTransferData> extends Mod
         return handler;
     }
     public boolean isTargetDepot() {
-        return bot.level().getBlockEntity(data.getTarget()) instanceof DepotBlockEntity;
+        return bot.level().getBlockState(data.getTarget()).getBlock() == AllBlocks.DEPOT.get();
     }
 
     public abstract IItemHandler from();

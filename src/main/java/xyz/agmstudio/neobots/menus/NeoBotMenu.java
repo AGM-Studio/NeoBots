@@ -20,6 +20,11 @@ import xyz.agmstudio.neobots.upgrades.UpgradeItem;
 
 
 public class NeoBotMenu extends AbstractMenu {
+    private Tab tab = Tab.modules;
+    public enum Tab {
+        modules, upgrades, inventory
+    }
+
     protected final NeoBotEntity bot;
     protected final DataSlot activeModule = DataSlot.standalone();
     protected final DataSlot moduleCapacity = DataSlot.standalone();
@@ -48,15 +53,23 @@ public class NeoBotMenu extends AbstractMenu {
         addDataSlot(moduleCapacity);
 
         moduleGroup       = addSlotGroup(bot.getModuleInventory(), 5, 8, -108, 40).pad(2)
-                .withSlotSize(20, 20).build(this);
+                .withSlotSize(20, 20).build(this, true);
         upgradeGroup      = addSlotGroup(bot.getUpgradeInventory(), 5, 4, -108, 40).pad(2)
-                .withSlotSize(20, 20).build(this);
-        botInventoryGroup = addSlotGroup(bot.getInventory(), 3, 3, -71, 46).pad(2).build(this);
-        batteryGroup      = addSlotGroup(bot.getBatteryInventory(), 1, 1, 118, 70).build(this);
+                .withSlotSize(20, 20).build(this, false);
+        botInventoryGroup = addSlotGroup(bot.getInventory(), 3, 3, -71, 46).pad(2).build(this, false);
+        batteryGroup      = addSlotGroup(bot.getBatteryInventory(), 1, 1, 118, 70).build(this, true);
 
-        upgradeGroup.setVisible(false);
-        botInventoryGroup.setVisible(false);
         addPlayerInventory(24, 116, 2, 5, 18);
+    }
+
+    public void setTab(Tab tab) {
+        this.tab = tab;
+        moduleGroup.setVisible(tab == Tab.modules);
+        upgradeGroup.setVisible(tab == Tab.upgrades);
+        botInventoryGroup.setVisible(tab == Tab.inventory);
+    }
+    public Tab getTab() {
+        return tab;
     }
 
     @Override public void handlePacket(int id, boolean value) {
@@ -66,6 +79,12 @@ public class NeoBotMenu extends AbstractMenu {
         } else if (id == 1 && value) {                              // Reset Tasks Button
             bot.setActiveModule(0);
             bot.setState(NeoBotEntity.State.RUNNING);
+        }
+    }
+    @Override public void handlePacket(int id, int value) {
+        if (id == 0) {
+            if (value < 0 || value >= 3) return;
+            setTab(Tab.values()[value]);
         }
     }
 
@@ -83,7 +102,7 @@ public class NeoBotMenu extends AbstractMenu {
 
         boolean moved;
 
-        if (from == moduleGroup || from == upgradeGroup || from == botInventoryGroup) {
+        if (from == moduleGroup || from == upgradeGroup || from == botInventoryGroup || from == batteryGroup) {
             moved = moveTo(playerInventoryGroup, stack, true);
 
         } else if (from == playerInventoryGroup) {

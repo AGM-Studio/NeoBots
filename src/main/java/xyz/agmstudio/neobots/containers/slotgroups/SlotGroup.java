@@ -117,6 +117,9 @@ public class SlotGroup {
     }
 
     public SlotGroupHolder build(AbstractMenu menu) {
+        return build(menu, true);
+    }
+    public SlotGroupHolder build(AbstractMenu menu, boolean isVisible) {
         if (this != root)
             return root.build(menu);
 
@@ -124,6 +127,7 @@ public class SlotGroup {
         SlotGroupHolder holder = new SlotGroupHolder(startIndex);
         buildInto(menu, holder);
         holder.setOffsetIndex(offset);
+        holder.setVisible(isVisible);
         menu.registerSlotGroup(holder);
         return holder;
     }

@@ -54,23 +54,20 @@ public class NeoBotScreen extends AbstractScreen<NeoBotMenu> {
             sendPacket(1, true);
         });
         moduleButton = addIconButton(17, 69, AllIcons.I_TOOLBOX).withCallback(() -> {
-            menu.moduleGroup.setVisible(true);
-            menu.upgradeGroup.setVisible(false);
-            menu.botInventoryGroup.setVisible(false);
+            menu.setTab(NeoBotMenu.Tab.modules);
+            sendPacket(0, NeoBotMenu.Tab.modules.ordinal());
             updateIconButtons();
         });
         moduleButton.setToolTip(Component.translatable("gui.create_neobots.modules_tab"));
         upgradeButton = addIconButton(39, 69, AllIcons.I_PRIORITY_VERY_HIGH).withCallback(() -> {
-            menu.moduleGroup.setVisible(false);
-            menu.upgradeGroup.setVisible(true);
-            menu.botInventoryGroup.setVisible(false);
+            menu.setTab(NeoBotMenu.Tab.upgrades);
+            sendPacket(0, NeoBotMenu.Tab.upgrades.ordinal());
             updateIconButtons();
         });
         upgradeButton.setToolTip(Component.translatable("gui.create_neobots.upgrades_tab"));
         botInventoryButton = addIconButton(61, 69, AllIcons.I_DICE).withCallback(() -> {
-            menu.moduleGroup.setVisible(false);
-            menu.upgradeGroup.setVisible(false);
-            menu.botInventoryGroup.setVisible(true);
+            menu.setTab(NeoBotMenu.Tab.inventory);
+            sendPacket(0, NeoBotMenu.Tab.inventory.ordinal());
             updateIconButtons();
         });
         botInventoryButton.setToolTip(Component.translatable("gui.create_neobots.bot_inventory"));
