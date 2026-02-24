@@ -2,21 +2,19 @@ package xyz.agmstudio.neobots.block.parts;
 
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllItems;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -29,19 +27,17 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-
 @ParametersAreNonnullByDefault
-public class BrassRollerHead extends HorizontalDirectionalBlock {
+public class AndesiteRollerHead extends HorizontalDirectionalBlock {
     protected static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 8.0, 12.0);
     public static void getRecipe(DataGenContext<Item, BlockItem> ctx, RegistrateRecipeProvider prov) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
-                .pattern("PAP")
-                .pattern("AGA")
-                .pattern("PAP")
-                .define('P', AllItems.PRECISION_MECHANISM)
+                .pattern(" N ")
+                .pattern("AAA")
+                .pattern(" A ")
                 .define('A', AllBlocks.ANDESITE_CASING)
-                .define('G', Items.GLASS)
-                .unlockedBy("has_precision", RegistrateRecipeProvider.has(AllItems.PRECISION_MECHANISM))
+                .define('N', AllBlocks.ORANGE_NIXIE_TUBE)
+                .unlockedBy("has_andesite", RegistrateRecipeProvider.has(AllBlocks.ANDESITE_CASING))
                 .save(prov);
     }
 
@@ -53,7 +49,7 @@ public class BrassRollerHead extends HorizontalDirectionalBlock {
         return SHAPE;
     }
 
-    public BrassRollerHead(Properties props) {
+    public AndesiteRollerHead(Properties props) {
         super(props);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
@@ -70,24 +66,41 @@ public class BrassRollerHead extends HorizontalDirectionalBlock {
         return defaultBlockState().setValue(FACING, nearest.getOpposite());
     }
 
-    @Override public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
         super.onPlace(state, level, pos, oldState, isMoving);
         if (level.isClientSide) return;
 
         Direction facing = state.getValue(FACING);
+        Direction left = facing.getCounterClockWise();
+        Direction right = facing.getClockWise();
 
-        BlockState b1 = level.getBlockState(pos.below());
-        BlockState b2 = level.getBlockState(pos.below(2));
+        BlockPos casingPos = pos.below();
+        BlockPos leftWheelPos = casingPos.relative(left);
+        BlockPos rightWheelPos = casingPos.relative(right);
 
-        if (b1.getBlock() == AllBlocks.BRASS_CASING.get() && b2.getBlock() == CNBBlocks.BRASS_WHEEL.get()) {
-            NeoBotEntity bot = new NeoBotEntity(CNBEntities.BRASS_ROLLER.get(), level);
-            bot.moveTo(pos.getX() + 0.5, pos.getY() - 1, pos.getZ() + 0.5, facing.toYRot(), 0);
-            bot.readAdditionalSaveData(new CompoundTag());
+        BlockState casing = level.getBlockState(casingPos);
+        BlockState leftWheel = level.getBlockState(leftWheelPos);
+        BlockState rightWheel = level.getBlockState(rightWheelPos);
+
+        if (
+                casing.getBlock() == AllBlocks.ANDESITE_CASING.get()
+                && leftWheel.getBlock() == CNBBlocks.ROLLER_WHEEL.get()
+                && rightWheel.getBlock() == CNBBlocks.ROLLER_WHEEL.get()
+                && leftWheel.getValue(DirectionalBlock.FACING) == left
+                && rightWheel.getValue(DirectionalBlock.FACING) == right
+        ) {
+            NeoBotEntity bot = new NeoBotEntity(CNBEntities.ANDESITE_ROLLER.get(), level);
+            bot.moveTo(casingPos.getX() + 0.5, casingPos.getY(), casingPos.getZ() + 0.5, facing.toYRot(), 0);
+            bot.setYRot(facing.toYRot());
+            bot.yBodyRot = facing.toYRot();
+            bot.yHeadRot = facing.toYRot();
             level.addFreshEntity(bot);
 
             level.removeBlock(pos, false);
-            level.removeBlock(pos.below(), false);
-            level.removeBlock(pos.below(2), false);
+            level.removeBlock(casingPos, false);
+            level.removeBlock(leftWheelPos, false);
+            level.removeBlock(rightWheelPos, false);
             level.levelEvent(2001, pos, Block.getId(state));
         }
     }

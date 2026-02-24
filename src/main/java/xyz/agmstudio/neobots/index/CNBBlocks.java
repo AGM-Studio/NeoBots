@@ -34,10 +34,7 @@ import xyz.agmstudio.neobots.block.battery.BatteryItem;
 import xyz.agmstudio.neobots.block.charger.ChargerBlock;
 import xyz.agmstudio.neobots.block.charger.ChargerRenderer;
 import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlock;
-import xyz.agmstudio.neobots.block.parts.BrassRollerHead;
-import xyz.agmstudio.neobots.block.parts.BrassWheel;
-import xyz.agmstudio.neobots.block.parts.BrassWheelBase;
-import xyz.agmstudio.neobots.block.parts.RollerWheel;
+import xyz.agmstudio.neobots.block.parts.*;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -158,6 +155,14 @@ public final class CNBBlocks {
             .blockstate(directionalBlockState())
             .item().model(itemModelProvider())
             .recipe(RollerWheel::getRecipe)
+            .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
+            .register();
+
+    public static final BlockEntry<AndesiteRollerHead> ANDESITE_ROLLER_HEAD = REGISTRATE.block("andesite_roller_head", AndesiteRollerHead::new)
+            .initialProperties(() -> Blocks.PLAYER_HEAD)
+            .blockstate(horizontalFacingBlockState())
+            .item().model(itemModelProvider())
+            .recipe(AndesiteRollerHead::getRecipe)
             .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
             .register();
 
