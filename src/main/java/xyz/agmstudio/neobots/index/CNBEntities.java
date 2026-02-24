@@ -9,9 +9,12 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
-import xyz.agmstudio.neobots.robos.brass.roller.BrassRoller;
-import xyz.agmstudio.neobots.robos.brass.roller.BrassRollerModel;
-import xyz.agmstudio.neobots.robos.brass.roller.BrassRollerRenderer;
+import xyz.agmstudio.neobots.robos.roller.andesite.AndesiteRoller;
+import xyz.agmstudio.neobots.robos.roller.andesite.AndesiteRollerModel;
+import xyz.agmstudio.neobots.robos.roller.andesite.AndesiteRollerRenderer;
+import xyz.agmstudio.neobots.robos.roller.brass.BrassRoller;
+import xyz.agmstudio.neobots.robos.roller.brass.BrassRollerModel;
+import xyz.agmstudio.neobots.robos.roller.brass.BrassRollerRenderer;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -28,19 +31,23 @@ public final class CNBEntities {
         }
     }
 
+    public static final EntityEntry<AndesiteRoller> ANDESITE_ROLLER = REGISTRATE.entity("andesite_roller", AndesiteRoller::new, MobCategory.MISC).register();
     public static final EntityEntry<BrassRoller> BRASS_ROLLER = REGISTRATE.entity("brass_roller", BrassRoller::new, MobCategory.MISC).register();
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(BRASS_ROLLER.get(), NeoBotEntity.createAttributes().build());
+        event.put(ANDESITE_ROLLER.get(), NeoBotEntity.createAttributes().build());
     }
 
     @OnlyIn(Dist.CLIENT)
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(CNBEntities.BRASS_ROLLER.get(), BrassRollerRenderer::new);
+        event.registerEntityRenderer(CNBEntities.ANDESITE_ROLLER.get(), AndesiteRollerRenderer::new);
     }
 
     @OnlyIn(Dist.CLIENT)
     public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(BrassRollerModel.LAYER_LOCATION, BrassRollerModel::createBodyLayer);
+        event.registerLayerDefinition(AndesiteRollerModel.LAYER_LOCATION, AndesiteRollerModel::createBodyLayer);
     }
 }

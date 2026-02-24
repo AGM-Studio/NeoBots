@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.robos.brass.roller;
+package xyz.agmstudio.neobots.robos.roller;
 
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntityType;
@@ -6,25 +6,45 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
-public class BrassRoller extends NeoBotEntity {
+public abstract class NeoBotRollerEntity extends NeoBotEntity {
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState crashAnimationState = new AnimationState();
     public final AnimationState shutdownAnimationState = new AnimationState();
     public final AnimationState turnonAnimationState = new AnimationState();
-
     protected int animTick = 0;
-    protected State state = null;
+
+    protected State botState = null;
     protected State oldState = null;
     protected boolean turningOn = false;
-
-    public BrassRoller(EntityType<? extends PathfinderMob> type, Level level) {
-        super(type, level);
-    }
 
     protected double oldWheelRot = 0;
     protected double wheelRot = 0;
     private double prevWheelX = 0;
     private double prevWheelZ = 0;
+
+    public int getAnimTick() {
+        return animTick;
+    }
+    public double getOldWheelRot() {
+        return oldWheelRot;
+    }
+    public double getWheelRot() {
+        return wheelRot;
+    }
+    public State getBotState() {
+        return botState;
+    }
+    public State getOldState() {
+        return oldState;
+    }
+    public boolean isTurningOn() {
+        return turningOn;
+    }
+
+    public NeoBotRollerEntity(EntityType<? extends PathfinderMob> type, Level level) {
+        super(type, level);
+    }
+
     private void calculateWheelRotation() {
         oldWheelRot = wheelRot;
         float yawRad = (float) Math.toRadians(getYRot());
@@ -44,7 +64,7 @@ public class BrassRoller extends NeoBotEntity {
             calculateWheelRotation();
             if (animTick > 0) animTick--;
             if (turningOn && animTick <= 0) turningOn = false;
-            if (state == State.RUNNING && animTick <= 0) {
+            if (botState == State.RUNNING && animTick <= 0) {
                 idleAnimationState.start(this.tickCount);
                 animTick = 40;
             }
@@ -52,29 +72,37 @@ public class BrassRoller extends NeoBotEntity {
     }
 
     public void handleStateAnimation(State state) {
-        if (state == this.state) return;
-        this.oldState = this.state;
-        this.state = state;
+        if (state == botState) return;
+        this.oldState = botState;
+        this.botState = state;
         idleAnimationState.stop();
         crashAnimationState.stop();
         shutdownAnimationState.stop();
         turnonAnimationState.stop();
 
+        AnimationState animation = null;
         switch (state) {
             case NO_CHARGE, STOPPED, LOADING -> {
                 animTick = 20;
-                shutdownAnimationState.start(this.tickCount);
+                animation = shutdownAnimationState;
             }
             case CRASHED -> {
                 animTick = 50;
-                crashAnimationState.start(this.tickCount);
+                animation = crashAnimationState;
             }
             case RUNNING -> {
                 animTick = 20;
                 turningOn = true;
-                turnonAnimationState.start(this.tickCount);
+                animation = turnonAnimationState;
                 if (!level().isClientSide) addCooldownTicks(20);
             }
+        }
+
+        if (animation == null) return;
+        animation.start(tickCount);
+        if (oldState == null || oldState == State.LOADING) {
+            animation.fastForward(animTick - 1, 1.0f);
+            animTick = 0;
         }
     }
 }

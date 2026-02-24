@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.index.CNBEntities;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
-import xyz.agmstudio.neobots.robos.brass.roller.BrassRoller;
+import xyz.agmstudio.neobots.robos.roller.brass.BrassRoller;
 
 import java.util.List;
 
