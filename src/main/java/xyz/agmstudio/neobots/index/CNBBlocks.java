@@ -15,6 +15,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.api.distmarker.Dist;
@@ -90,6 +91,28 @@ public final class CNBBlocks {
             });
         };
     }
+    private static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> directionalBlockState(String... subs) {
+        return (ctx, prov) -> {
+            var model = prov.models().getExistingFile(loc(ctx, subs));
+            prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                Direction facing = state.getValue(DirectionalBlock.FACING);
+                int xRot = switch (facing) {
+                    case DOWN -> 180;
+                    case NORTH, SOUTH, WEST, EAST -> 90;
+                    default -> 0;
+                };
+
+                int yRot = switch (facing) {
+                    case SOUTH -> 180;
+                    case WEST -> 270;
+                    case EAST -> 90;
+                    default -> 0;
+                };
+
+                return ConfiguredModel.builder().modelFile(model).rotationX(xRot).rotationY(yRot).build();
+            });
+        };
+    }
 
     private static <T extends BlockItem> @NotNull NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> itemModelProvider(String... subs) {
         final String sub = subs.length == 0 ? "" : String.join("/", subs);
@@ -132,7 +155,7 @@ public final class CNBBlocks {
     // Bot Parts
     public static final BlockEntry<RollerWheel> ROLLER_WHEEL = REGISTRATE.block("roller_wheel", RollerWheel::new)
             .initialProperties(SharedProperties::wooden)
-            .blockstate(blockStateProvider())
+            .blockstate(directionalBlockState())
             .item().model(itemModelProvider())
             .recipe(RollerWheel::getRecipe)
             .tab(CNBCreativeModeTabs.MAIN.getKey()).build()
