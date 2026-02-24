@@ -52,7 +52,7 @@
   "crash.create_neobots.inventory_inaccessible": "Unable to reach the container.",
   "crash.create_neobots.not_on_charger": "Bot was not standing on the charging pad.",
 
-  "create_neobots.ponder.tag.bots": "NeoBots Assemble bots",
+  "create_neobots.ponder.tag.bots": "NeoBots Assembly",
   "create_neobots.ponder.tag.bots.description": "All available bot assemblies. More will be added in future versions.",
 
   "create_neobots.ponder.bot_assembly.header": "Assembling Bots",

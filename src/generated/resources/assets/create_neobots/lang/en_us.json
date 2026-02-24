@@ -22,7 +22,7 @@
   "create_neobots.ponder.charging.text_4": "The charging pad can also charge bots directly above it.",
   "create_neobots.ponder.charging.text_5": "Though the bot needs to connect to the pad using a charging module.",
   "create_neobots.ponder.charging.text_6": "And the pad can only charge one bot at a time... more might result in a bot crash.",
-  "create_neobots.ponder.tag.bots": "NeoBots Assemble bots",
+  "create_neobots.ponder.tag.bots": "NeoBots Assembly",
   "create_neobots.ponder.tag.bots.description": "All available bot assemblies. More will be added in future versions.",
   "entity.create_neobots.andesite_roller": "Andesite Roller",
   "entity.create_neobots.brass_roller": "Brass Roller",

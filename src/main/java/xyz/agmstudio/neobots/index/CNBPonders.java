@@ -20,13 +20,15 @@ public final class CNBPonders {
         PonderTagRegistrationHelper<RegistryEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
         HELPER.registerTag(BOTS).addToIndex().item(CNBBlocks.BRASS_ROLLER_HEAD).register();
         HELPER.addToTag(BOTS)
-                .add(CNBBlocks.BRASS_ROLLER_HEAD);
+                .add(CNBBlocks.BRASS_ROLLER_HEAD)
+                .add(CNBBlocks.ANDESITE_ROLLER_HEAD);
     }
 
     public static void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
-        HELPER.addStoryBoard(CNBBlocks.BRASS_ROLLER_HEAD, "bot_assemble", CNBPonderScenes::botAssembly, BOTS);
+        HELPER.addStoryBoard(CNBBlocks.ANDESITE_ROLLER_HEAD, "andesite_roller_assemble", CNBPonderScenes::andesiteRollerAssembly, BOTS);
+        HELPER.addStoryBoard(CNBBlocks.BRASS_ROLLER_HEAD, "brass_roller_assemble", CNBPonderScenes::brassRollerAssembly, BOTS);
         HELPER.addStoryBoard(CNBBlocks.CHARGING_PAD, "charging", CNBPonderScenes::charging, AllCreatePonderTags.KINETIC_APPLIANCES);
         HELPER.forComponents(CNBBlocks.CHARGER, CNBBlocks.BATTERY)
                 .addStoryBoard("charging", CNBPonderScenes::charging);
