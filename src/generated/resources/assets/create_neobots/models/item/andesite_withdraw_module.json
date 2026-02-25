@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "create_neobots:item/deposit_module"
+    "layer0": "create_neobots:item/andesite_withdraw_module"
   }
 }

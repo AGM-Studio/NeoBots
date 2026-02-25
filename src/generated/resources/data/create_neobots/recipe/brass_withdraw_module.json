@@ -3,13 +3,13 @@
   "category": "misc",
   "key": {
     "B": {
-      "item": "create_neobots:andesite_module_base"
+      "item": "create_neobots:brass_module_base"
     },
     "H": {
       "item": "minecraft:hopper"
     },
     "I": {
-      "item": "minecraft:iron_ingot"
+      "item": "create_neobots:andesite_move_to_module"
     },
     "R": {
       "item": "minecraft:redstone"
@@ -22,6 +22,6 @@
   ],
   "result": {
     "count": 1,
-    "id": "create_neobots:withdraw_module"
+    "id": "create_neobots:brass_withdraw_module"
   }
 }

@@ -48,12 +48,18 @@ public abstract class ModuleTask<D extends ModuleData> {
     public abstract boolean isDone();
     public abstract void tick();
 
-    public Component getStatus() {
-        if (!isDone())
-            return Component.translatable("module.create_neobots." + getType() + ".status", getTranslateArgs()).withStyle(getStatusStyle());
-        else
-            return Component.translatable("module.create_neobots." + getType() + ".status.is_done", getTranslateArgs()).withStyle(getStatusStyle());
+    public final Component getStatus() {
+        if (!isDone()) return getOnGoingStatus();
+        else return getOnFinishedStatus();
     }
+
+    protected @NotNull Component getOnFinishedStatus() {
+        return Component.translatable("module.create_neobots." + getType() + ".status.is_done", getTranslateArgs()).withStyle(getStatusStyle());
+    }
+    protected @NotNull Component getOnGoingStatus() {
+        return Component.translatable("module.create_neobots." + getType() + ".status", getTranslateArgs()).withStyle(getStatusStyle());
+    }
+
     protected Style getFinishedStyle() {
         return Style.EMPTY.withColor(ChatFormatting.GREEN);
     }

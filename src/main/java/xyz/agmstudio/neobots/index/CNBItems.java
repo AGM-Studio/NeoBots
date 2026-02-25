@@ -9,11 +9,13 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import net.minecraft.world.item.Item;
 import xyz.agmstudio.neobots.NeoBots;
+import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
 import xyz.agmstudio.neobots.modules.andesite.AndesiteChargingModule;
 import xyz.agmstudio.neobots.modules.andesite.AndesiteDepositModule;
 import xyz.agmstudio.neobots.modules.andesite.AndesiteMoveToModule;
 import xyz.agmstudio.neobots.modules.andesite.AndesiteWithdrawModule;
-import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
+import xyz.agmstudio.neobots.modules.brass.BrassDepositModule;
+import xyz.agmstudio.neobots.modules.brass.BrassWithdrawModule;
 import xyz.agmstudio.neobots.upgrades.InventoryUpgradeItem;
 import xyz.agmstudio.neobots.upgrades.MemoryUpgradeItem;
 import xyz.agmstudio.neobots.upgrades.UpgradeItem;
@@ -34,10 +36,13 @@ public final class CNBItems {
     }
 
     // Modules
-    public static final ItemEntry<AndesiteDepositModule>    DEPOSIT_MODULE      = register("deposit_module", AndesiteDepositModule::new, 1, AndesiteDepositModule::getRecipe);
-    public static final ItemEntry<AndesiteWithdrawModule>   WITHDRAW_MODULE     = register("withdraw_module", AndesiteWithdrawModule::new, 1, AndesiteWithdrawModule::getRecipe);
-    public static final ItemEntry<AndesiteMoveToModule>     MOVE_TO_MODULE      = register("move_to_module", AndesiteMoveToModule::new, 1, AndesiteMoveToModule::getRecipe);
-    public static final ItemEntry<AndesiteChargingModule>   CHARGING_MODULE     = register("charging_module", AndesiteChargingModule::new, 1, AndesiteChargingModule::getRecipe);
+    public static final ItemEntry<AndesiteDepositModule> ANDESITE_DEPOSIT_MODULE    = register("andesite_deposit_module", AndesiteDepositModule::new, 1, AndesiteDepositModule::getRecipe, "deposit_module");
+    public static final ItemEntry<AndesiteWithdrawModule> ANDESITE_WITHDRAW_MODULE  = register("andesite_withdraw_module", AndesiteWithdrawModule::new, 1, AndesiteWithdrawModule::getRecipe, "withdraw_module");
+    public static final ItemEntry<AndesiteMoveToModule> ANDESITE_MOVE_TO_MODULE     = register("andesite_move_to_module", AndesiteMoveToModule::new, 1, AndesiteMoveToModule::getRecipe, "move_to_module");
+    public static final ItemEntry<AndesiteChargingModule> ANDESITE_CHARGING_MODULE  = register("andesite_charging_module", AndesiteChargingModule::new, 1, AndesiteChargingModule::getRecipe, "charging_module");
+
+    public static final ItemEntry<BrassDepositModule> BRASS_DEPOSIT_MODULE    = register("brass_deposit_module", BrassDepositModule::new, 1, BrassDepositModule::getRecipe);
+    public static final ItemEntry<BrassWithdrawModule> BRASS_WITHDRAW_MODULE  = register("brass_withdraw_module", BrassWithdrawModule::new, 1, BrassWithdrawModule::getRecipe);
 
     // Upgrades
     public static final ItemEntry<MemoryUpgradeItem.Andesite>    ANDESITE_MEMORY_UPGRADE     = register("andesite_memory_upgrade", MemoryUpgradeItem.Andesite::new, 4, MemoryUpgradeItem.Andesite::getRecipe, "memory_upgrade");
@@ -50,7 +55,8 @@ public final class CNBItems {
             (ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/battery"))
     ).register();
 
-    public static final ItemEntry<Item> BASE_MODULE             = register("andesite_module_base", Item::new, 16, ModuleItem::getBaseRecipe);
+    public static final ItemEntry<Item> ANDESITE_MODULE_BASE    = register("andesite_module_base", Item::new, 16, ModuleItem::getAndesiteBaseRecipe);
+    public static final ItemEntry<Item> BRASS_MODULE_BASE       = register("brass_module_base", Item::new, 16, ModuleItem::getBrassBaseRecipe);
     public static final ItemEntry<Item> ANDESITE_UPGRADE_BASE   = register("andesite_upgrade_base", Item::new, 16, UpgradeItem::getAndesiteBaseRecipe);
     public static final ItemEntry<Item> BRASS_UPGRADE_BASE      = register("brass_upgrade_base", Item::new, 16, UpgradeItem::getBrassBaseRecipe);
 }

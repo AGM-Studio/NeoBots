@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "create_neobots:andesite_module_base"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "RIR",
+    "IBI",
+    "RHR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_neobots:andesite_deposit_module"
+  }
+}

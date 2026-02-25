@@ -33,11 +33,11 @@ public class AndesiteDepositModule extends TargetedModuleItem<AndesiteDepositMod
                 .pattern("RIR")
                 .pattern("IBI")
                 .pattern("RHR")
-                .define('B', CNBItems.BASE_MODULE)
+                .define('B', CNBItems.ANDESITE_MODULE_BASE)
                 .define('R', Items.REDSTONE)
                 .define('I', Items.IRON_INGOT)
                 .define('H', Items.HOPPER)
-                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BASE_MODULE))
+                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.ANDESITE_MODULE_BASE))
                 .save(prov);
     }
 

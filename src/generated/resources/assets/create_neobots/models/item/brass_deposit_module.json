@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "create_neobots:item/charging_module"
+    "layer0": "create_neobots:item/brass_deposit_module"
   }
 }

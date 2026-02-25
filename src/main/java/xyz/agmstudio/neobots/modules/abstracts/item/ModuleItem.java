@@ -31,28 +31,44 @@ import java.util.List;
 import java.util.Objects;
 
 public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> extends Item {
-    public static void getBaseRecipe(DataGenContext<Item, Item> ctx, RegistrateRecipeProvider prov) {
+    public static void getAndesiteBaseRecipe(DataGenContext<Item, Item> ctx, RegistrateRecipeProvider prov) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get(), 4)
+                .pattern("CAC")
+                .pattern("ACA")
+                .pattern("RAR")
+                .define('A', AllBlocks.ANDESITE_CASING)
+                .define('C', AllBlocks.COGWHEEL)
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_cog", RegistrateRecipeProvider.has(AllBlocks.COGWHEEL))
+                .save(prov);
+    }
+    public static void getBrassBaseRecipe(DataGenContext<Item, Item> ctx, RegistrateRecipeProvider prov) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get(), 2)
                 .pattern("CAC")
                 .pattern("APA")
                 .pattern("RAR")
                 .define('P', AllItems.PRECISION_MECHANISM)
-                .define('A', AllBlocks.ANDESITE_CASING)
+                .define('A', AllBlocks.BRASS_CASING)
                 .define('C', AllBlocks.COGWHEEL)
                 .define('R', Items.REDSTONE)
                 .unlockedBy("has_precision", RegistrateRecipeProvider.has(AllItems.PRECISION_MECHANISM))
                 .save(prov);
     }
 
+    protected final int lines;
     protected final String key;
     private final ModuleTask.Gen<D, T> taskGenerator;
     private final ModuleData.Gen<D> dataGenerator;
 
     public ModuleItem(String key, Properties properties, ModuleTask.Gen<D, T> taskGenerator, ModuleData.Gen<D> dataGenerator) {
+        this(key, properties, taskGenerator, dataGenerator, 1);
+    }
+    public ModuleItem(String key, Properties properties, ModuleTask.Gen<D, T> taskGenerator, ModuleData.Gen<D> dataGenerator, int lines) {
         super(properties);
         this.key = key;
         this.taskGenerator = taskGenerator;
         this.dataGenerator = dataGenerator;
+        this.lines = lines;
     }
 
     public abstract ModuleTier getTier();
@@ -70,8 +86,15 @@ public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> 
         return dataGenerator.generate(level, stack);
     }
 
-    public @NotNull Component getModuleDescription() {
-        return Component.translatable("module.create_neobots." + key + ".tooltip.description");
+    public @NotNull List<Component> getModuleDescription() {
+        if (lines <= 1)
+            return List.of(Component.translatable("module.create_neobots." + key + ".tooltip.description"));
+
+        List<Component> list = new ArrayList<>();
+        for (int i = 1; i <= lines; i++)
+            list.add(Component.translatable("module.create_neobots." + key + ".tooltip.description." + i));
+
+        return list;
     }
     public @NotNull FontHelper.Palette getPalette() {
         return FontHelper.Palette.GRAY_AND_GOLD;
@@ -84,7 +107,8 @@ public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> 
         tooltip.add(TooltipHelper.holdShift(FontHelper.Palette.GRAY_AND_BLUE, false));
         tooltip.add(CommonComponents.SPACE);
         if (flags.hasShiftDown())
-            tooltip.addAll(FontHelper.cutTextComponent(getModuleDescription(), getShiftPalette()));
+            for (Component line: getModuleDescription())
+                tooltip.addAll(FontHelper.cutTextComponent(line, getShiftPalette()));
         else {
             List<Component> dataTooltip = new ArrayList<>();
             getData(ctx.level(), stack).addTooltip(dataTooltip, ctx, flags);

@@ -5,7 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": "create_neobots:andesite_module_base"
+            "items": "create_neobots:brass_module_base"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create_neobots:move_to_module"
+        "recipe": "create_neobots:brass_withdraw_module"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "create_neobots:move_to_module"
+      "create_neobots:brass_withdraw_module"
     ]
   }
 }

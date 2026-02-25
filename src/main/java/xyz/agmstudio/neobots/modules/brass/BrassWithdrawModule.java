@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.modules.andesite;
+package xyz.agmstudio.neobots.modules.brass;
 
 import com.simibubi.create.content.logistics.vault.ItemVaultBlockEntity;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -27,25 +27,25 @@ import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.task.ItemTransferTask;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
-public class AndesiteWithdrawModule extends TargetedModuleItem<AndesiteWithdrawModule.Data, AndesiteWithdrawModule.Task> implements MenuProvider {
-    public static void getRecipe(DataGenContext<Item, AndesiteWithdrawModule> ctx, RegistrateRecipeProvider prov) {
+public class BrassWithdrawModule extends TargetedModuleItem<BrassWithdrawModule.Data, BrassWithdrawModule.Task> implements MenuProvider {
+    public static void getRecipe(DataGenContext<Item, BrassWithdrawModule> ctx, RegistrateRecipeProvider prov) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
                 .pattern("RHR")
                 .pattern("IBI")
                 .pattern("RIR")
-                .define('B', CNBItems.ANDESITE_MODULE_BASE)
+                .define('B', CNBItems.BRASS_MODULE_BASE)
                 .define('R', Items.REDSTONE)
-                .define('I', Items.IRON_INGOT)
+                .define('I', CNBItems.ANDESITE_MOVE_TO_MODULE)
                 .define('H', Items.HOPPER)
-                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.ANDESITE_MODULE_BASE))
+                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BRASS_MODULE_BASE))
                 .save(prov);
     }
 
     private static final int REACH_SQR = 4;
     private static final int COOLDOWN = 4;
 
-    public AndesiteWithdrawModule(Properties props) {
-        super("withdraw", props, (bot, stack) -> new Task(bot, stack, REACH_SQR, COOLDOWN), Data::new);
+    public BrassWithdrawModule(Properties props) {
+        super("brass_withdraw", props, (bot, stack) -> new Task(bot, stack, REACH_SQR, COOLDOWN), Data::new, 2);
     }
 
     @Override public ModuleTier getTier() {
@@ -64,13 +64,13 @@ public class AndesiteWithdrawModule extends TargetedModuleItem<AndesiteWithdrawM
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
         return TransferModuleMenu.create(id, inv);
     }
-    public static class Task extends ItemTransferTask<Data> {
+    public static class Task extends ItemTransferTask.Advanced<Data> {
         public Task(NeoBotEntity bot, Data data, double reach, int cooldown) {
             super(bot, data, reach, cooldown);
         }
 
         @Override public String getType() {
-            return "withdraw";
+            return "brass_withdraw";
         }
 
         @Override public IItemHandler from() {
@@ -86,7 +86,7 @@ public class AndesiteWithdrawModule extends TargetedModuleItem<AndesiteWithdrawM
             super(level, stack);
         }
         @Override protected String getTranslateKey() {
-            return "withdraw";
+            return "brass_withdraw";
         }
     }
 }

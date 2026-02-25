@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_base": {
+    "has_precision": {
       "conditions": {
         "items": [
           {
-            "items": "create_neobots:andesite_module_base"
+            "items": "create:precision_mechanism"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create_neobots:withdraw_module"
+        "recipe": "create_neobots:brass_module_base"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_base"
+      "has_precision"
     ]
   ],
   "rewards": {
     "recipes": [
-      "create_neobots:withdraw_module"
+      "create_neobots:brass_module_base"
     ]
   }
 }

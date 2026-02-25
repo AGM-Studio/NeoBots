@@ -38,10 +38,10 @@ public class AndesiteMoveToModule extends TargetedModuleItem<AndesiteMoveToModul
                 .pattern("AAA")
                 .pattern("CBC")
                 .pattern("AAA")
-                .define('B', CNBItems.BASE_MODULE)
+                .define('B', CNBItems.ANDESITE_MODULE_BASE)
                 .define('A', AllItems.ANDESITE_ALLOY)
                 .define('C', AllBlocks.COGWHEEL)
-                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BASE_MODULE))
+                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.ANDESITE_MODULE_BASE))
                 .save(prov);
     }
 

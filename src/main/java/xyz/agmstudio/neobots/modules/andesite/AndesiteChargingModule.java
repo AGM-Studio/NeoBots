@@ -28,10 +28,10 @@ public class AndesiteChargingModule extends ModuleItem<AndesiteChargingModule.Da
                 .pattern("CRC")
                 .pattern("RBR")
                 .pattern("CRC")
-                .define('B', CNBItems.BASE_MODULE)
+                .define('B', CNBItems.ANDESITE_MODULE_BASE)
                 .define('R', Items.REDSTONE)
                 .define('C', Items.COPPER_INGOT)
-                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BASE_MODULE))
+                .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.ANDESITE_MODULE_BASE))
                 .save(prov);
     }
     public AndesiteChargingModule(Properties props) {

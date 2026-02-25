@@ -2,7 +2,15 @@ package xyz.agmstudio.neobots.modules.abstracts.task;
 
 import com.simibubi.create.AllBlocks;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.jetbrains.annotations.NotNull;
@@ -85,5 +93,50 @@ public abstract class ItemTransferTask<D extends ModuleTransferData> extends Mod
 
     @Override protected Object @NotNull [] getTranslateArgs() {
         return new Object[]{transferred, data.getCount()};
+    }
+
+    public static abstract class Advanced<D extends ModuleTransferData> extends ItemTransferTask<D> {
+        private final Vec3 target;
+        public Advanced(NeoBotEntity bot, D data, double reach, int cooldown) {
+            super(bot, data, reach, cooldown);
+            if (data.getTarget() == null) target = null;
+            else {
+                BlockPos pos = data.getTarget().relative(data.getSide());
+                Level level = bot.level();
+                BlockState state = level.getBlockState(pos);
+                VoxelShape shape = state.getCollisionShape(level, pos);
+
+                double height = shape.isEmpty() ? 0.0 : shape.max(Direction.Axis.Y);
+                target = new Vec3(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
+            }
+        }
+
+        @Override public void onStart() {
+            if (!data.isSameDimension(bot.level().dimension())) throw NeoBotCrash.TARGET_INACCESSIBLE;
+            if (bot.position().distanceTo(target) > 0.02) bot.getNavigation().moveTo(target.x, target.y, target.z, 0, 1.0);
+            else super.onStart();
+        }
+
+        @Override public void tick() {
+            if (target == null) return;
+            if (!bot.getNavigation().isDone()) return;
+            Vec3 delta = target.subtract(bot.position());
+            if (delta.lengthSqr() < 0.02) {
+                bot.setDeltaMovement(Vec3.ZERO);
+                super.tick();
+            } else {
+                double speed = bot.getAttributeValue(Attributes.MOVEMENT_SPEED) / 2.0;
+                double maxStep = Math.min(speed, Math.sqrt(delta.lengthSqr()));
+
+                Vec3 motion = delta.normalize().scale(maxStep);
+                bot.setDeltaMovement(motion.x, bot.getDeltaMovement().y, motion.z);
+            }
+        }
+
+        @Override protected @NotNull Component getOnGoingStatus() {
+            if (!bot.getNavigation().isDone())
+                return Component.translatable("module.create_neobots." + getType() + ".status.on_the_way", data.getTarget().relative(data.getSide()).toShortString()).withStyle(getStatusStyle());
+            return super.getOnGoingStatus();
+        }
     }
 }

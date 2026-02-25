@@ -27,6 +27,9 @@ public abstract class ModuleBlockPosData extends ModuleData {
     public BlockPos getTarget() {
         return target;
     }
+    public Direction getSide() {
+        return side;
+    }
     public boolean isSameDimension(ResourceKey<Level> dimension) {
         return dimension != null && Objects.equals(this.dimension, dimension.location());
     }

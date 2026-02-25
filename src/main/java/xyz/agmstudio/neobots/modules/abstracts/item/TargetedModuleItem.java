@@ -14,7 +14,10 @@ import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 
 public abstract class TargetedModuleItem<D extends ModuleBlockPosData, T extends ModuleTask<D>> extends ModuleItem<D, T> {
     public TargetedModuleItem(String key, Properties properties, ModuleTask.Gen<D, T> taskGenerator, ModuleData.Gen<D> dataGenerator) {
-        super(key, properties, taskGenerator, dataGenerator);
+        this(key, properties, taskGenerator, dataGenerator, 1);
+    }
+    public TargetedModuleItem(String key, Properties properties, ModuleTask.Gen<D, T> taskGenerator, ModuleData.Gen<D> dataGenerator, int lines) {
+        super(key, properties, taskGenerator, dataGenerator, lines);
     }
 
     public boolean isValidTarget(@NotNull UseOnContext ctx,@NotNull BlockPos pos) {

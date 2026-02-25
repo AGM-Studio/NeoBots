@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_cog": {
+    "has_base": {
       "conditions": {
         "items": [
           {
-            "items": "create:cogwheel"
+            "items": "create_neobots:andesite_module_base"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create_neobots:andesite_module_base"
+        "recipe": "create_neobots:andesite_charging_module"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_cog"
+      "has_base"
     ]
   ],
   "rewards": {
     "recipes": [
-      "create_neobots:andesite_module_base"
+      "create_neobots:andesite_charging_module"
     ]
   }
 }
