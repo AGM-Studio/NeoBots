@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.modules;
+package xyz.agmstudio.neobots.modules.andesite;
 
 import com.simibubi.create.content.logistics.vault.ItemVaultBlockEntity;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -22,12 +22,13 @@ import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.index.CNBItems;
 import xyz.agmstudio.neobots.menus.TransferModuleMenu;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleTransferData;
+import xyz.agmstudio.neobots.modules.abstracts.item.ModuleTier;
 import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.task.ItemTransferTask;
 import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
-public class DepositModule extends TargetedModuleItem<DepositModule.Data, DepositModule.Task> implements MenuProvider {
-    public static void getRecipe(DataGenContext<Item, DepositModule> ctx, RegistrateRecipeProvider prov) {
+public class AndesiteDepositModule extends TargetedModuleItem<AndesiteDepositModule.Data, AndesiteDepositModule.Task> implements MenuProvider {
+    public static void getRecipe(DataGenContext<Item, AndesiteDepositModule> ctx, RegistrateRecipeProvider prov) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
                 .pattern("RIR")
                 .pattern("IBI")
@@ -43,8 +44,12 @@ public class DepositModule extends TargetedModuleItem<DepositModule.Data, Deposi
     private static final int REACH_SQR = 4;
     private static final int COOLDOWN = 4;
 
-    public DepositModule(Properties props) {
+    public AndesiteDepositModule(Properties props) {
         super("deposit", props, (bot, stack) -> new Task(bot, stack, REACH_SQR, COOLDOWN), Data::new);
+    }
+
+    @Override public ModuleTier getTier() {
+        return ModuleTier.ANDESITE;
     }
 
     @Override public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {

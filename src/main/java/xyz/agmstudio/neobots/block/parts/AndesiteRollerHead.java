@@ -23,7 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.index.CNBBlocks;
 import xyz.agmstudio.neobots.index.CNBEntities;
-import xyz.agmstudio.neobots.robos.NeoBotEntity;
+import xyz.agmstudio.neobots.robos.roller.andesite.AndesiteRoller;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -90,7 +90,7 @@ public class AndesiteRollerHead extends HorizontalDirectionalBlock {
                 && leftWheel.getValue(DirectionalBlock.FACING) == left
                 && rightWheel.getValue(DirectionalBlock.FACING) == right
         ) {
-            NeoBotEntity bot = new NeoBotEntity(CNBEntities.ANDESITE_ROLLER.get(), level);
+            AndesiteRoller bot = new AndesiteRoller(CNBEntities.ANDESITE_ROLLER.get(), level);
             bot.moveTo(casingPos.getX() + 0.5, casingPos.getY(), casingPos.getZ() + 0.5, facing.toYRot(), 0);
             bot.setYRot(facing.toYRot());
             bot.yBodyRot = facing.toYRot();

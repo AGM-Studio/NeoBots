@@ -25,7 +25,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.index.CNBBlocks;
 import xyz.agmstudio.neobots.index.CNBEntities;
-import xyz.agmstudio.neobots.robos.NeoBotEntity;
+import xyz.agmstudio.neobots.robos.roller.brass.BrassRoller;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -80,7 +80,7 @@ public class BrassRollerHead extends HorizontalDirectionalBlock {
         BlockState b2 = level.getBlockState(pos.below(2));
 
         if (b1.getBlock() == AllBlocks.BRASS_CASING.get() && b2.getBlock() == CNBBlocks.BRASS_WHEEL.get()) {
-            NeoBotEntity bot = new NeoBotEntity(CNBEntities.BRASS_ROLLER.get(), level);
+            BrassRoller bot = new BrassRoller(CNBEntities.BRASS_ROLLER.get(), level);
             bot.moveTo(pos.getX() + 0.5, pos.getY() - 1, pos.getZ() + 0.5, facing.toYRot(), 0);
             bot.readAdditionalSaveData(new CompoundTag());
             level.addFreshEntity(bot);

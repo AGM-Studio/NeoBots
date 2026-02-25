@@ -31,6 +31,7 @@ import xyz.agmstudio.neobots.containers.InventoryContainer;
 import xyz.agmstudio.neobots.containers.ModuleContainer;
 import xyz.agmstudio.neobots.containers.UpgradeContainer;
 import xyz.agmstudio.neobots.menus.NeoBotMenu;
+import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
 import xyz.agmstudio.neobots.modules.abstracts.task.ModuleTask;
 import xyz.agmstudio.neobots.robos.roller.NeoBotRollerEntity;
 import xyz.agmstudio.neobots.upgrades.InventoryUpgradeItem;
@@ -39,7 +40,7 @@ import xyz.agmstudio.neobots.utils.NeoEntityDataAccessor;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class NeoBotEntity extends PathfinderMob implements MenuProvider {
+public abstract class NeoBotEntity extends PathfinderMob implements MenuProvider {
     public static final NeoEntityDataAccessor<Component> TASK_STATUS =
             new NeoEntityDataAccessor<>(NeoBotEntity.class, EntityDataSerializers.COMPONENT);
     public static final NeoEntityDataAccessor<Integer> STATE =
@@ -143,6 +144,7 @@ public class NeoBotEntity extends PathfinderMob implements MenuProvider {
     public CompoundTag getTaskData() {
         return taskData;
     }
+    public abstract boolean canExecute(@NotNull ModuleItem<?, ?> module);
 
     public State getState() {
         return state;

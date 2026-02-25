@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.modules;
+package xyz.agmstudio.neobots.modules.andesite;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.index.CNBItems;
+import xyz.agmstudio.neobots.modules.abstracts.item.ModuleTier;
 import xyz.agmstudio.neobots.modules.abstracts.task.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleBlockPosData;
 import xyz.agmstudio.neobots.modules.abstracts.item.TargetedModuleItem;
@@ -31,8 +32,8 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import java.util.List;
 
-public class MoveToModule extends TargetedModuleItem<MoveToModule.Data, MoveToModule.Task> {
-    public static void getRecipe(DataGenContext<Item, MoveToModule> ctx, RegistrateRecipeProvider prov) {
+public class AndesiteMoveToModule extends TargetedModuleItem<AndesiteMoveToModule.Data, AndesiteMoveToModule.Task> {
+    public static void getRecipe(DataGenContext<Item, AndesiteMoveToModule> ctx, RegistrateRecipeProvider prov) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
                 .pattern("AAA")
                 .pattern("CBC")
@@ -44,12 +45,15 @@ public class MoveToModule extends TargetedModuleItem<MoveToModule.Data, MoveToMo
                 .save(prov);
     }
 
-    public MoveToModule(Properties props) {
+    public AndesiteMoveToModule(Properties props) {
         super("move_to", props, Task::new, Data::new);
     }
 
-    @Override
-    public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {
+    @Override public ModuleTier getTier() {
+        return ModuleTier.ANDESITE;
+    }
+
+    @Override public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {
         Level level = ctx.getLevel();
         BlockState state = level.getBlockState(pos);
 

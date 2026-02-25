@@ -55,6 +55,8 @@ public abstract class ModuleItem<D extends ModuleData, T extends ModuleTask<D>> 
         this.dataGenerator = dataGenerator;
     }
 
+    public abstract ModuleTier getTier();
+
     /** Generates a task for the bot to be executed (Uses load to automatically load the data)*/
     public T getTask(NeoBotEntity bot, ItemStack stack) {
         T task = taskGenerator.generate(bot, getData(bot.level(), stack));

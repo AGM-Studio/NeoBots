@@ -1,4 +1,4 @@
-package xyz.agmstudio.neobots.modules;
+package xyz.agmstudio.neobots.modules.andesite;
 
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
@@ -13,6 +13,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import xyz.agmstudio.neobots.block.charging_pad.ChargingPadBlockEntity;
 import xyz.agmstudio.neobots.index.CNBItems;
+import xyz.agmstudio.neobots.modules.abstracts.item.ModuleTier;
 import xyz.agmstudio.neobots.modules.abstracts.task.ModuleTask;
 import xyz.agmstudio.neobots.modules.abstracts.data.ModuleData;
 import xyz.agmstudio.neobots.modules.abstracts.item.ModuleItem;
@@ -21,8 +22,8 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 
 import java.util.List;
 
-public class ChargingModule extends ModuleItem<ChargingModule.Data, ChargingModule.Task> {
-    public static void getRecipe(DataGenContext<Item, ChargingModule> ctx, RegistrateRecipeProvider prov) {
+public class AndesiteChargingModule extends ModuleItem<AndesiteChargingModule.Data, AndesiteChargingModule.Task> {
+    public static void getRecipe(DataGenContext<Item, AndesiteChargingModule> ctx, RegistrateRecipeProvider prov) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
                 .pattern("CRC")
                 .pattern("RBR")
@@ -33,8 +34,12 @@ public class ChargingModule extends ModuleItem<ChargingModule.Data, ChargingModu
                 .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BASE_MODULE))
                 .save(prov);
     }
-    public ChargingModule(Properties props) {
+    public AndesiteChargingModule(Properties props) {
         super("charging", props, Task::new, Data::new);
+    }
+
+    @Override public ModuleTier getTier() {
+        return ModuleTier.ANDESITE;
     }
 
     public static class Task extends ModuleTask<Data> {
