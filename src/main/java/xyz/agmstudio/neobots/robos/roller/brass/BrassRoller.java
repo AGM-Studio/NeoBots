@@ -13,6 +13,14 @@ public class BrassRoller extends NeoBotRollerEntity {
         super(type, level);
     }
 
+    @Override public int getBaseModuleSlots() {
+        return 10;
+    }
+
+    @Override public int getUpgradeSlots() {
+        return 6;
+    }
+
     @Override public boolean canExecute(@NotNull ModuleItem<?, ?> module) {
         return module.getTier() == ModuleTier.BRASS || module.getTier() == ModuleTier.ANDESITE;
     }

@@ -70,16 +70,17 @@ public abstract class NeoBotEntity extends PathfinderMob implements MenuProvider
     }
 
     // Attributes
-    protected final static int UPGRADE_SLOTS        = 3;
     protected final static int BATTERY_SLOTS        = 1;
-    protected final static int BASE_MODULE_SLOTS    = 6;
     protected final static int MAX_MODULE_SLOTS     = 32;
     protected final static int BASE_INVENTORY_SLOTS = 1;
     protected final static int MAX_INVENTORY_SLOTS  = 9;
     protected final static int BASE_CONSUMPTION     = 10;
 
+    public abstract int getBaseModuleSlots();
+    public abstract int getUpgradeSlots();
+
     // Execution values
-    private int moduleCapacity = BASE_MODULE_SLOTS;
+    private int moduleCapacity = getBaseModuleSlots();
     private int inventoryCapacity = BASE_INVENTORY_SLOTS;
 
     private int cooldownTicks = 0;
@@ -93,7 +94,7 @@ public abstract class NeoBotEntity extends PathfinderMob implements MenuProvider
     private final BatteryContainer batteryInventory = new BatteryContainer(this, BATTERY_SLOTS);
     private final InventoryContainer inventory = new InventoryContainer(this, MAX_INVENTORY_SLOTS);
     private final ModuleContainer moduleInventory = new ModuleContainer(this, MAX_MODULE_SLOTS);
-    private final UpgradeContainer upgradeInventory = new UpgradeContainer(this, UPGRADE_SLOTS);
+    private final UpgradeContainer upgradeInventory = new UpgradeContainer(this, getUpgradeSlots());
 
     public void setChanged() {}
 
@@ -117,7 +118,7 @@ public abstract class NeoBotEntity extends PathfinderMob implements MenuProvider
         return moduleCapacity;
     }
     public int getUpgradeCapacity() {
-        return UPGRADE_SLOTS;
+        return getUpgradeSlots();
     }
 
     public int getActiveModuleIndex() {
@@ -357,7 +358,7 @@ public abstract class NeoBotEntity extends PathfinderMob implements MenuProvider
         for (ItemStack stack: upgradeInventory.getItems())
             if (stack.getItem() instanceof MemoryUpgradeItem upgrade) upgrades += upgrade.getUpgradeSize();
 
-        moduleCapacity = Math.min(BASE_MODULE_SLOTS + upgrades, MAX_MODULE_SLOTS);
+        moduleCapacity = Math.min(getBaseModuleSlots() + upgrades, MAX_MODULE_SLOTS);
     }
     public void recalculateInventoryCapacity() {
         int upgrades = 0;

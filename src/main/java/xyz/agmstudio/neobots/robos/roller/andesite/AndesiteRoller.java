@@ -13,6 +13,14 @@ public class AndesiteRoller extends NeoBotRollerEntity {
         super(type, level);
     }
 
+    @Override public int getBaseModuleSlots() {
+        return 6;
+    }
+
+    @Override public int getUpgradeSlots() {
+        return 3;
+    }
+
     @Override public boolean canExecute(@NotNull ModuleItem<?, ?> module) {
         return module.getTier() == ModuleTier.ANDESITE;
     }
