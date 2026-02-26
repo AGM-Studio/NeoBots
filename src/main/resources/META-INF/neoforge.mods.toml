@@ -8,7 +8,7 @@ version = "${mod_version}"
 displayName = "${mod_name}"
 
 # updateJSONURL = "https://raw.githubusercontent.com/AGM-Studio/NeoBots/refs/heads/main/update.json"
-displayURL = "https://www.curseforge.com/minecraft/mc-mods/neobots"
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/create-neobots"
 credits = "Made by Love! AGMStudio©"
 logoFile = "${mod_id}.png"
 
