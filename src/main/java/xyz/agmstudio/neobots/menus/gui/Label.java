@@ -8,12 +8,13 @@ import xyz.agmstudio.neobots.menus.abstracts.AbstractScreen;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 public class Label {
     private final Function<AbstractScreen<?>, Component> text;
     private final int x;
     private final int y;
-    private int color = 0x404040;
+    private IntSupplier color = () -> 0x404040;
     private boolean shadow = false;
     private boolean center = false;
     private int maxWidth = -1;
@@ -31,6 +32,10 @@ public class Label {
     }
 
     public Label withColor(int color) {
+        this.color = () -> color;
+        return this;
+    }
+    public Label withColor(IntSupplier color) {
         this.color = color;
         return this;
     }
@@ -66,7 +71,7 @@ public class Label {
         int dx = center ? (screen.getWidth() - font.width(text)) / 2 : x;
         g.pose().pushPose();
         g.pose().scale(scale, scale, 1.0f);
-        g.drawString(font, text, Math.round(dx / scale), Math.round(y / scale), color, shadow);
+        g.drawString(font, text, Math.round(dx / scale), Math.round(y / scale), color.getAsInt(), shadow);
         g.pose().popPose();
     }
 }

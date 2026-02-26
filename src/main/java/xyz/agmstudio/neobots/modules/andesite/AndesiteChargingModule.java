@@ -89,5 +89,9 @@ public class AndesiteChargingModule extends ModuleItem<AndesiteChargingModule.Da
         @Override public void addTooltip(@NotNull List<Component> tooltip, @NotNull TooltipContext ctx, @NotNull TooltipFlag flags) {
 
         }
+
+        @Override protected String getTranslateKey() {
+            return "charging";
+        }
     }
 }

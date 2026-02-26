@@ -32,10 +32,11 @@ public class BrassWithdrawModule extends TargetedModuleItem<BrassWithdrawModule.
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
                 .pattern("RHR")
                 .pattern("IBI")
-                .pattern("RIR")
+                .pattern("RMR")
                 .define('B', CNBItems.BRASS_MODULE_BASE)
+                .define('M', CNBItems.ANDESITE_MOVE_TO_MODULE)
                 .define('R', Items.REDSTONE)
-                .define('I', CNBItems.ANDESITE_MOVE_TO_MODULE)
+                .define('I', Items.IRON_INGOT)
                 .define('H', Items.HOPPER)
                 .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BRASS_MODULE_BASE))
                 .save(prov);
@@ -49,7 +50,7 @@ public class BrassWithdrawModule extends TargetedModuleItem<BrassWithdrawModule.
     }
 
     @Override public ModuleTier getTier() {
-        return ModuleTier.ANDESITE;
+        return ModuleTier.BRASS;
     }
 
     @Override public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {

@@ -84,6 +84,4 @@ public abstract class ModuleTransferData extends ModuleBlockPosData {
             }
         } else tooltip.add(Component.translatable(trans + "no_filter").withStyle(ChatFormatting.DARK_GRAY));
     }
-
-    protected abstract String getTranslateKey();
 }

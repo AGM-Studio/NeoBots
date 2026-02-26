@@ -2,6 +2,7 @@ package xyz.agmstudio.neobots.menus.abstracts;
 
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
+import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import net.createmod.catnip.gui.element.ScreenElement;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -106,6 +107,12 @@ public abstract class AbstractScreen<T extends AbstractMenu> extends AbstractCon
     protected ScrollInput addScrollInput(int x, int y, int w, int h) {
         ScrollInput input = new ScrollInput(x, y, w, h);
         this.widgets.add(new WidgetHolder<>(input, x, y));
+        return input;
+    }
+    protected SelectionScrollInput addSelectionScrollInput(int x, int y, int w, int h, List<? extends Component> options) {
+        SelectionScrollInput input = new SelectionScrollInput(x, y, w, h);
+        this.widgets.add(new WidgetHolder<>(input, x, y));
+        input.forOptions(options);
         return input;
     }
     protected Button addButton(String text, Button.OnPress onPress, int x, int y, int w, int h) {

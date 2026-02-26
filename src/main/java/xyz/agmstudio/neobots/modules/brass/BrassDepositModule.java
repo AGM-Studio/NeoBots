@@ -30,12 +30,13 @@ import xyz.agmstudio.neobots.robos.NeoBotEntity;
 public class BrassDepositModule extends TargetedModuleItem<BrassDepositModule.Data, BrassDepositModule.Task> implements MenuProvider {
     public static void getRecipe(DataGenContext<Item, BrassDepositModule> ctx, RegistrateRecipeProvider prov) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.get())
-                .pattern("RIR")
+                .pattern("RMR")
                 .pattern("IBI")
                 .pattern("RHR")
                 .define('B', CNBItems.BRASS_MODULE_BASE)
+                .define('M', CNBItems.ANDESITE_MOVE_TO_MODULE)
                 .define('R', Items.REDSTONE)
-                .define('I', CNBItems.ANDESITE_MOVE_TO_MODULE)
+                .define('I', Items.IRON_INGOT)
                 .define('H', Items.HOPPER)
                 .unlockedBy("has_base", RegistrateRecipeProvider.has(CNBItems.BRASS_MODULE_BASE))
                 .save(prov);
@@ -49,7 +50,7 @@ public class BrassDepositModule extends TargetedModuleItem<BrassDepositModule.Da
     }
 
     @Override public ModuleTier getTier() {
-        return ModuleTier.ANDESITE;
+        return ModuleTier.BRASS;
     }
 
     @Override public boolean isValidTarget(@NotNull UseOnContext ctx, @NotNull BlockPos pos) {

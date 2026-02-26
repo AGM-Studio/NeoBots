@@ -5,11 +5,8 @@
     "B": {
       "item": "create_neobots:brass_module_base"
     },
-    "H": {
-      "item": "minecraft:hopper"
-    },
-    "I": {
-      "item": "minecraft:iron_ingot"
+    "C": {
+      "item": "minecraft:copper_ingot"
     },
     "M": {
       "item": "create_neobots:andesite_move_to_module"
@@ -19,12 +16,12 @@
     }
   },
   "pattern": [
-    "RMR",
-    "IBI",
-    "RHR"
+    "CRC",
+    "RBR",
+    "CMC"
   ],
   "result": {
     "count": 1,
-    "id": "create_neobots:brass_deposit_module"
+    "id": "create_neobots:brass_charging_module"
   }
 }

@@ -14,6 +14,7 @@ import xyz.agmstudio.neobots.modules.andesite.AndesiteChargingModule;
 import xyz.agmstudio.neobots.modules.andesite.AndesiteDepositModule;
 import xyz.agmstudio.neobots.modules.andesite.AndesiteMoveToModule;
 import xyz.agmstudio.neobots.modules.andesite.AndesiteWithdrawModule;
+import xyz.agmstudio.neobots.modules.brass.BrassChargingModule;
 import xyz.agmstudio.neobots.modules.brass.BrassDepositModule;
 import xyz.agmstudio.neobots.modules.brass.BrassWithdrawModule;
 import xyz.agmstudio.neobots.upgrades.InventoryUpgradeItem;
@@ -43,6 +44,7 @@ public final class CNBItems {
 
     public static final ItemEntry<BrassDepositModule> BRASS_DEPOSIT_MODULE    = register("brass_deposit_module", BrassDepositModule::new, 1, BrassDepositModule::getRecipe);
     public static final ItemEntry<BrassWithdrawModule> BRASS_WITHDRAW_MODULE  = register("brass_withdraw_module", BrassWithdrawModule::new, 1, BrassWithdrawModule::getRecipe);
+    public static final ItemEntry<BrassChargingModule> BRASS_CHARGING_MODULE  = register("brass_charging_module", BrassChargingModule::new, 1, BrassChargingModule::getRecipe);
 
     // Upgrades
     public static final ItemEntry<MemoryUpgradeItem.Andesite>    ANDESITE_MEMORY_UPGRADE     = register("andesite_memory_upgrade", MemoryUpgradeItem.Andesite::new, 4, MemoryUpgradeItem.Andesite::getRecipe, "memory_upgrade");

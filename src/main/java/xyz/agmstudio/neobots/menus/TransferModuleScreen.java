@@ -9,10 +9,10 @@ import xyz.agmstudio.neobots.menus.gui.Texture;
 import xyz.agmstudio.neobots.utils.NeoBotsHelper;
 
 public class TransferModuleScreen extends AbstractScreen<TransferModuleMenu> {
-    private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 204);
+    private static final Texture BG = new Texture("textures/gui/one_slot_panel.png", 176, 203);
 
     private int count;
-    public boolean skip;
+    private boolean skip;
     private final IconButton skipButton;
 
     public TransferModuleScreen(TransferModuleMenu menu, Inventory inv, Component title) {

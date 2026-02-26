@@ -1,10 +1,7 @@
 package xyz.agmstudio.neobots.index;
 
 import com.tterrag.registrate.util.entry.MenuEntry;
-import xyz.agmstudio.neobots.menus.NeoBotMenu;
-import xyz.agmstudio.neobots.menus.NeoBotScreen;
-import xyz.agmstudio.neobots.menus.TransferModuleMenu;
-import xyz.agmstudio.neobots.menus.TransferModuleScreen;
+import xyz.agmstudio.neobots.menus.*;
 
 import static xyz.agmstudio.neobots.NeoBots.REGISTRATE;
 
@@ -16,4 +13,6 @@ public final class CNBMenus {
 
     public static final MenuEntry<TransferModuleMenu> TRANSFER_MODULE =
             REGISTRATE.menu("transfer_menu", TransferModuleMenu::new, () -> TransferModuleScreen::new).register();
+    public static final MenuEntry<ChargingModuleMenu> CHARGING_MODULE =
+            REGISTRATE.menu("transfer_menu", ChargingModuleMenu::new, () -> ChargingModuleScreen::new).register();
 }

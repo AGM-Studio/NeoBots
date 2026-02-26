@@ -47,6 +47,7 @@ public abstract class ModuleData {
         stack.set(MODULE_DATA, data.tag.copy());
     }
 
+    protected abstract String getTranslateKey();
     public abstract int getCooldown();
     public abstract void addTooltip(List<Component> tooltip, Item.@NotNull TooltipContext ctx, @NotNull TooltipFlag flags);
 }

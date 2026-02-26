@@ -9,6 +9,9 @@
       "item": "minecraft:hopper"
     },
     "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
       "item": "create_neobots:andesite_move_to_module"
     },
     "R": {
@@ -18,7 +21,7 @@
   "pattern": [
     "RHR",
     "IBI",
-    "RIR"
+    "RMR"
   ],
   "result": {
     "count": 1,

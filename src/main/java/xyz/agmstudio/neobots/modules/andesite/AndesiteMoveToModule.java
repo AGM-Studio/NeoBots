@@ -136,5 +136,9 @@ public class AndesiteMoveToModule extends TargetedModuleItem<AndesiteMoveToModul
             else
                 tooltip.add(Component.translatable("module.create_neobots.move_to.tooltip.no_target").withStyle(ChatFormatting.DARK_GRAY));
         }
+
+        @Override protected String getTranslateKey() {
+            return "move_to";
+        }
     }
 }

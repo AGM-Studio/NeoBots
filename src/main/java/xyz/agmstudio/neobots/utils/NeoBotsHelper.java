@@ -9,6 +9,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public interface NeoBotsHelper {
@@ -25,6 +26,9 @@ public interface NeoBotsHelper {
 
     Component STACKS_TERM = Component.translatable("gui_term.create_neobots.stacks");
     Component STACK_TERM = Component.translatable("gui_term.create_neobots.stack");
+    static String leadingZeros(int number, int length) {
+        return String.format("%0" + length + "d", number);
+    }
     static Component countAsStacks(int count) {
         if (count < 64) return Component.literal(count + "");
         int s = count / 64;
@@ -32,6 +36,11 @@ public interface NeoBotsHelper {
         Component term = s > 1 ? STACKS_TERM : STACK_TERM;
         if (r > 0) return Component.literal(s + " ").append(term).append(" + " + r);
         return Component.literal(s + " ").append(term);
+    }
+    static @NotNull Component formatSeconds(int value) {
+        if (value < 60) return Component.literal(value + "s");
+        if (value < 3600) return Component.literal(value / 60 + ":" + leadingZeros(value % 60, 2));
+        return Component.literal(value / 3600 + ":" + leadingZeros(value % 3600 / 60, 2) + ":" + leadingZeros(value % 60, 2));
     }
 
     static int moveItems(Level level, Container from, IItemHandler to, ItemStack filter, int count) {
