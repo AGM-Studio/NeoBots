@@ -14,5 +14,5 @@ public final class CNBMenus {
     public static final MenuEntry<TransferModuleMenu> TRANSFER_MODULE =
             REGISTRATE.menu("transfer_menu", TransferModuleMenu::new, () -> TransferModuleScreen::new).register();
     public static final MenuEntry<ChargingModuleMenu> CHARGING_MODULE =
-            REGISTRATE.menu("transfer_menu", ChargingModuleMenu::new, () -> ChargingModuleScreen::new).register();
+            REGISTRATE.menu("charging_menu", ChargingModuleMenu::new, () -> ChargingModuleScreen::new).register();
 }
