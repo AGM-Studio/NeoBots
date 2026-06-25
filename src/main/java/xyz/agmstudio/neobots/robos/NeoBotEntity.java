@@ -205,6 +205,9 @@ public abstract class NeoBotEntity extends PathfinderMob implements MenuProvider
     @Override public boolean canBeLeashed() {
         return false;
     }
+    @Override public boolean removeWhenFarAway(double ignored) {
+        return false;
+    }
     @Override public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         if (!level().isClientSide && player instanceof ServerPlayer sp)
             sp.openMenu(this, buf -> buf.writeInt(this.getId()));
