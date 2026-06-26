@@ -16,7 +16,7 @@ public class ChargingModuleMenu extends AbstractMenu {
     protected final ItemStack module;
 
     public static @NotNull ChargingModuleMenu create(int id, Inventory inv) {
-        return new ChargingModuleMenu(CNBMenus.TRANSFER_MODULE.get(), id, inv);
+        return new ChargingModuleMenu(CNBMenus.CHARGING_MODULE.get(), id, inv);
     }
     public ChargingModuleMenu(MenuType<?> menu, int id, Inventory inv) {
         super(menu, id, inv);
