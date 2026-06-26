@@ -59,7 +59,7 @@ public class BrassWithdrawModule extends TargetedModuleItem<BrassWithdrawModule.
     }
 
     @Override public @NotNull Component getDisplayName() {
-        return Component.translatable("item.create_neobots.withdraw_module");
+        return Component.translatable("item.create_neobots.brass_withdraw_module");
     }
 
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {

@@ -58,7 +58,7 @@ public class AndesiteWithdrawModule extends TargetedModuleItem<AndesiteWithdrawM
     }
 
     @Override public @NotNull Component getDisplayName() {
-        return Component.translatable("item.create_neobots.withdraw_module");
+        return Component.translatable("item.create_neobots.andesite_withdraw_module");
     }
 
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {

@@ -58,7 +58,7 @@ public class AndesiteDepositModule extends TargetedModuleItem<AndesiteDepositMod
     }
 
     @Override public @NotNull Component getDisplayName() {
-        return Component.translatable("item.create_neobots.deposit_module");
+        return Component.translatable("item.create_neobots.andesite_deposit_module");
     }
 
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {

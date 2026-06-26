@@ -26,7 +26,7 @@ public class ChargingModuleMenu extends AbstractMenu {
             data = m.getData(inv.player.level(), this.module.copy());
         else throw new IllegalArgumentException("Invalid module type for menu");
 
-        addPlayerInventory(8, 122, this.data.getStack());
+        addPlayerInventory(8, 121, this.data.getStack());
         addSlot(new PreviewSlot(data.getStack(), 18, 80));
     }
 

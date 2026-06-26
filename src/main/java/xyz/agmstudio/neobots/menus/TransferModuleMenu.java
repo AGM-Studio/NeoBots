@@ -36,7 +36,7 @@ public class TransferModuleMenu extends AbstractMenu {
         this.filterSlot = new FilterSlot(data.getFilter(), 26, 48, this::updateFilter);
         this.filterHolder = SlotGroupHolder.of(this, filterSlot);
 
-        addPlayerInventory(8, 122, this.data.getStack());
+        addPlayerInventory(8, 121, this.data.getStack());
         addSlot(new PreviewSlot(data.getStack(), 18, 80));
     }
 

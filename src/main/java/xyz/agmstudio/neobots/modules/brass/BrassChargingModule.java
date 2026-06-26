@@ -51,7 +51,7 @@ public class BrassChargingModule extends TargetedModuleItem<BrassChargingModule.
                 .save(prov);
     }
     public BrassChargingModule(Properties props) {
-        super("brass_charging", props, Task::new, Data::new);
+        super("brass_charging", props, Task::new, Data::new, 2);
     }
 
     @Override public ModuleTier getTier() {

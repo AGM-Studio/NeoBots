@@ -59,7 +59,7 @@ public class BrassDepositModule extends TargetedModuleItem<BrassDepositModule.Da
     }
 
     @Override public @NotNull Component getDisplayName() {
-        return Component.translatable("item.create_neobots.deposit_module");
+        return Component.translatable("item.create_neobots.brass_deposit_module");
     }
 
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
